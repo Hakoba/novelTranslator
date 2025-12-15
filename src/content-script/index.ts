@@ -1,16 +1,67 @@
-// This import css file is used to style the iframe that is injected into the page
 import "./index.css"
 import { name } from "~/package.json"
+import { createApp, defineComponent, h } from "vue"
+import PrimeVue from "primevue/config"
+import Aura from '@primeuix/themes/aura'
+import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 
-const src = chrome.runtime.getURL("src/ui/content-script-iframe/index.html")
+// helpers
+function createStartButton(label: string): HTMLButtonElement {
+  const el = new DOMParser().parseFromString(
+    `<button type="button" class="${name}">${label}</button>`,
+    "text/html",
+  ).body.firstElementChild
+  return el instanceof HTMLButtonElement ? el : document.createElement("button")
+}
 
-const iframe = new DOMParser().parseFromString(
-  `<iframe class="crx-iframe ${name}" src="${src}" title="${name}"></iframe>`,
-  "text/html",
-).body.firstElementChild
+function createOverlayContainer(): HTMLDivElement {
+  const el = document.createElement("div")
+  el.id = `novel-translator-overlay-root`
 
-if (iframe) {
-  document.body?.append(iframe)
+  return el
+}
+
+let app: ReturnType<typeof createApp> | null = null
+let container: HTMLDivElement | null = null
+
+function mountOverlay(): void {
+  if (container) return
+  container = createOverlayContainer()
+  document.body?.append(container)
+  const Root = defineComponent({
+    setup() {
+      const handleClose = (): void => {
+        unmountOverlay()
+      }
+      return () => h(ChapterOverlay, { onClose: handleClose })
+    },
+  })
+
+  app = createApp(Root)
+  app.use(PrimeVue, {
+    theme: {
+      preset: Aura
+    }
+  })
+  app.mount(container)
+}
+
+function unmountOverlay(): void {
+  if (app && container) {
+    app.unmount()
+    container.remove()
+  }
+  app = null
+  container = null
+}
+
+const btn = createStartButton("Начать работу")
+if (document.body) {
+  document.body.append(btn)
+  btn.addEventListener("click", (): void => {
+    mountOverlay()
+    btn.style.display = "none"
+  })
 }
 
 self.onerror = function (message, source, lineno, colno, error) {
