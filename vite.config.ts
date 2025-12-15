@@ -90,7 +90,7 @@ export default defineConfig({
           "pinia",
           "@vueuse/core",
           { "vue-router/auto": ["definePage"] },
-          { "vue-i18n": ["useI18n", "t"] },
+          { "vue-i18n": ["useI18n"] },
           {
             "webextension-polyfill": [["=", "browser"]],
           },

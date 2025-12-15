@@ -1,14 +1,55 @@
-.crx-iframe {
-  border: none;
-  border-radius: 8px;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 -1px 0px rgba(0, 0, 0, 0.02);
-  background-color: #fff;
-  margin: 2em;
+/* Overlay root must be fixed to ensure visibility above page content */
+#novel-translator-overlay-root {
   position: fixed;
-  bottom: 0;
-  right: 0;
-  width: 496px;
-  min-height: 420px;
+  inset: 0; /* allow inner overlay to choose placement; container covers viewport */
+  pointer-events: none; /* let clicks pass through except overlay content */
+  z-index: 2147483647; /* on top of the page */
+}
+
+/* Any direct children can enable pointer events back to handle interactions */
+#novel-translator-overlay-root > * {
+  pointer-events: auto;
+}
+
+/* Start button styling (class comes from package.json name) */
+button.novelTranslator {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #16a34a, #15803d);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35), 0 2px 6px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+button.novelTranslator:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.4), 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+button.novelTranslator:active {
+  transform: translateY(0);
+}
+button.novelTranslator:focus-visible {
+  outline: 2px solid #86efac; /* green-200 */
+  outline-offset: 2px;
+}
+
+/* In-page highlight for found terms */
+mark.nt-highlight {
+  background: #fef08a; /* yellow-200 */
+  color: inherit;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.5);
+  padding: 0 2px;
+}
+@media (prefers-color-scheme: dark) {
+  mark.nt-highlight {
+    background: rgba(250, 204, 21, 0.25);
+    box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.35);
+  }
 }
