@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineEmits, defineProps } from 'vue'
 import Button from 'primevue/button'
+import Badge from 'primevue/badge'
 
 const props = defineProps<{
   isPinned: boolean
@@ -27,19 +28,15 @@ function handleClose(): void {
 </script>
 
 <template>
-  <header class="nt-header" @click="handleToggleMinimized">
-    <div class="nt-header-left">
-      <span class="nt-header-icon" aria-hidden="true">📘</span>
-      <strong class="nt-title">Сложные слова и фразы (B1+)</strong>
-      <span v-if="!props.isLoading && props.wordsCount" class="nt-badge" aria-label="Количество слов">{{ props.wordsCount }}</span>
+  <div @click="handleToggleMinimized" role="heading" aria-level="2">
+    <div>
+      <span aria-hidden="true">📘</span>
+      <strong>Сложные слова и фразы (B1+)</strong>
+      <Badge v-if="!props.isLoading && props.wordsCount" :value="String(props.wordsCount)" severity="info" aria-label="Количество слов" />
     </div>
-    <div class="nt-header-actions">
-      <Button type="button" text rounded severity="secondary" :aria-label="props.isPinned ? 'Открепить' : 'Закрепить'" title="Закрепить" @click.stop="handleTogglePinned">
-        <span aria-hidden="true">{{ props.isPinned ? '📌' : '📍' }}</span>
-      </Button>
+    <div>
       <Button type="button" text rounded severity="secondary" aria-label="Закрыть" title="Закрыть" @click.stop="handleClose">
-        <span aria-hidden="true">✖️</span>
       </Button>
     </div>
-  </header>
+  </div>
 </template>

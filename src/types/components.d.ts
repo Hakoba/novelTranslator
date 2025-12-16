@@ -18,5 +18,8 @@ declare module 'vue' {
     TailwindEmptyState: typeof import('./../components/state/tailwind-empty-state.vue')['default']
     TestComponent: typeof import('./../components/TestComponent.vue')['default']
     ThemeSwitch: typeof import('./../components/ThemeSwitch.vue')['default']
+    UApp: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/App.vue')['default']
+    UButton: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
+    UInput: typeof import('./../../node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
   }
 }
