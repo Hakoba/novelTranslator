@@ -39,6 +39,7 @@ console.info("hello world from background")
 // Proxy fetch requests to avoid CORS issues from content scripts
 // We keep payload types minimal and validated without using "as"
 chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+
   // Narrow message type
   const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
   if (!isObject(message)) return
@@ -55,9 +56,13 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
       }, {})
     : undefined
   const body = initRaw && typeof initRaw.body === 'string' ? initRaw.body : undefined
+  console.log('kekekkekeke',body)
 
-  ;(async () => {
+  ;
+
+  (async () => {
     try {
+      console.log('fetch!!!!!!',url,method,headers,body)
       const res = await fetch(url, { method, headers, body })
       const status = res.status
       const ok = res.ok
