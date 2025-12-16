@@ -57,11 +57,12 @@ function unmountOverlay(): void {
 
 const btn = createStartButton("Начать работу")
 if (document.body) {
-  document.body.append(btn)
-  btn.addEventListener("click", (): void => {
-    mountOverlay()
-    btn.style.display = "none"
-  })
+  // document.body.append(btn)
+  // btn.addEventListener("click", (): void => {
+  //   mountOverlay()
+  //   btn.style.display = "none"
+  // })
+  mountOverlay()
 }
 
 self.onerror = function (message, source, lineno, colno, error) {

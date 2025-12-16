@@ -30,7 +30,6 @@ function handleClose(): void {
 <template>
   <div @click="handleToggleMinimized" role="heading" aria-level="2">
     <div>
-      <span aria-hidden="true">📘</span>
       <strong>Сложные слова и фразы (B1+)</strong>
       <Badge v-if="!props.isLoading && props.wordsCount" :value="String(props.wordsCount)" severity="info" aria-label="Количество слов" />
     </div>
