@@ -85,17 +85,5 @@ async function handleToggleTips(): Promise<void> {
 </template>
 
 <style scoped>
-.nt-row { display: inline-flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-.nt-word-original { font-weight: 600; }
-.nt-word-translate { color: #64748b; }
-.nt-sep { opacity: 0.6; }
-.nt-tips { margin-top: 0.25rem; display: grid; gap: 0.25rem; }
-.nt-tip-btn { background: transparent; display: flex; border: 1px solid rgba(15,23,42,0.12); color: inherit; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-size: 0.8125rem; line-height: 1; cursor: pointer; }
-.nt-tip-btn:hover { background: rgba(0,0,0,.04); }
-.nt-add-btn { margin-left: auto; }
-@media (prefers-color-scheme: dark) {
-  .nt-word-translate { color: #94a3b8; }
-  .nt-tip-btn { border-color: rgba(148,163,184,0.25); }
-  .nt-tip-btn:hover { background: rgba(255,255,255,.06); }
-}
+
 </style>

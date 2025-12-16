@@ -59,7 +59,7 @@ function addToDictionary(word: WordWithExplanation): void {
     :draggable="true"
     :dismissableMask="false"
     :position="isPinned ? 'center' : 'bottom-right'"
-    :style="{ width: '36rem', maxWidth: '92vw' }"
+    :style="{ width: '550px', maxWidth: '92vw' }"
     @update:visible="handleVisibleChange"
   >
     <template v-slot:header>
