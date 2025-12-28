@@ -3,12 +3,12 @@
 <template>
   <!-- <div class="text-center my-6">No products found in cart</div> -->
 
-  <div class="grid px-4 bg-white place-content-center">
+  <div class="grid px-4 place-content-center">
     <div class="text-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1024 768"
-        class="mt-6 w-auto h-32 mx-auto text-black"
+        class="mt-6 w-auto h-32 mx-auto"
       >
         <g
           fill="none"
@@ -39,11 +39,11 @@
         </g>
       </svg>
 
-      <h1 class="mt-6 font-bold tracking-tight text-gray-500">
+      <h1 class="mt-6 font-bold tracking-tight">
         No products found!
       </h1>
 
-      <p class="mb-4 text-gray-500">
+      <p class="mb-4">
         Please add some items to Coles or Woolworths cart to get started
       </p>
     </div>
