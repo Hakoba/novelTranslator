@@ -1,6 +1,6 @@
 import type { WordWithExplanation } from '@/types/words'
 
-export const BASE_URL = 'http://192.168.0.12:1234'
+export const BASE_URL = 'http://192.168.0.17:1234'
 export const MODEL = 'gpt-oss'
 export const DEFAULT_TEXT = 'Get thrown around until you figure it out.\nA lesson learned through countless times being pinned and twisted on the bed.\nAudin had already subdued Enkrid and, in a deep voice, hummed a tune.\n'
 export const CONTRACT_PROMPT_WORDS = 'Return ONLY valid JSON array of objects with fields: original: string, translate: string. "original" — оригинальное английское слово/фраза; "translate" — краткий перевод на русский. No markdown, no code fences, no comments, no extra text.'

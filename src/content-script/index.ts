@@ -1,3 +1,4 @@
+import "../assets/base.css"
 import "./index.css"
 import { name } from "~/package.json"
 import { createApp, defineComponent, h } from "vue"

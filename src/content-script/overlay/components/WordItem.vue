@@ -3,6 +3,9 @@ import { defineEmits, defineProps, computed, ref } from 'vue'
 import type { WordWithExplanation } from '@/types/words'
 import { requestExplanation } from '@/utils/llmClient'
 import { extractReadableText } from '@/utils/pageText'
+import Button from 'primevue/button'
+import PlusIcon from '@primevue/icons/plus'
+import Card from 'primevue/card'
 
 const props = defineProps<{ word: WordWithExplanation }>()
 
@@ -45,45 +48,57 @@ async function handleToggleTips(): Promise<void> {
 </script>
 
 <template>
-  <li class="nt-list-item">
-    <div class="nt-word">
-      <div class="nt-row">
-        <span class="nt-word-original">{{ props.word.original }}</span>
-        <span class="nt-sep">—</span>
-        <span class="nt-word-translate">{{ props.word.translate }}</span>
+  <li class="list-none flex flex-nowrap items-start justify-between gap-3 rounded-md border px-3 py-2 shadow-sm">
+    <div class="flex flex-col gap-2 min-w-0 flex-1">
+      <div class="flex items-baseline gap-2 min-w-0">
+        <span class="font-semibold truncate">{{ props.word.original }}</span>
+        <span>—</span>
+        <span class="truncate">{{ props.word.translate }}</span>
       </div>
-      <div class="nt-tips">
-        <button
+      <div class="flex items-center gap-2">
+        <Button
           type="button"
-          class="nt-tip-btn"
           :aria-expanded="isTipsOpen ? 'true' : 'false'"
           :aria-controls="tipsId"
+          size="small"
+          severity="secondary"
+          text
           @click="handleToggleTips"
         >
-          Пояснение
-        </button>
-        <small
-          v-show="isTipsOpen"
-          :id="tipsId"
-          class="nt-word-explanation"
-        >
-          <template v-if="isExplLoading">Загрузка…</template>
-          <template v-else>{{ explanationValue || '—' }}</template>
-        </small>
+          <template #default>
+            Пояснение
+          </template>
+        </Button>
       </div>
+      <Card
+        v-show="isTipsOpen"
+        :id="tipsId"
+        class="mt-1 border shadow-sm"
+      >
+        <template #content>
+          <p class="text-sm">
+            <template v-if="isExplLoading">Загрузка…</template>
+            <template v-else>{{ explanationValue || '—' }}</template>
+          </p>
+        </template>
+      </Card>
     </div>
-    <button
+    <Button
       type="button"
-      class="nt-icon-btn nt-add-btn"
       aria-label="Добавить в словарь"
       title="Добавить в словарь"
+      size="small"
+      severity="success"
+      rounded
+      class="shrink-0 self-start"
       @click="handleAdd"
     >
-      ➕
-    </button>
+      <template #icon>
+        <PlusIcon class="w-4 h-4" />
+      </template>
+    </Button>
   </li>
 </template>
 
 <style scoped>
-
 </style>
