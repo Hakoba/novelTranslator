@@ -36,7 +36,7 @@
     "unplugin-imagemin": "^0.6.9",
     "unplugin-turbo-console": "^2.2.0",
     "unplugin-vue-components": "^32.1.0",
-    "unplugin-vue-router": "^0.14.0",
+    "unplugin-vue-router": "^0.19.2",
     "vite": "^7.0.6",
     "vite-plugin-vue-devtools": "^8.0.0",
     "vite-plugin-zip-pack": "^1.2.4",
