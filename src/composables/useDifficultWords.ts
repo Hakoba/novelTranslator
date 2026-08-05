@@ -3,7 +3,8 @@ import type { WordWithExplanation } from '@/types/words'
 import { requestDifficultWords } from '@/utils/llmClient'
 import { extractReadableText } from '@/utils/pageText'
 
-const REQUEST_TIMEOUT_MS = 15000
+// локальные модели на CPU думают минуту и дольше, 15 секунд обрывали живой запрос
+const REQUEST_TIMEOUT_MS = 90000
 
 export function useDifficultWords(): {
   words: Ref<WordWithExplanation[]>
@@ -40,7 +41,9 @@ export function useDifficultWords(): {
       words.value = await requestDifficultWords(sourceText, controller.signal)
     } catch (error) {
       // без текста ошибки непонятно, модель не отвечает или ответ не распарсился
-      errorMessage.value = error instanceof Error ? error.message : 'Не удалось получить ответ модели'
+      errorMessage.value = error instanceof DOMException && error.name === 'AbortError'
+        ? `Модель не ответила за ${REQUEST_TIMEOUT_MS / 1000} секунд`
+        : error instanceof Error ? error.message : 'Не удалось получить ответ модели'
     } finally {
       clearTimeout(timer)
       isLoading.value = false

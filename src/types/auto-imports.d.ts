@@ -14,9 +14,11 @@ declare global {
   const DEFAULT_LLM_SETTINGS: typeof import('../composables/useLlmSettings').DEFAULT_LLM_SETTINGS
   const DEFAULT_TEXT: typeof import('../utils/llmClient')['DEFAULT_TEXT']
   const EffectScope: typeof import('vue').EffectScope
+  const HAS_DEV_YANDEX_CREDENTIALS: typeof import('../composables/useLlmSettings').HAS_DEV_YANDEX_CREDENTIALS
   const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
   const MODEL: typeof import('../utils/llmClient')['MODEL']
   const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
+  const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
   const appRouter: typeof import('../utils/router/index').appRouter
   const applyTheme: typeof import('../composables/useTheme').applyTheme
@@ -48,6 +50,7 @@ declare global {
   const customRef: typeof import('vue').customRef
   const debouncedRef: typeof import('@vueuse/core').debouncedRef
   const debouncedWatch: typeof import('@vueuse/core').debouncedWatch
+  const dedupeBlocks: typeof import('../utils/pageText').dedupeBlocks
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
   const defineLocale: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineLocale.js')['defineLocale']
@@ -401,8 +404,10 @@ declare module 'vue' {
     readonly CONTRACT_PROMPT_WORDS: UnwrapRef<typeof import('../utils/llmClient')['CONTRACT_PROMPT_WORDS']>
     readonly DEFAULT_LLM_SETTINGS: UnwrapRef<typeof import('../composables/useLlmSettings')['DEFAULT_LLM_SETTINGS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly HAS_DEV_YANDEX_CREDENTIALS: UnwrapRef<typeof import('../composables/useLlmSettings')['HAS_DEV_YANDEX_CREDENTIALS']>
     readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
     readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
+    readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
     readonly applyTheme: UnwrapRef<typeof import('../composables/useTheme')['applyTheme']>
@@ -432,6 +437,7 @@ declare module 'vue' {
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
+    readonly dedupeBlocks: UnwrapRef<typeof import('../utils/pageText')['dedupeBlocks']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly definePage: UnwrapRef<typeof import('vue-router/auto')['definePage']>

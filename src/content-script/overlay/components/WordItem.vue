@@ -30,7 +30,7 @@ async function toggleTips(): Promise<void> {
 
   isExplanationLoading.value = true
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 15000)
+  const timer = setTimeout(() => controller.abort(), 90000)
 
   try {
     const text = await requestExplanation(
