@@ -5,7 +5,7 @@
 - **Multi-Context Extension**: Supports background, popup, options, content script, devtools, side panel, and offscreen pages.
 - **File-Based Routing**: UI routes are auto-registered from `src/ui/*/pages`.
 - **Composable & Modular**: Uses Vue 3 Composition API, Pinia for state, and composables for i18n, theme, storage, etc.
-- **UI**: Nuxt/UI v3 and shadcn-vue for components, styled with Tailwind CSS 4.
+- **UI**: PrimeVue for all UI components, styled with Tailwind CSS 4.
 - **WebExtension Utilities**: Uses `webext-bridge` and `webextension-polyfill` for browser API compatibility.
 
 ## Folder Structure

@@ -12,7 +12,6 @@ Modern, opinionated starter template for browser extensions using [Vite](https:/
 - Multi-context: background, popup, options, content script, devtools, side panel, offscreen
 - File-based routing (auto-register UI pages)
 - Vue 3 Composition API, Pinia, composables
-- Nuxt/UI v3, shadcn-vue, Tailwind CSS 4
 - WebExtension utilities: `webext-bridge`, `webextension-polyfill`
 
 

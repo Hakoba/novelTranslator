@@ -6,7 +6,7 @@
 - Major contexts: background, popup, options, content script, devtools, side panel, offscreen (see `src/` subfolders).
 - UI is modular, file-based, and auto-routed from `src/ui/*/pages`.
 - State is managed with Pinia; cross-context communication uses `webext-bridge` and `webextension-polyfill`.
-- UI components: Nuxt/UI v3, shadcn-vue, styled with Tailwind CSS 4.
+- UI components: PrimeVue, Tailwind CSS 4.
 
 ## Key Workflows
 
@@ -29,7 +29,7 @@
 ## Integration Points
 
 - **Browser APIs**: Use `webextension-polyfill` for compatibility
-- **UI Components**: Use Nuxt/UI and shadcn-vue; add new shadcn-vue components via CLI
+- **UI Components**: Use PrimeVue
 - **i18n**: Locales in `src/locales/`, managed via Vue I18n
 
 ## Project-specific Conventions
