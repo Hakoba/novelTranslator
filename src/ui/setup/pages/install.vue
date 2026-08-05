@@ -13,6 +13,7 @@ const displayName = __DISPLAY_NAME__
       <br />
       Now you can close this tab and start using the extension.
     </p>
+    <AccessSites></AccessSites>
   </div>
 
   <hr />

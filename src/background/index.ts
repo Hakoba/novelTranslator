@@ -63,6 +63,7 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
   (async () => {
     try {
       console.log('fetch!!!!!!',url,method,headers,body)
+      return
       const res = await fetch(url, { method, headers, body })
       const status = res.status
       const ok = res.ok

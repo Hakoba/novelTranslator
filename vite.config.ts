@@ -32,7 +32,6 @@ export default defineConfig({
       input: {
         setup: resolve(__dirname, "src/ui/setup/index.html"),
         iframe: resolve(__dirname, "src/ui/content-script-iframe/index.html"),
-        devtoolsPanel: resolve(__dirname, "src/ui/devtools-panel/index.html"),
       },
     },
     terserOptions: {

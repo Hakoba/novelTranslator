@@ -50,7 +50,6 @@ export default {
       resources: [
         "src/ui/setup/index.html",
         "src/ui/content-script-iframe/index.html",
-        "src/ui/devtools-panel/index.html",
       ],
       matches: ["<all_urls>"],
       use_dynamic_url: false,
