@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { BookmarkCheck, BookmarkPlus } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus, EyeOff } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import LookupPanel from '@/components/LookupPanel.vue'
 import type { WordWithExplanation } from '@/types/words'
@@ -11,6 +11,7 @@ const props = defineProps<{ word: WordWithExplanation; sourceText: string }>()
 
 const emit = defineEmits<{
   (e: 'addToDictionary', word: WordWithExplanation): void
+  (e: 'ignore'): void
 }>()
 
 // composables
@@ -104,24 +105,37 @@ function addToDictionary(): void {
       </div>
     </div>
 
-    <Button
-      size="small"
-      severity="success"
-      text
-      rounded
-      class="shrink-0"
-      :disabled="isSaved"
-      :aria-label="isSaved ? 'Уже в словаре' : 'Добавить в словарь'"
-      @click="addToDictionary"
-    >
-      <BookmarkCheck
-        v-if="isSaved"
-        :size="16"
-      />
-      <BookmarkPlus
-        v-else
-        :size="16"
-      />
-    </Button>
+    <div class="flex shrink-0 gap-0.5">
+      <Button
+        size="small"
+        severity="secondary"
+        text
+        rounded
+        data-hint="Больше не показывать это слово"
+        aria-label="Скрыть слово"
+        @click="emit('ignore')"
+      >
+        <EyeOff :size="16" />
+      </Button>
+
+      <Button
+        size="small"
+        severity="success"
+        text
+        rounded
+        :disabled="isSaved"
+        :aria-label="isSaved ? 'Уже в словаре' : 'Добавить в словарь'"
+        @click="addToDictionary"
+      >
+        <BookmarkCheck
+          v-if="isSaved"
+          :size="16"
+        />
+        <BookmarkPlus
+          v-else
+          :size="16"
+        />
+      </Button>
+    </div>
   </li>
 </template>

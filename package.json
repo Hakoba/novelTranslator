@@ -1,5 +1,5 @@
 {
-  "description": "A Vue 3 + Vite project for building Chrome extensions",
+  "description": "Читалка англоязычных текстов: сложные слова с переводом, подсветка на странице, словарь и тренировка",
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.3",
     "@eslint/compat": "^1.3.1",
@@ -48,7 +48,8 @@
     "webext-bridge": "^6.0.1",
     "webextension-polyfill": "^0.12.0"
   },
-  "displayName": "Vite Vue 3 Chrome Extension",
+  "displayName": "Novel Translator",
+  "license": "GPL-3.0-or-later",
   "name": "novelTranslator",
   "overrides": {
     "@crxjs/vite-plugin": "$@crxjs/vite-plugin"

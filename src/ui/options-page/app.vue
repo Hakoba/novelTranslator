@@ -8,7 +8,7 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-4xl flex-col gap-6 p-6">
+  <div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
     <header class="flex items-center justify-between gap-2">
       <h1 class="m-0 text-xl font-semibold">
         Novel Translator

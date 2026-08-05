@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { BookA, Check, Download, Pencil, Plus, Trash2, Upload, X } from 'lucide-vue-next'
+import { BookA, Check, Download, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
 // путь до wasm даёт сборщик: в расширении относительные пути sql.js не находит
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 import { parseApkg } from '@/utils/anki'
@@ -9,6 +9,8 @@ import { firstTranslation } from '@/utils/dict/parse'
 import { lookupTerm } from '@/utils/dictClient'
 import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
+import { useIgnoredWords } from '@/composables/useIgnoredWords'
+import { plural } from '@/utils/plural'
 import { CEFR_LEVELS, type CefrLevel, type DictionaryEntry } from '@/types/words'
 import {
   EMPTY_FILTERS,
@@ -29,6 +31,7 @@ const SORT_OPTIONS: { label: string; value: DictionarySort }[] = [
 
 // composables
 const { entries, addEntry, updateEntry, removeEntry } = useDictionary()
+const { ignored, restoreWord } = useIgnoredWords()
 const { isExporting, exportError, exportToAnki } = useAnkiExport()
 
 // state
@@ -126,7 +129,7 @@ async function importFromAnki(event: Event): Promise<void> {
       failed: false,
       message: added
         ? `Добавлено слов: ${added}, уже было: ${notes.length - added}`
-        : `Все ${notes.length} слов(а) уже в словаре`,
+        : `Все ${notes.length} ${plural(notes.length, ['слово', 'слова', 'слов'])} уже в словаре`,
     }
   } catch (error) {
     importState.value = {
@@ -162,6 +165,7 @@ function submitDraft(): void {
             size="small"
             severity="secondary"
             outlined
+            title="Колода .apkg из того, что сейчас в списке — с учётом фильтров. Повторный экспорт обновит заметки, а не создаст дубли"
             :disabled="isExporting || !visibleEntries.length"
             :label="isExporting ? 'Собираю колоду…' : `В Anki — ${visibleEntries.length}`"
             @click="exportToAnki(visibleEntries)"
@@ -174,6 +178,7 @@ function submitDraft(): void {
             size="small"
             severity="secondary"
             outlined
+            title="Загрузить колоду .apkg: первые два поля заметки станут словом и переводом"
             :disabled="importState.busy"
             :label="importState.busy ? 'Читаю колоду…' : 'Из Anki'"
             @click="$file?.click()"
@@ -238,7 +243,7 @@ function submitDraft(): void {
           @submit.prevent="submitDraft"
         >
           <div class="flex flex-wrap gap-3">
-            <div class="flex min-w-48 flex-1 flex-col gap-2">
+            <div class="flex min-w-56 flex-1 flex-col gap-2">
               <label
                 for="draft-original"
                 class="text-muted"
@@ -254,29 +259,33 @@ function submitDraft(): void {
               />
             </div>
 
-            <div class="flex min-w-48 flex-1 flex-col gap-2">
-              <div class="flex items-center justify-between gap-2">
-                <label
-                  for="draft-translate"
-                  class="text-muted"
-                >
-                  Перевод
-                </label>
+            <!-- кнопка стоит рядом с полем, а не в подписи: в подписи она сбивала
+                 высоту шапки и поле перевода уезжало ниже соседних -->
+            <div class="flex min-w-64 flex-1 flex-col gap-2">
+              <label
+                for="draft-translate"
+                class="text-muted"
+              >
+                Перевод
+              </label>
+              <div class="flex gap-2">
+                <InputText
+                  id="draft-translate"
+                  v-model="draft.translate"
+                  autocomplete="off"
+                  placeholder="вспышка света"
+                  class="min-w-0 flex-1"
+                />
                 <Button
-                  size="small"
                   severity="secondary"
-                  text
+                  outlined
+                  class="shrink-0"
+                  title="Подставить перевод из Яндекс.Словаря — модель не зовём"
                   :disabled="!draft.original.trim() || isSuggesting"
                   :label="isSuggesting ? 'Ищу…' : 'Из словаря'"
                   @click="suggestTranslation(true)"
                 />
               </div>
-              <InputText
-                id="draft-translate"
-                v-model="draft.translate"
-                autocomplete="off"
-                placeholder="вспышка света"
-              />
             </div>
 
             <div class="flex flex-col gap-2">
@@ -292,18 +301,20 @@ function submitDraft(): void {
                 :options="[...CEFR_LEVELS]"
                 placeholder="не указан"
                 show-clear
-                class="w-32"
+                class="w-40"
               />
             </div>
           </div>
 
-          <div>
+          <div class="flex items-center gap-3">
             <Button
               type="submit"
-              size="small"
               label="Сохранить"
               :disabled="!isDraftValid"
             />
+            <small class="text-muted">
+              Слово с уже сохранённым переводом не задвоится — обновится существующая запись
+            </small>
           </div>
         </form>
 
@@ -387,21 +398,23 @@ function submitDraft(): void {
                 class="flex items-start gap-3 rounded-md border border-line px-3 py-2"
               >
                 <div class="flex min-w-0 flex-1 flex-col gap-1">
+                  <!-- уровень сразу после слова: в конце строки он отрывался
+                       на отдельную строку у длинных переводов -->
                   <p class="m-0 flex flex-wrap items-baseline gap-x-2">
                     <span class="font-semibold">{{ entry.original }}</span>
-
-                    <span
-                      v-if="editingId !== entry.id"
-                      class="text-muted"
-                    >
-                      — {{ entry.translate }}
-                    </span>
 
                     <span
                       v-if="entry.level"
                       class="rounded border border-line px-1 text-xs text-muted"
                     >
                       {{ entry.level }}
+                    </span>
+
+                    <span
+                      v-if="editingId !== entry.id"
+                      class="text-muted"
+                    >
+                      — {{ entry.translate }}
                     </span>
                   </p>
 
@@ -483,11 +496,14 @@ function submitDraft(): void {
                   >
                     <Pencil :size="16" />
                   </Button>
+                  <!-- красной корзина становится под курсором: в покое двадцать
+                       красных иконок в столбик перетягивают на себя весь экран -->
                   <Button
                     size="small"
-                    severity="danger"
+                    severity="secondary"
                     text
                     rounded
+                    class="hover:!text-red-500"
                     aria-label="Удалить из словаря"
                     @click="removeEntry(entry.id)"
                   >
@@ -498,6 +514,35 @@ function submitDraft(): void {
             </ul>
           </template>
         </DataView>
+
+        <div
+          v-if="ignored.length"
+          class="flex flex-col gap-2 border-t border-line pt-4"
+        >
+          <p class="m-0 text-muted">
+            Скрытые слова — модель их находит, но в оверлее они не показываются.
+            Нажмите, чтобы вернуть.
+          </p>
+          <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+            <li
+              v-for="term in ignored"
+              :key="term"
+            >
+              <Button
+                size="small"
+                severity="secondary"
+                outlined
+                :label="term"
+                :aria-label="`Вернуть слово ${term}`"
+                @click="restoreWord(term)"
+              >
+                <template #icon>
+                  <RotateCcw :size="14" />
+                </template>
+              </Button>
+            </li>
+          </ul>
+        </div>
       </div>
     </template>
   </Card>

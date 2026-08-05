@@ -4,16 +4,19 @@ import { BookMarked, Settings } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
 import { useDictionary } from '@/composables/useDictionary'
+import { plural } from '@/utils/plural'
 
 const { enabledSites } = useAccessSites()
 const { entries } = useDictionary()
 
 // computed
-const summary = computed<string>(() =>
-  enabledSites.value.length
-    ? `Активен на ${enabledSites.value.length} сайт(ах)`
-    : 'Нет активных сайтов',
-)
+const summary = computed<string>(() => {
+  const count = enabledSites.value.length
+
+  return count
+    ? `Активен на ${count} ${plural(count, ['сайте', 'сайтах', 'сайтах'])}`
+    : 'Нет активных сайтов'
+})
 
 // методы
 function openOptions(): void {

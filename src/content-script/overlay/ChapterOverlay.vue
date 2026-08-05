@@ -8,6 +8,7 @@ import { useDifficultWords } from '@/composables/useDifficultWords'
 import { useDictionary } from '@/composables/useDictionary'
 import { useAreaSelectors } from '@/composables/useAreaSelectors'
 import { useHighlightHover } from '@/composables/useHighlightHover'
+import { useIgnoredWords } from '@/composables/useIgnoredWords'
 import { useReaderSettings } from '@/composables/useReaderSettings'
 import { useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
@@ -34,6 +35,7 @@ const {
 const { entries, addEntry } = useDictionary()
 const { selectors, setSelector, clearSelector } = useAreaSelectors()
 const { anchor, clearSelection } = useTextSelection()
+const { isIgnored, ignoreWord } = useIgnoredWords()
 const { hint } = useHighlightHover()
 const { settings: readerSettings, promise: readerSettingsLoaded } = useReaderSettings()
 
@@ -48,8 +50,11 @@ const selectionState = ref<'idle' | 'saving' | 'failed'>('idle')
 const knownTerms = ref<Set<string>>(new Set())
 
 // computed
+// скрытое слово убираем по живому списку, а не по снимку: строка должна пропасть сразу
 const newWords = computed<WordWithExplanation[]>(() =>
-  words.value.filter((word) => !knownTerms.value.has(normalizeTerm(word.original))),
+  words.value.filter(
+    (word) => !knownTerms.value.has(normalizeTerm(word.original)) && !isIgnored(word.original),
+  ),
 )
 const hasArea = computed<boolean>(() =>
   selectors.value.some((item) => item.host === normalizeHost(location.host)),
@@ -298,6 +303,7 @@ async function saveSelection(): Promise<void> {
             :word="word"
             :source-text="sourceText"
             @add-to-dictionary="addToDictionary"
+            @ignore="ignoreWord(word.original)"
           />
         </ul>
       </div>
