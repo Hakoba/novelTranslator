@@ -8,14 +8,6 @@ self.onerror = function (message, source, lineno, colno, error) {
 
 console.info('hello world from devtools html')
 
-chrome.devtools.panels.create(
-  'My Panel',
-  chrome.runtime.getURL('src/assets/logo.png'),
-  function (panel) {
-    console.info('Panel created', panel)
-  }
-)
-
 chrome.devtools.panels.elements.createSidebarPane(
   'My Sidebar',
   function (sidebar) {

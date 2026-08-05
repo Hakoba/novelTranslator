@@ -57,16 +57,25 @@ function handleToggleSite(url: string): void {
             class="flex-1"
             @keyup.enter="handleAddSite"
           />
-          <Button @click="handleAddSite" size="icon">
+          <Button
+            size="icon"
+            @click="handleAddSite"
+          >
             <Plus class="h-4 w-4" />
           </Button>
         </div>
         
-        <p v-if="errorMessage" class="text-sm text-red-500">
+        <p
+          v-if="errorMessage"
+          class="text-sm text-red-500"
+        >
           {{ errorMessage }}
         </p>
 
-        <ul v-if="sites.length > 0" class="space-y-2">
+        <ul
+          v-if="sites.length > 0"
+          class="space-y-2"
+        >
           <li
             v-for="site in sites"
             :key="site.url"
@@ -87,15 +96,18 @@ function handleToggleSite(url: string): void {
             <Button
               severity="secondary"
               text
-              @click="handleRemoveSite(site.url)"
               class="shrink-0"
+              @click="handleRemoveSite(site.url)"
             >
               <Trash2 class="h-4 w-4" />
             </Button>
           </li>
         </ul>
 
-        <p v-else class="text-sm opacity-50 text-center py-4">
+        <p
+          v-else
+          class="text-sm opacity-50 text-center py-4"
+        >
           Нет добавленных сайтов
         </p>
       </div>

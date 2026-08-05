@@ -13,7 +13,12 @@ function handleStart(): void {
 <template>
   <div>
     <div v-if="!isStarted">
-      <UButton type="button" @click="handleStart">Начать работу</UButton>
+      <UButton
+        type="button"
+        @click="handleStart"
+      >
+        Начать работу
+      </UButton>
     </div>
     <UApp v-else>
       <AppHeader />

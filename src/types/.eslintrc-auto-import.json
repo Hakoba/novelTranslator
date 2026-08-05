@@ -2,6 +2,7 @@
   "globals": {
     "AccessSite": true,
     "BASE_URL": true,
+    "BgFetchInit": true,
     "BgFetchResponse": true,
     "CONTRACT_PROMPT_WORDS": true,
     "Component": true,
@@ -75,6 +76,7 @@
     "effectScope": true,
     "extendLocale": true,
     "extendRef": true,
+    "extractContent": true,
     "extractReadableText": true,
     "extractShortcuts": true,
     "formBusInjectionKey": true,
@@ -128,6 +130,7 @@
     "onUnmounted": true,
     "onUpdated": true,
     "onWatcherCleanup": true,
+    "parseWords": true,
     "pausableWatch": true,
     "pinia": true,
     "portalTargetInjectionKey": true,
