@@ -1,47 +1,33 @@
-import type { BasicColorSchema } from "@vueuse/core"
+import { computed, watch, type WritableComputedRef, type Ref } from "vue"
 import { useBrowserLocalStorage } from "./useBrowserStorage"
-import { name } from "~/package.json"
 
-export function applyTheme(mode: BasicColorSchema) {
-  const container = document.getElementById(name)
+export type ThemeMode = "light" | "dark"
 
-  if (container?.shadowRoot) {
-    // If running in content script, apply theme to shadow DOM
-    container.shadowRoot.querySelector("html")?.setAttribute("class", mode)
-    container.shadowRoot.querySelector("#app")?.setAttribute("data-theme", mode)
-  } else {
-    // If not in content script, apply theme to the main document
-    document.documentElement.setAttribute("class", mode)
-    document.querySelector("#app")?.setAttribute("data-theme", mode)
-  }
+// один ref на весь контекст страницы — тему держим в browser.storage.local
+const { data: mode } = useBrowserLocalStorage<ThemeMode>("theme-mode", "dark")
+
+/** Класс .dark на <html> — его же слушает PrimeVue (darkModeSelector) и Tailwind */
+export function applyTheme(target: HTMLElement = document.documentElement): void {
+  target.classList.toggle("dark", mode.value === "dark")
 }
 
-export function useTheme() {
-  const { data: mode } = useBrowserLocalStorage<BasicColorSchema>(
-    "mode",
-    "dark",
-  )
+watch(mode, () => applyTheme())
 
-  const isDark = computed({
+export function useTheme(): {
+  mode: Ref<ThemeMode>
+  isDark: WritableComputedRef<boolean>
+  toggleDark: () => void
+} {
+  const isDark = computed<boolean>({
     get: () => mode.value === "dark",
     set: (value) => {
       mode.value = value ? "dark" : "light"
-      applyTheme(mode.value)
     },
   })
 
-  const toggleDark = () => {
+  function toggleDark(): void {
     isDark.value = !isDark.value
   }
 
-  watch(isDark, (newValue) => {
-    applyTheme(newValue ? "dark" : "light")
-  })
-
-  return {
-    mode,
-    isDark,
-    toggleDark,
-    applyTheme,
-  }
+  return { mode, isDark, toggleDark }
 }

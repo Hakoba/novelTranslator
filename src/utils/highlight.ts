@@ -106,6 +106,8 @@ export function highlightTerms(terms: string[]): void {
         const mark = document.createElement('mark')
         mark.className = 'nt-highlight'
         mark.setAttribute('data-nt-highlight', '1')
+        // инлайном, а не классом: подсветка живёт в документе сайта, своего CSS мы туда не добавляем
+        mark.style.cssText = 'background:rgba(250,204,21,.35);color:inherit;border-radius:2px;padding:0 2px'
         mark.textContent = middle
 
         const parent = node?.parentNode

@@ -1,116 +1,97 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Plus, Trash2 } from 'lucide-vue-next'
 import { useAccessSites } from '@/composables/useAccessSites'
-import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
-import ToggleSwitch from 'primevue/toggleswitch'
-import Card from 'primevue/card'
-import { Trash2, Plus } from 'lucide-vue-next'
 
 const { sites, addSite, removeSite, toggleSite } = useAccessSites()
 
+// state
 const newSiteUrl = ref<string>('')
 const errorMessage = ref<string>('')
 
+// методы
 function handleAddSite(): void {
   errorMessage.value = ''
-  
-  if (!newSiteUrl.value.trim()) {
-    errorMessage.value = 'Введите URL сайта'
+  const url = newSiteUrl.value.trim()
+
+  if (!url) {
+    errorMessage.value = 'Введите адрес сайта'
     return
   }
 
-  const success = addSite(newSiteUrl.value.trim())
-  
-  if (!success) {
-    errorMessage.value = 'Неверный URL или сайт уже добавлен'
+  if (!addSite(url)) {
+    errorMessage.value = 'Некорректный адрес или сайт уже в списке'
     return
   }
 
   newSiteUrl.value = ''
 }
-
-function handleRemoveSite(url: string): void {
-  removeSite(url)
-}
-
-function handleToggleSite(url: string): void {
-  toggleSite(url)
-}
 </script>
 
 <template>
-  <Card>
-    <template #title>
-      Разрешенные сайты
-    </template>
-    <template #subtitle>
-      Расширение будет работать только на перечисленных сайтах
-    </template>
-    <template #content>
-      <div class="space-y-4">
-        <div class="flex gap-2">
-          <input
-            v-model="newSiteUrl"
-            type="url"
-            placeholder="https://example.com/"
-            class="flex-1"
-            @keyup.enter="handleAddSite"
-          />
-          <Button
-            size="icon"
-            @click="handleAddSite"
-          >
-            <Plus class="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <p
-          v-if="errorMessage"
-          class="text-sm text-red-500"
-        >
-          {{ errorMessage }}
-        </p>
+  <section class="flex flex-col gap-3">
+    <div class="flex gap-2">
+      <InputText
+        v-model="newSiteUrl"
+        placeholder="https://novelbin.com/"
+        class="flex-1"
+        aria-label="Адрес сайта"
+        @keyup.enter="handleAddSite"
+      />
+      <Button
+        aria-label="Добавить сайт"
+        @click="handleAddSite"
+      >
+        <Plus :size="16" />
+      </Button>
+    </div>
 
-        <ul
-          v-if="sites.length > 0"
-          class="space-y-2"
-        >
-          <li
-            v-for="site in sites"
-            :key="site.url"
-            class="flex items-center justify-between gap-4 p-3 rounded-lg border"
-          >
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-              <ToggleSwitch
-                :model-value="site.enabled"
-                @update:model-value="handleToggleSite(site.url)"
-              />
-              <span
-                class="text-sm truncate"
-                :class="{ 'opacity-50': !site.enabled }"
-              >
-                {{ site.url }}
-              </span>
-            </div>
-            <Button
-              severity="secondary"
-              text
-              class="shrink-0"
-              @click="handleRemoveSite(site.url)"
-            >
-              <Trash2 class="h-4 w-4" />
-            </Button>
-          </li>
-        </ul>
+    <Message
+      v-if="errorMessage"
+      severity="error"
+      size="small"
+      variant="simple"
+    >
+      {{ errorMessage }}
+    </Message>
 
-        <p
-          v-else
-          class="text-sm opacity-50 text-center py-4"
+    <ul
+      v-if="sites.length"
+      class="flex flex-col gap-2 m-0 p-0 list-none"
+    >
+      <li
+        v-for="site in sites"
+        :key="site.url"
+        class="flex items-center gap-3 rounded-md border border-line px-3 py-2"
+      >
+        <ToggleSwitch
+          :model-value="site.enabled"
+          :aria-label="`Включить ${site.url}`"
+          @update:model-value="toggleSite(site.url)"
+        />
+        <span
+          class="flex-1 truncate"
+          :class="{ 'opacity-50': !site.enabled }"
         >
-          Нет добавленных сайтов
-        </p>
-      </div>
-    </template>
-  </Card>
+          {{ site.url }}
+        </span>
+        <Button
+          severity="danger"
+          text
+          rounded
+          :aria-label="`Удалить ${site.url}`"
+          @click="removeSite(site.url)"
+        >
+          <Trash2 :size="16" />
+        </Button>
+      </li>
+    </ul>
+
+    <p
+      v-else
+      class="text-muted m-0"
+    >
+      Список пуст — расширение не будет работать нигде.
+    </p>
+  </section>
 </template>

@@ -1,35 +1,33 @@
 <script setup lang="ts">
+import AccessSites from '@/components/accessSites.vue'
+
 const displayName = __DISPLAY_NAME__
-// const version = __VERSION__
+
+// методы
+function openOptions(): void {
+  browser.runtime.openOptionsPage()
+}
 </script>
 
 <template>
-  <div
-    class="w-full h-full flex flex-col justify-center items-center text-center md:my-12"
-  >
-    <h1>🎉 Installed! 🚀</h1>
-    <p>
-      Thank you for installing {{ displayName }}! ❤️
-      <br />
-      Now you can close this tab and start using the extension.
-    </p>
-    <AccessSites></AccessSites>
-  </div>
+  <Card>
+    <template #title>
+      {{ displayName }} установлен
+    </template>
+    <template #subtitle>
+      Осталось проверить, на каких сайтах он работает, и указать адрес своей модели
+    </template>
+    <template #content>
+      <div class="flex flex-col gap-4 pt-2">
+        <AccessSites />
 
-  <hr />
-  <h2>App Routes:</h2>
-  <div class="flex flex-wrap gap-2">
-    <RouterLink
-      v-for="route in appRouter.getRoutes()"
-      :key="route.path"
-      :to="route.path"
-      class="btn"
-    >
-      {{ route.path }}
-    </RouterLink>
-  </div>
-
-  <hr />
+        <div>
+          <Button
+            label="Открыть настройки"
+            @click="openOptions"
+          />
+        </div>
+      </div>
+    </template>
+  </Card>
 </template>
-
-<style lang="css" scoped></style>

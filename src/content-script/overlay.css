@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Стили живут внутри Shadow DOM оверлея: preflight отсюда не выходит наружу и вёрстку сайта не трогает */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-surface: var(--p-content-background);
+  --color-content: var(--p-text-color);
+  --color-muted: var(--p-text-muted-color);
+  --color-line: var(--p-content-border-color);
+}
+
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  color-scheme: light dark;
+}
+
+/* Клики проходят сквозь пустой контейнер, ловит их только сам оверлей */
+.nt-overlay > * {
+  pointer-events: auto;
+}

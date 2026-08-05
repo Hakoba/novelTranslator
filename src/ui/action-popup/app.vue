@@ -1,15 +1,16 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import ThemeSwitch from '@/components/ThemeSwitch.vue'
+</script>
 
 <template>
-  <UApp>
-    <AppHeader />
+  <div class="flex flex-col w-[380px]">
+    <header class="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+      <strong>Novel Translator</strong>
+      <ThemeSwitch />
+    </header>
 
-    <div class="p-4 prose dark:prose-invert">
+    <main class="p-4">
       <RouterView />
-    </div>
-
-    <AppFooter />
-  </UApp>
+    </main>
+  </div>
 </template>
-
-<style scoped></style>
