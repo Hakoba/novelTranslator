@@ -1,60 +1,64 @@
 <script setup lang="ts">
-import { defineEmits, defineProps } from 'vue'
-import Button from 'primevue/button'
+import { ChevronDown, ChevronUp, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
+import Button from 'primevue/button'
 
-const props = defineProps<{
-  isPinned: boolean
+defineProps<{
   isMinimized: boolean
   wordsCount: number
   isLoading: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'togglePinned'): void
   (e: 'toggleMinimized'): void
   (e: 'close'): void
 }>()
-
-function handleToggleMinimized(): void {
-  emit('toggleMinimized')
-}
-function handleTogglePinned(): void {
-  emit('togglePinned')
-}
-function handleClose(): void {
-  emit('close')
-}
 </script>
 
 <template>
-  <div
-    role="heading"
-    aria-level="2"
-    @click="handleToggleMinimized"
-  >
-    <div>
-      <strong>Сложные слова и фразы (B1+)</strong>
+  <div class="flex w-full items-center gap-2">
+    <strong
+      class="flex-1"
+      role="heading"
+      aria-level="2"
+    >
+      Сложные слова и фразы
+    </strong>
 
-      <Badge
-        v-if="!props.isLoading && props.wordsCount"
-        class="p-2"
-        :value="String(props.wordsCount)"
-        severity="info"
-        aria-label="Количество слов"
+    <Badge
+      v-if="!isLoading && wordsCount"
+      :value="String(wordsCount)"
+      severity="info"
+      aria-label="Найдено слов"
+    />
+
+    <Button
+      text
+      rounded
+      severity="secondary"
+      size="small"
+      :aria-label="isMinimized ? 'Развернуть' : 'Свернуть'"
+      @click="emit('toggleMinimized')"
+    >
+      <ChevronDown
+        v-if="isMinimized"
+        :size="16"
       />
-    </div>
-    <div>
-      <Button
-        type="button"
-        text
-        rounded
-        severity="secondary"
-        aria-label="Закрыть"
-        title="Закрыть"
-        @click.stop="handleClose"
-      >
-      </Button>
-    </div>
+      <ChevronUp
+        v-else
+        :size="16"
+      />
+    </Button>
+
+    <Button
+      text
+      rounded
+      severity="secondary"
+      size="small"
+      aria-label="Закрыть"
+      @click="emit('close')"
+    >
+      <X :size="16" />
+    </Button>
   </div>
 </template>

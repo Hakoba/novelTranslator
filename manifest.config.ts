@@ -44,10 +44,7 @@ export default {
   permissions: ["storage", "tabs", "background"],
   web_accessible_resources: [
     {
-      resources: [
-        "src/ui/setup/index.html",
-        "src/ui/content-script-iframe/index.html",
-      ],
+      resources: ["src/ui/setup/index.html"],
       matches: ["<all_urls>"],
       use_dynamic_url: false,
     },

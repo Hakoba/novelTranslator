@@ -1,96 +1,104 @@
 <script setup lang="ts">
-import { defineEmits, ref, onMounted, watch, onUnmounted } from 'vue'
-import Dialog from 'primevue/dialog'
-import { useDifficultWords } from '@/composables/useDifficultWords'
-import type { WordWithExplanation } from '@/types/words'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import Button from 'primevue/button'
 import OverlayHeader from './components/OverlayHeader.vue'
 import WordItem from './components/WordItem.vue'
-import { highlightTerms, clearHighlights } from '@/utils/highlight'
+import { useDifficultWords } from '@/composables/useDifficultWords'
+import { clearHighlights, highlightTerms } from '@/utils/highlight'
+import type { WordWithExplanation } from '@/types/words'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
-// state
-const isPinned = ref<boolean>(true)
-const isMinimized = ref<boolean>(false)
-const isVisible = ref<boolean>(true)
-
 // composables
-const { words, isLoading, wordsCount, fetchDifficultWords } = useDifficultWords()
+const { words, isLoading, errorMessage, wordsCount, fetchDifficultWords } = useDifficultWords()
 
+// state
+const isMinimized = ref<boolean>(false)
+
+// lifecycle
 onMounted((): void => {
   void fetchDifficultWords()
-})
-
-// watchers
-watch([words, isLoading], (vals): void => {
-  const [list, loading] = vals
-  if (loading) return
-  const terms = list.map((w) => w.original)
-  clearHighlights()
-  if (terms.length) highlightTerms(terms)
 })
 
 onUnmounted((): void => {
   clearHighlights()
 })
 
-// methods
-function togglePinned(): void {
-  isPinned.value = !isPinned.value
-}
-function toggleMinimized(): void {
-  isMinimized.value = !isMinimized.value
-}
-function handleVisibleChange(val: boolean): void {
-  if (!val) closeOverlay()
-}
-function closeOverlay(): void {
-  emit('close')
-}
+// watchers
+watch([words, isLoading], (): void => {
+  if (isLoading.value) return
+
+  clearHighlights()
+  const terms = words.value.map((word) => word.original)
+  if (terms.length) highlightTerms(terms)
+})
+
+// методы
 function addToDictionary(word: WordWithExplanation): void {
+  // словарь ещё не реализован
   void word
 }
 </script>
 
 <template>
-  <Dialog
-    v-model:visible="isVisible"
-    :modal="false"
-    :draggable="true"
-    :dismissable-mask="false"
-    :position="isPinned ? 'center' : 'bottom-right'"
-    :style="{ width: '550px', maxWidth: '92vw' }"
-    @update:visible="handleVisibleChange"
+  <section
+    class="fixed bottom-4 right-4 flex max-h-[70vh] w-[420px] max-w-[calc(100vw-2rem)] flex-col
+           overflow-hidden rounded-xl border border-line bg-surface text-content shadow-2xl"
+    aria-label="Novel Translator"
   >
-    <template #header>
+    <header class="border-b border-line px-3 py-2">
       <OverlayHeader
-        :is-pinned="isPinned"
         :is-minimized="isMinimized"
         :words-count="wordsCount"
         :is-loading="isLoading"
-        @toggle-pinned="togglePinned"
-        @toggle-minimized="toggleMinimized"
-        @close="closeOverlay"
+        @toggle-minimized="isMinimized = !isMinimized"
+        @close="emit('close')"
       />
-    </template>
+    </header>
 
-    <div v-if="!isMinimized">
-      <template v-if="isLoading">
-        <p>Загрузка…</p>
-      </template>
-      <template v-else>
-        <template v-if="words.length">
-          <ul role="list">
-            <WordItem
-              v-for="word in words"
-              :key="word.original"
-              :word="word"
-              @add-to-dictionary="addToDictionary"
-            />
-          </ul>
-        </template>
-        <p v-else>Пока ничего не найдено.</p>
-      </template>
+    <div
+      v-if="!isMinimized"
+      class="flex-1 overflow-y-auto p-3"
+    >
+      <p
+        v-if="isLoading"
+        class="m-0 text-muted"
+      >
+        Разбираю главу…
+      </p>
+
+      <div
+        v-else-if="errorMessage"
+        class="flex flex-col items-start gap-2"
+      >
+        <p class="m-0 text-muted">
+          {{ errorMessage }}
+        </p>
+        <Button
+          size="small"
+          label="Повторить"
+          @click="fetchDifficultWords()"
+        />
+      </div>
+
+      <ul
+        v-else-if="words.length"
+        class="m-0 flex list-none flex-col gap-2 p-0"
+      >
+        <WordItem
+          v-for="word in words"
+          :key="word.original"
+          :word="word"
+          @add-to-dictionary="addToDictionary"
+        />
+      </ul>
+
+      <p
+        v-else
+        class="m-0 text-muted"
+      >
+        Сложных слов не нашлось.
+      </p>
     </div>
-  </Dialog>
+  </section>
 </template>
