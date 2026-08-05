@@ -25,7 +25,8 @@ export async function sendBgFetch(
   init: BgFetchInit,
   signal?: AbortSignal,
 ): Promise<BgFetchResponse> {
-  console.info('[nt] запрос в background:', url)
+  // без query: у словарей ключ лежит прямо в адресе, а логи видны на любой странице
+  console.info('[nt] запрос в background:', url.split('?')[0])
   const request = browser.runtime.sendMessage({ type: 'llm/fetch', url, init })
   // abort только перестаёт ждать ответ — запрос в background уже ушёл и доживёт сам
   const res: unknown = signal ? await Promise.race([request, abortSignalPromise(signal)]) : await request

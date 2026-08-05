@@ -35,6 +35,11 @@ export function matchesSite(currentUrl: string, pattern: string): boolean {
   }
 }
 
+/** www.example.com и example.com — один сайт: иначе запись из адресной строки не совпадает с введённой руками */
+function stripWww(host: string): string {
+  return host.startsWith('www.') ? host.slice(4) : host
+}
+
 function matchesHost(currentHost: string, patternHost: string): boolean {
   if (patternHost.startsWith('*.')) {
     const domain = patternHost.slice(2)
@@ -42,5 +47,5 @@ function matchesHost(currentHost: string, patternHost: string): boolean {
     return currentHost === domain || currentHost.endsWith(`.${domain}`)
   }
 
-  return currentHost === patternHost
+  return stripWww(currentHost) === stripWww(patternHost)
 }

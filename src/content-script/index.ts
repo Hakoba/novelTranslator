@@ -1,10 +1,11 @@
 import overlayCss from "./overlay.css?inline"
-import { createApp, defineComponent, h } from "vue"
+import { createApp, defineComponent, h, watchEffect } from "vue"
 import PrimeVue from "primevue/config"
 import Aura from "@primeuix/themes/aura"
 import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 import { useAccessSites } from "@/composables/useAccessSites"
 import { useDictionary } from "@/composables/useDictionary"
+import { useTheme } from "@/composables/useTheme"
 import { mirrorPrimeVueStyles } from "@/content-script/mirrorStyles"
 import { OVERLAY_ROOT_ID } from "@/utils/overlayRoot"
 
@@ -43,6 +44,11 @@ function mountOverlay(): void {
 
   const Root = defineComponent({
     setup() {
+      // класс кладём внутрь shadow root, а не на <html> сайта: PrimeVue зеркалит светлые
+      // токены на :host, и снаружи, наследованием, их уже не перебить
+      const { isDark } = useTheme()
+      watchEffect(() => created.mount.classList.toggle("dark", isDark.value))
+
       return () => h(ChapterOverlay, { onClose: unmountOverlay })
     },
   })

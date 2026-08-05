@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Check, Download, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
+import { BookA, Check, Download, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
+import LookupPanel from '@/components/LookupPanel.vue'
+import { firstTranslation } from '@/utils/dict/parse'
+import { lookupTerm } from '@/utils/dictClient'
 import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
 import { CEFR_LEVELS, type CefrLevel, type DictionaryEntry } from '@/types/words'
 import {
   EMPTY_FILTERS,
-  collectLevels,
+  levelFilterOptions,
   queryEntries,
   type DictionaryFilters,
   type DictionarySort,
+  type LevelOption,
 } from '@/utils/dictionary'
 
 const PAGE_SIZE = 20
@@ -29,7 +33,10 @@ const filters = ref<DictionaryFilters>({ ...EMPTY_FILTERS })
 const sort = ref<DictionarySort>('newest')
 const editingId = ref<string>('')
 const editedTranslate = ref<string>('')
+// раскрыта одна справка за раз: иначе список превращается в простыню
+const lookupId = ref<string>('')
 const isFormOpen = ref<boolean>(false)
+const isSuggesting = ref<boolean>(false)
 const draft = ref<{ original: string; translate: string; level: CefrLevel | null }>({
   original: '',
   translate: '',
@@ -40,7 +47,7 @@ const draft = ref<{ original: string; translate: string; level: CefrLevel | null
 const visibleEntries = computed<DictionaryEntry[]>(() =>
   queryEntries(entries.value, filters.value, sort.value),
 )
-const levelOptions = computed<CefrLevel[]>(() => collectLevels(entries.value))
+const levelOptions = computed<LevelOption[]>(() => levelFilterOptions(entries.value))
 const isFilterActive = computed<boolean>(() =>
   Boolean(filters.value.search || filters.value.level || filters.value.onlyWithExplanation),
 )
@@ -62,6 +69,27 @@ function saveEditing(): void {
   const translate = editedTranslate.value.trim()
   if (translate) updateEntry(editingId.value, { translate })
   editingId.value = ''
+}
+
+/**
+ * Перевод для ручной формы берём только из словаря: модель здесь не зовём, чтобы
+ * добавление слова оставалось бесплатным. `force` — явное нажатие кнопки поверх
+ * уже введённого перевода, без него подставляем только в пустое поле.
+ */
+async function suggestTranslation(force = false): Promise<void> {
+  const original = draft.value.original.trim()
+  if (!original || isSuggesting.value) return
+  if (!force && draft.value.translate.trim()) return
+
+  isSuggesting.value = true
+
+  try {
+    const { results } = await lookupTerm(original)
+    const translate = firstTranslation(results.find((result) => result.source === 'yandex'))
+    if (translate) draft.value.translate = translate
+  } finally {
+    isSuggesting.value = false
+  }
 }
 
 function submitDraft(): void {
@@ -150,16 +178,27 @@ function submitDraft(): void {
                 v-model="draft.original"
                 autocomplete="off"
                 placeholder="flash of light"
+                @blur="suggestTranslation()"
               />
             </div>
 
             <div class="flex min-w-48 flex-1 flex-col gap-2">
-              <label
-                for="draft-translate"
-                class="text-muted"
-              >
-                Перевод
-              </label>
+              <div class="flex items-center justify-between gap-2">
+                <label
+                  for="draft-translate"
+                  class="text-muted"
+                >
+                  Перевод
+                </label>
+                <Button
+                  size="small"
+                  severity="secondary"
+                  text
+                  :disabled="!draft.original.trim() || isSuggesting"
+                  :label="isSuggesting ? 'Ищу…' : 'Из словаря'"
+                  @click="suggestTranslation(true)"
+                />
+              </div>
               <InputText
                 id="draft-translate"
                 v-model="draft.translate"
@@ -211,6 +250,8 @@ function submitDraft(): void {
             v-if="levelOptions.length"
             v-model="filters.level"
             :options="levelOptions"
+            option-label="label"
+            option-value="value"
             placeholder="Любой уровень"
             show-clear
             class="w-44"
@@ -339,9 +380,26 @@ function submitDraft(): void {
                   >
                     {{ entry.explanation }}
                   </p>
+
+                  <!-- v-if, а не v-show: панель запрашивает словари при монтировании -->
+                  <LookupPanel
+                    v-if="lookupId === entry.id"
+                    :term="entry.original"
+                    class="mt-1 border-l-2 border-line pl-3 text-sm"
+                  />
                 </div>
 
                 <div class="flex shrink-0 gap-1">
+                  <Button
+                    size="small"
+                    severity="secondary"
+                    text
+                    rounded
+                    :aria-label="lookupId === entry.id ? 'Скрыть словари' : 'Посмотреть в словарях'"
+                    @click="lookupId = lookupId === entry.id ? '' : entry.id"
+                  >
+                    <BookA :size="16" />
+                  </Button>
                   <Button
                     v-if="editingId !== entry.id"
                     size="small"

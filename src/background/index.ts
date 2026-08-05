@@ -55,7 +55,8 @@ async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResp
     : undefined
   const body = initRaw && typeof initRaw.body === 'string' ? initRaw.body : undefined
 
-  console.info('[nt] fetch:', url, 'ключ передан:', Boolean(headers?.Authorization))
+  // query не логируем: у словарей ключ лежит прямо в адресе
+  console.info('[nt] fetch:', url.split('?')[0], 'ключ передан:', Boolean(headers?.Authorization))
 
   try {
     const res = await fetch(url, { method, headers, body })

@@ -4,9 +4,12 @@ import type { CefrLevel, DictionaryEntry } from '@/types/words'
 
 export type DictionarySort = 'newest' | 'oldest' | 'alphabetical'
 
+/** 'none' — записи без уровня: словарь его не даёт, проставляет только модель */
+export type LevelFilter = CefrLevel | 'none'
+
 export type DictionaryFilters = {
   search: string
-  level: CefrLevel | null
+  level: LevelFilter | null
   onlyWithExplanation: boolean
 }
 
@@ -22,7 +25,10 @@ export function normalizeTerm(term: string): string {
 }
 
 function matchesFilters(entry: DictionaryEntry, filters: DictionaryFilters): boolean {
-  if (filters.level && entry.level !== filters.level) return false
+  if (filters.level === 'none') {
+    if (entry.level) return false
+  } else if (filters.level && entry.level !== filters.level) return false
+
   if (filters.onlyWithExplanation && !entry.explanation) return false
 
   const search = normalizeTerm(filters.search)
@@ -59,4 +65,20 @@ export function collectLevels(entries: DictionaryEntry[]): CefrLevel[] {
   }
 
   return Array.from(levels).sort()
+}
+
+export type LevelOption = { label: string; value: LevelFilter }
+
+/** Пункт «Без уровня» появляется, только если такие записи есть */
+export function levelFilterOptions(entries: DictionaryEntry[]): LevelOption[] {
+  const options: LevelOption[] = collectLevels(entries).map((level) => ({
+    label: level,
+    value: level,
+  }))
+
+  if (entries.some((entry) => !entry.deletedAt && !entry.level)) {
+    options.push({ label: 'Без уровня', value: 'none' })
+  }
+
+  return options
 }

@@ -9,7 +9,7 @@ import { useAreaSelectors } from '@/composables/useAreaSelectors'
 import { useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
 import { clearHighlights, highlightTerms } from '@/utils/highlight'
-import { requestTranslation } from '@/utils/llmClient'
+import { translateTerm } from '@/utils/translateTerm'
 import { normalizeTerm } from '@/utils/dictionary'
 import { findSentence } from '@/utils/sentence'
 import type { WordWithExplanation } from '@/types/words'
@@ -97,7 +97,7 @@ function addToDictionary(word: WordWithExplanation): void {
   })
 }
 
-/** Выделенную фразу переводим отдельным запросом: в разборе главы её может и не быть */
+/** Выделенную фразу переводим отдельно: в разборе главы её может и не быть */
 async function saveSelection(): Promise<void> {
   const selected = anchor.value
   if (!selected || selectionState.value === 'saving') return
@@ -106,8 +106,8 @@ async function saveSelection(): Promise<void> {
   const context = findSentence(sourceText.value, selected.text)
 
   try {
-    const word = await requestTranslation(selected.text, context ?? '')
-    if (!word) throw new Error('модель не вернула перевод')
+    const word = await translateTerm(selected.text, context ?? '')
+    if (!word) throw new Error('перевод не найден')
 
     addEntry({ original: selected.text, translate: word.translate, context, level: word.level })
     selectionState.value = 'idle'
@@ -135,11 +135,11 @@ async function saveSelection(): Promise<void> {
 
   <section
     class="fixed bottom-4 right-4 flex max-h-[70vh] w-[420px] max-w-[calc(100vw-2rem)] flex-col
-           overflow-hidden rounded-md border border-line bg-surface text-content
-           shadow-[0_2px_12px_rgba(0,0,0,.18)]"
+           overflow-hidden rounded-xl border border-line bg-surface text-content
+           shadow-[0_10px_32px_-8px_rgba(0,0,0,.35)]"
     aria-label="Novel Translator"
   >
-    <header class="border-b border-line px-3 py-2">
+    <header class="border-b border-line px-3 py-2.5">
       <OverlayHeader
         :is-minimized="isMinimized"
         :words-count="newWords.length"
@@ -178,7 +178,7 @@ async function saveSelection(): Promise<void> {
 
       <ul
         v-else-if="newWords.length"
-        class="m-0 flex list-none flex-col gap-2 p-0"
+        class="m-0 flex list-none flex-col gap-1.5 p-0"
       >
         <WordItem
           v-for="word in newWords"
