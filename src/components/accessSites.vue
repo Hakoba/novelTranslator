@@ -55,6 +55,10 @@ function handleAddSite(): void {
       {{ errorMessage }}
     </Message>
 
+    <small class="text-muted">
+      Адрес целиком, с протоколом. Поддомены — https://*.novelbin.com, путь — префиксом.
+    </small>
+
     <ul
       v-if="sites.length"
       class="flex flex-col gap-2 m-0 p-0 list-none"
@@ -76,9 +80,10 @@ function handleAddSite(): void {
           {{ site.url }}
         </span>
         <Button
-          severity="danger"
+          severity="secondary"
           text
           rounded
+          class="hover:!text-red-500"
           :aria-label="`Удалить ${site.url}`"
           @click="removeSite(site.url)"
         >

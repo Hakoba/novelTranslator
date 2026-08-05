@@ -34,7 +34,8 @@ function applyYandexPreset(): void {
       Слова ниже вашего уровня в разбор не попадают
     </template>
     <template #content>
-      <div class="flex flex-col gap-2 pt-2">
+      <!-- поля не растягиваем на всю карточку: строка длиннее ~80 символов уже плохо читается -->
+      <div class="flex max-w-2xl flex-col gap-2 pt-2">
         <label
           for="reader-level"
           class="text-muted"
@@ -63,7 +64,7 @@ function applyYandexPreset(): void {
       Любой сервер с OpenAI-совместимым API: LM Studio, Ollama, llama.cpp, Yandex AI Studio
     </template>
     <template #content>
-      <div class="flex flex-col gap-4 pt-2">
+      <div class="flex max-w-2xl flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
           <label
             for="llm-base-url"
@@ -152,7 +153,7 @@ function applyYandexPreset(): void {
       Перевод и толкования из готовых словарей — бесплатно и без запросов к модели
     </template>
     <template #content>
-      <div class="flex flex-col gap-4 pt-2">
+      <div class="flex max-w-2xl flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
           <label
             for="dict-yandex-key"
@@ -204,7 +205,7 @@ function applyYandexPreset(): void {
       Расширение работает только на сайтах из списка
     </template>
     <template #content>
-      <div class="pt-2">
+      <div class="max-w-2xl pt-2">
         <AccessSites />
       </div>
     </template>

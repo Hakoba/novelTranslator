@@ -53,3 +53,8 @@ npm test               # node:test через tsx
 Архитектура и конвенции: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [.junie/guidelines.md](.junie/guidelines.md).
 
 Собрано на основе шаблона [vite-vue3-browser-extension-v3](https://github.com/mubaidr/vite-vue3-browser-extension-v3).
+
+## Лицензия
+
+[GPL-3.0-or-later](LICENSE). Форкать и использовать можно свободно; если распространяете свою
+версию — исходники должны быть открыты под той же лицензией.

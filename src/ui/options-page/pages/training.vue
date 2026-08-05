@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Check, X } from 'lucide-vue-next'
 import { useDictionary } from '@/composables/useDictionary'
+import { plural } from '@/utils/plural'
 import { countNew, dueEntries, nextDueAt, reviewEntry } from '@/utils/srs'
 import type { DictionaryEntry } from '@/types/words'
 
@@ -26,6 +27,10 @@ const current = computed<DictionaryEntry | undefined>(() => queue.value[currentI
 const isFinished = computed<boolean>(() => isSessionActive.value && !current.value)
 const progressLabel = computed<string>(
   () => `${Math.min(currentIndex.value + 1, queue.value.length)} из ${queue.value.length}`,
+)
+const sessionSize = computed<number>(() => Math.min(dueCount.value, SESSION_SIZE))
+const sessionLabel = computed<string>(
+  () => `${sessionSize.value} ${plural(sessionSize.value, ['слово', 'слова', 'слов'])}`,
 )
 const nextDueLabel = computed<string>(() => {
   const timestamp = nextDueAt(entries.value, Date.now())
@@ -143,7 +148,7 @@ onUnmounted((): void => {
 
           <Button
             v-if="dueCount"
-            :label="`Начать — ${Math.min(dueCount, SESSION_SIZE)} слов`"
+            :label="`Начать — ${sessionLabel}`"
             @click="startSession"
           />
 
@@ -239,7 +244,7 @@ onUnmounted((): void => {
           </p>
           <Button
             v-if="dueCount"
-            :label="`Ещё ${Math.min(dueCount, SESSION_SIZE)} слов`"
+            :label="`Ещё ${sessionLabel}`"
             severity="secondary"
             @click="startSession"
           />

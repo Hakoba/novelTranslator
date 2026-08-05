@@ -149,6 +149,7 @@ declare global {
   const pausableWatch: typeof import('@vueuse/core').pausableWatch
   const pickBestIndex: typeof import('../utils/extract/score').pickBestIndex
   const pinia: typeof import('../utils/pinia').pinia
+  const plural: typeof import('../utils/plural').plural
   const promise: typeof import('../composables/useReaderSettings').promise
   const provide: typeof import('vue').provide
   const provideLocal: typeof import('@vueuse/core').provideLocal
@@ -281,6 +282,7 @@ declare global {
   const useHighlightHover: typeof import('../composables/useHighlightHover').useHighlightHover
   const useId: typeof import('vue').useId
   const useIdle: typeof import('@vueuse/core').useIdle
+  const useIgnoredWords: typeof import('../composables/useIgnoredWords').useIgnoredWords
   const useImage: typeof import('@vueuse/core').useImage
   const useInfiniteScroll: typeof import('@vueuse/core').useInfiniteScroll
   const useIntersectionObserver: typeof import('@vueuse/core').useIntersectionObserver
@@ -606,6 +608,7 @@ declare module 'vue' {
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly pickBestIndex: UnwrapRef<typeof import('../utils/extract/score')['pickBestIndex']>
     readonly pinia: UnwrapRef<typeof import('../utils/pinia')['pinia']>
+    readonly plural: UnwrapRef<typeof import('../utils/plural')['plural']>
     readonly promise: UnwrapRef<typeof import('../composables/useReaderSettings')['promise']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
@@ -738,6 +741,7 @@ declare module 'vue' {
     readonly useHighlightHover: UnwrapRef<typeof import('../composables/useHighlightHover')['useHighlightHover']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
+    readonly useIgnoredWords: UnwrapRef<typeof import('../composables/useIgnoredWords')['useIgnoredWords']>
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>
     readonly useInfiniteScroll: UnwrapRef<typeof import('@vueuse/core')['useInfiniteScroll']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('@vueuse/core')['useIntersectionObserver']>
