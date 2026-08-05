@@ -57,7 +57,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/mubaidr/vite-vue3-browser-extension-v3"
+    "url": "https://github.com/Hakoba/novelTranslator"
   },
   "scripts": {
     "build": "npm run build:chrome && npm run build:firefox",
