@@ -20,7 +20,7 @@ const { isDark, profile, others } = storeToRefs(optionsStore)
     <h3>User Interface</h3>
     <p>Change application interface settings.</p>
 
-    <UForm class="space-y-4">
+    <div class="space-y-4">
       <UFormField label="Theme">
         <USwitch v-model="isDark" />
       </UFormField>
@@ -55,6 +55,6 @@ const { isDark, profile, others } = storeToRefs(optionsStore)
         context like Popup, Developer Tools UI etc
       </p>
       <p>Feel free to change groups or options as per your requirements.</p>
-    </UForm>
+    </div>
   </div>
 </template>

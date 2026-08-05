@@ -37,14 +37,11 @@ export default {
       run_at: "document_end",
     },
   ],
-  side_panel: {
-    default_path: "src/ui/side-panel/index.html",
-  },
   devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
   host_permissions: ["<all_urls>"],
-  permissions: ["storage", "tabs", "background", "sidePanel"],
+  permissions: ["storage", "tabs", "background"],
   web_accessible_resources: [
     {
       resources: [

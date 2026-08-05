@@ -57,19 +57,19 @@ function addToDictionary(word: WordWithExplanation): void {
     v-model:visible="isVisible"
     :modal="false"
     :draggable="true"
-    :dismissableMask="false"
+    :dismissable-mask="false"
     :position="isPinned ? 'center' : 'bottom-right'"
     :style="{ width: '550px', maxWidth: '92vw' }"
     @update:visible="handleVisibleChange"
   >
-    <template v-slot:header>
+    <template #header>
       <OverlayHeader
-        :isPinned="isPinned"
-        :isMinimized="isMinimized"
-        :wordsCount="wordsCount"
-        :isLoading="isLoading"
-        @togglePinned="togglePinned"
-        @toggleMinimized="toggleMinimized"
+        :is-pinned="isPinned"
+        :is-minimized="isMinimized"
+        :words-count="wordsCount"
+        :is-loading="isLoading"
+        @toggle-pinned="togglePinned"
+        @toggle-minimized="toggleMinimized"
         @close="closeOverlay"
       />
     </template>
@@ -85,7 +85,7 @@ function addToDictionary(word: WordWithExplanation): void {
               v-for="word in words"
               :key="word.original"
               :word="word"
-              @addToDictionary="addToDictionary"
+              @add-to-dictionary="addToDictionary"
             />
           </ul>
         </template>

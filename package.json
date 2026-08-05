@@ -71,6 +71,7 @@
     "launch:all": "tsx scripts/launch.ts --all",
     "lint": "eslint . --fix --cache",
     "lint:manifest": "web-ext lint --pretty",
+    "test": "tsx --test src/**/*.test.ts",
     "typecheck": "vue-tsc --noEmit"
   },
   "type": "module",

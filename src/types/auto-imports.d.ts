@@ -52,6 +52,7 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const extendLocale: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineLocale.js')['extendLocale']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const extractContent: typeof import('../utils/llmParse')['extractContent']
   const extractReadableText: typeof import('../utils/pageText')['extractReadableText']
   const extractShortcuts: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineShortcuts.js')['extractShortcuts']
   const formBusInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formBusInjectionKey']
@@ -105,6 +106,7 @@ declare global {
   const onUnmounted: typeof import('vue')['onUnmounted']
   const onUpdated: typeof import('vue')['onUpdated']
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
+  const parseWords: typeof import('../utils/llmParse')['parseWords']
   const pausableWatch: typeof import('@vueuse/core')['pausableWatch']
   const pinia: typeof import('../utils/pinia')['pinia']
   const portalTargetInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/usePortal.js')['portalTargetInjectionKey']
@@ -367,7 +369,7 @@ declare global {
   export type { AccessSite } from '../composables/useAccessSites'
   import('../composables/useAccessSites')
   // @ts-ignore
-  export type { BgFetchResponse } from '../utils/bgFetch'
+  export type { BgFetchResponse, BgFetchInit } from '../utils/bgFetch'
   import('../utils/bgFetch')
   // @ts-ignore
   export type { LlmChoice, LlmResponse } from '../utils/llmClient'
@@ -442,6 +444,7 @@ declare module 'vue' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendLocale: UnwrapRef<typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineLocale.js')['extendLocale']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly extractContent: UnwrapRef<typeof import('../utils/llmParse')['extractContent']>
     readonly extractReadableText: UnwrapRef<typeof import('../utils/pageText')['extractReadableText']>
     readonly extractShortcuts: UnwrapRef<typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineShortcuts.js')['extractShortcuts']>
     readonly formBusInjectionKey: UnwrapRef<typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formBusInjectionKey']>
@@ -495,6 +498,7 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly parseWords: UnwrapRef<typeof import('../utils/llmParse')['parseWords']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly pinia: UnwrapRef<typeof import('../utils/pinia')['pinia']>
     readonly portalTargetInjectionKey: UnwrapRef<typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/usePortal.js')['portalTargetInjectionKey']>

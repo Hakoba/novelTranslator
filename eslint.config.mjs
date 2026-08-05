@@ -31,6 +31,9 @@ export default [
       "cypress",
       "src/types/**/*",
       "eslint.config.mjs",
+      // сторонний код скиллов, не наш стиль
+      ".agents",
+      ".claude",
     ],
   },
   { files: ["**/*.{js,mjs,cjs,ts,vue}"] },

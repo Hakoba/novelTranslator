@@ -1,3 +1,6 @@
+import browser from "webextension-polyfill"
+import type { BgFetchResponse } from "@/utils/bgFetch"
+
 // Sample code if using extensionpay.com
 // import { extPay } from 'src/utils/payment/extPay'
 // extPay.startBackground()
@@ -36,16 +39,11 @@ self.onerror = function (message, source, lineno, colno, error) {
 
 console.info("hello world from background")
 
-// Proxy fetch requests to avoid CORS issues from content scripts
-// We keep payload types minimal and validated without using "as"
-chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+function isObject(val: unknown): val is Record<string, unknown> {
+  return typeof val === 'object' && val !== null
+}
 
-  // Narrow message type
-  const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
-  if (!isObject(message)) return
-  const type = typeof message.type === 'string' ? message.type : ''
-  if (type !== 'llm/fetch') return
-
+async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResponse> {
   const url = typeof message.url === 'string' ? message.url : ''
   const initRaw = isObject(message.init) ? message.init : undefined
   const method = initRaw && typeof initRaw.method === 'string' ? initRaw.method : 'GET'
@@ -56,33 +54,28 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
       }, {})
     : undefined
   const body = initRaw && typeof initRaw.body === 'string' ? initRaw.body : undefined
-  console.log('kekekkekeke',body)
 
-  ;
-
-  (async () => {
+  try {
+    const res = await fetch(url, { method, headers, body })
+    // Try JSON first, fallback to text
+    let data: unknown
     try {
-      console.log('fetch!!!!!!',url,method,headers,body)
-      return
-      const res = await fetch(url, { method, headers, body })
-      const status = res.status
-      const ok = res.ok
-      // Try JSON first, fallback to text
-      let data: unknown
-      try {
-        data = await res.json()
-      } catch {
-        data = await res.text()
-      }
-      sendResponse({ ok, status, data })
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unknown error'
-      sendResponse({ ok: false, status: 0, error: msg })
+      data = await res.json()
+    } catch {
+      data = await res.text()
     }
-  })()
+    return { ok: res.ok, status: res.status, data }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Unknown error'
+    return { ok: false, status: 0, error: msg }
+  }
+}
 
-  // Indicate async response
-  return true
+// Proxy fetch requests: content script не может ходить на http-эндпоинт LLM со https-страницы
+// Возвращаем Promise только для своих сообщений, чужие отдаём другим слушателям (undefined)
+browser.runtime.onMessage.addListener((message: unknown) => {
+  if (!isObject(message) || message.type !== 'llm/fetch') return
+  return proxyFetch(message)
 })
 
 export {}
