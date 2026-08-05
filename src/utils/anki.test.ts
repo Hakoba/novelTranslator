@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import initSqlJs from 'sql.js'
-import { unzipSync, strFromU8 } from 'fflate'
+import { unzipSync, strFromU8, strToU8, zipSync } from 'fflate'
 import type { DictionaryEntry } from '@/types/words'
-import { buildApkg } from './anki'
+import { buildApkg, parseApkg, stripHtml } from './anki'
 import { FIELD_NAMES, MODEL_NAME } from './ankiSchema'
 
 const NOW = 1_700_000_000_000
@@ -144,6 +144,38 @@ test('buildApkg: коллекция объявляет схему 11 и тип �
   assert.ok(decks['1'], 'колода Default обязательна')
   assert.equal(Object.keys(decks).length, 2)
   db.close()
+})
+
+test('parseApkg: колода читается обратно — слово, перевод, контекст и уровень', async () => {
+  const apkg = await buildApkg(ENTRIES, { now: NOW })
+  const notes = await parseApkg(apkg)
+
+  assert.deepEqual(notes, [
+    {
+      original: 'brittle',
+      translate: 'хрупкий',
+      context: 'The brittle bone snapped.',
+      level: 'C1',
+    },
+    {
+      // экранированный html разворачивается обратно
+      original: 'a & b <tag>',
+      translate: 'проверка экранирования',
+      context: undefined,
+      level: undefined,
+    },
+  ])
+})
+
+test('parseApkg: архив без коллекции Anki отвергается с внятной ошибкой', async () => {
+  const zip = zipSync({ media: strToU8('{}') })
+
+  await assert.rejects(() => parseApkg(zip), /нет коллекции/)
+})
+
+test('stripHtml: теги и сущности из чужих колод', () => {
+  assert.equal(stripHtml('<div>flash&nbsp;of<br>light</div>'), 'flash of light')
+  assert.equal(stripHtml('&amp;&lt;&gt;'), '&<>')
 })
 
 test('buildApkg: пустой словарь даёт валидную пустую коллекцию', async () => {

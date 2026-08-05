@@ -16,9 +16,17 @@ const { data, promise } = useBrowserLocalStorage<AreaSelector[]>('AREA_SELECTORS
 export function useAreaSelectors(): {
   selectors: Ref<AreaSelector[]>
   promise: Promise<unknown>
+  hasSelector: (host: string) => boolean
   setSelector: (host: string, selector: string) => void
+  clearSelector: (host: string) => void
 } {
   // методы
+  function hasSelector(host: string): boolean {
+    const key = normalizeHost(host)
+
+    return data.value.some((item) => item.host === key)
+  }
+
   function setSelector(host: string, selector: string): void {
     const key = normalizeHost(host)
     const existing = data.value.find((item) => item.host === key)
@@ -32,7 +40,13 @@ export function useAreaSelectors(): {
     data.value.push({ host: key, selector, addedAt: Date.now() })
   }
 
-  return { selectors: data, promise, setSelector }
+  /** Без записи разбор снова идёт по общим правилам — надгробие тут не нужно */
+  function clearSelector(host: string): void {
+    const key = normalizeHost(host)
+    data.value = data.value.filter((item) => item.host !== key)
+  }
+
+  return { selectors: data, promise, hasSelector, setSelector, clearSelector }
 }
 
 /** Для не-Vue кода (pageText): дожидается загрузки из storage */

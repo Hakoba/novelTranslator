@@ -1,6 +1,6 @@
 import initSqlJs, { type Database } from 'sql.js'
-import { strToU8, zipSync } from 'fflate'
-import type { DictionaryEntry } from '@/types/words'
+import { strToU8, unzipSync, zipSync } from 'fflate'
+import { CEFR_LEVELS, type CefrLevel, type DictionaryEntry } from '@/types/words'
 import {
   CREATE_TABLES,
   DEFAULT_CONF,
@@ -106,6 +106,82 @@ async function insertEntry(
     0,
     '',
   ])
+}
+
+const ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+}
+
+/** Поля Anki — это HTML: чужие колоды приходят с `<br>`, `<div>` и сущностями */
+export function stripHtml(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&[a-z]+;|&#\d+;/gi, (entity) => ENTITIES[entity.toLowerCase()] ?? entity)
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function levelFromTags(tags: string): CefrLevel | undefined {
+  return CEFR_LEVELS.find((level) => tags.split(/\s+/).includes(level))
+}
+
+export type ImportedNote = {
+  original: string
+  translate: string
+  level?: CefrLevel
+  context?: string
+}
+
+/**
+ * Читаем `.apkg`: первые два поля заметки — слово и перевод, третье (если есть) —
+ * контекст. Так устроен и наш экспорт, и типовая колода «слово → перевод».
+ *
+ * ponytail: `collection.anki21b` (zstd, Anki 2.1.50+) не поддержан — распаковать его
+ * нечем; при нужде брать `fzstd`. Пока просим экспорт с совместимостью со старыми версиями.
+ */
+export async function parseApkg(
+  data: Uint8Array,
+  options: Pick<ApkgOptions, 'locateFile'> = {},
+): Promise<ImportedNote[]> {
+  const files = unzipSync(data)
+  const collection = files['collection.anki2'] ?? files['collection.anki21']
+
+  if (!collection) {
+    throw new Error(files['collection.anki21b']
+      ? 'Колода в новом формате Anki. Экспортируйте её с галкой «Support older Anki versions»'
+      : 'В архиве нет коллекции Anki')
+  }
+
+  const SQL = await initSqlJs(options.locateFile ? { locateFile: options.locateFile } : {})
+  const db = new SQL.Database(collection)
+
+  try {
+    const [result] = db.exec('SELECT flds, tags FROM notes')
+    const notes: ImportedNote[] = []
+
+    for (const [flds, tags] of result?.values ?? []) {
+      const fields = String(flds).split(FIELD_SEPARATOR).map(stripHtml)
+      const [original, translate, context] = fields
+
+      if (!original || !translate) continue
+
+      notes.push({
+        original,
+        translate,
+        level: levelFromTags(String(tags ?? '')),
+        context: context || undefined,
+      })
+    }
+
+    return notes
+  } finally {
+    db.close()
+  }
 }
 
 export async function buildApkg(
