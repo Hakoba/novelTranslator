@@ -26,8 +26,17 @@ export function yandexModelUri(folderId: string, model = "yandexgpt/latest"): st
 const devApiKey = __YANDEX_API_KEY__
 const devFolderId = __YANDEX_FOLDER_ID__
 
-export const DEFAULT_LLM_SETTINGS: LlmSettings = devApiKey && devFolderId
-  ? { baseUrl: YANDEX_BASE_URL, model: yandexModelUri(devFolderId), apiKey: devApiKey }
+/** Пресет Яндекса. В dev подставляет ключ и каталог из .env, в прод-сборке оставляет поля пустыми */
+export const YANDEX_PRESET: LlmSettings = {
+  baseUrl: YANDEX_BASE_URL,
+  model: yandexModelUri(devFolderId || "<идентификатор каталога>"),
+  apiKey: devApiKey,
+}
+
+export const HAS_DEV_YANDEX_CREDENTIALS = Boolean(devApiKey && devFolderId)
+
+export const DEFAULT_LLM_SETTINGS: LlmSettings = HAS_DEV_YANDEX_CREDENTIALS
+  ? YANDEX_PRESET
   : LOCAL_PRESET
 
 const { data, promise } = useBrowserSyncStorage<LlmSettings>(
@@ -45,6 +54,8 @@ export function useLlmSettings(): {
 /** Для не-Vue кода (llmClient): дожидается загрузки из storage */
 export async function getLlmSettings(): Promise<LlmSettings> {
   await promise
+  const current = data.value
 
-  return data.value
+  // в dev-сборке не заставляем вбивать ключ руками, если он уже лежит в .env
+  return current.apiKey || !devApiKey ? current : { ...current, apiKey: devApiKey }
 }

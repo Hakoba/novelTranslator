@@ -10,20 +10,42 @@ const TEMPERATURE = 0.2
 
 type ChatMessage = { role: 'system' | 'user'; content: string }
 
+/** Сообщение должно называть причину и место, куда лезть, — иначе «HTTP 401» ни о чём не говорит */
+function describeError(status: number, host: string, error?: string): string {
+  if (status === 401 || status === 403) {
+    return `${host} отклонил ключ API (${status}). Проверьте ключ и имя модели в настройках расширения.`
+  }
+  if (status === 404) {
+    return `${host} не знает такой эндпоинт или модель (404). Проверьте адрес и имя модели.`
+  }
+  if (status === 0) {
+    return `Не удалось подключиться к ${host}${error ? `: ${error}` : ''}. Сервер модели запущен?`
+  }
+
+  return `${host} ответил ошибкой ${status}${error ? `: ${error}` : ''}`
+}
+
 async function chat(messages: ChatMessage[], signal?: AbortSignal): Promise<string> {
   const { baseUrl, model, apiKey } = await getLlmSettings()
+  const url = `${baseUrl.replace(/\/$/, '')}/v1/chat/completions`
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (apiKey) headers.Authorization = `Bearer ${apiKey}`
 
-  const res = await sendBgFetch(`${baseUrl.replace(/\/$/, '')}/v1/chat/completions`, {
+  const res = await sendBgFetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify({ model, temperature: TEMPERATURE, messages }),
   }, signal)
 
   if (!res.ok) {
-    throw new Error(`LLM HTTP ${res.status}${res.error ? `: ${res.error}` : ''}`)
+    let host = baseUrl
+    try {
+      host = new URL(baseUrl).host
+    } catch {
+      // адрес из настроек может быть кривым — тогда показываем как есть
+    }
+    throw new Error(describeError(res.status, host, res.error))
   }
 
   return extractContent(res.data)

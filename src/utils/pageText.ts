@@ -1,63 +1,78 @@
-const TEXT_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'] as const
-const CONTAINER_SELECTORS = ['article', 'main', '[role="main"]', '.chapter-content', '.entry-content', '#content'] as const
+const TEXT_TAGS = 'p, li, h1, h2, h3, h4, h5, h6, blockquote'
+const CONTAINER_SELECTORS = [
+  '.cha-words',
+  '.cha-content',
+  '#chapterContent',
+  '.chapter-content',
+  '.chr-c',
+  '#chr-content',
+  '.entry-content',
+  'article',
+  'main',
+  '[role="main"]',
+] as const
 const MIN_LINE_LENGTH = 30
 const MAX_CHARS = 8000
-
-function isElement(node: Node): node is Element {
-  return node.nodeType === Node.ELEMENT_NODE
-}
 
 function normalizeWhitespace(input: string): string {
   return input.replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * Одна и та же строка приходит несколько раз: сайты дублируют абзацы в скрытых
+ * блоках, а вложенные li/p дают текст родителя ещё раз. Модели это стоит токенов.
+ */
+export function dedupeBlocks(blocks: string[]): string[] {
+  const seen = new Set<string>()
+
+  return blocks.filter((block) => {
+    if (seen.has(block)) return false
+    seen.add(block)
+
+    return true
+  })
+}
+
+/** Из кандидатов берём тот, в котором больше всего текста абзацев — это и есть глава */
+function findContentRoot(): Element {
+  const candidates = CONTAINER_SELECTORS.flatMap((selector) =>
+    Array.from(document.querySelectorAll(selector)),
+  )
+
+  let best: Element = document.body
+  let bestLength = 0
+
+  for (const candidate of candidates) {
+    const length = Array.from(candidate.querySelectorAll(TEXT_TAGS))
+      .reduce((sum, el) => sum + (el.textContent?.length ?? 0), 0)
+
+    if (length > bestLength) {
+      best = candidate
+      bestLength = length
+    }
+  }
+
+  return best
+}
+
+function isHidden(element: Element): boolean {
+  if (element.getAttribute('aria-hidden') === 'true') return true
+  const styles = getComputedStyle(element)
+
+  return styles.display === 'none' || styles.visibility === 'hidden'
+}
+
 export function extractReadableText(): string {
-  // 1. Попробуем найти основной контейнер контента
-  let root: Element | Document = document
-  for (const sel of CONTAINER_SELECTORS) {
-    const el = document.querySelector(sel)
-    if (el) {
-      root = el
-      break
-    }
-  }
+  const root = findContentRoot()
 
-  // 2. Собираем текстовые блоки
-  const blocks: string[] = []
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
-  while (true) {
-    const node = walker.nextNode()
-    if (!node) break
+  const blocks = Array.from(root.querySelectorAll(TEXT_TAGS))
+    // вложенный абзац отдаёт свой текст сам, иначе родитель продублирует его
+    .filter((element) => !element.querySelector(TEXT_TAGS))
+    .filter((element) => !isHidden(element))
+    .map((element) => normalizeWhitespace(element.textContent ?? ''))
+    .filter((text) => text.length >= MIN_LINE_LENGTH)
 
-    // Пропускаем скрытые/служебные элементы
-    const parentEl = node.parentElement
-    if (parentEl) {
-      const tag = parentEl.tagName
-      const isHidden = parentEl.getAttribute('aria-hidden') === 'true' || getComputedStyle(parentEl).display === 'none' || getComputedStyle(parentEl).visibility === 'hidden'
-      if (isHidden) continue
-      // Исключаем элементы навигации и пр.
-      const role = parentEl.getAttribute('role')
-      if (role && (role.includes('navigation') || role.includes('search') || role.includes('banner'))) continue
-      const unwanted = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'CANVAS', 'IMG', 'VIDEO', 'AUDIO']
-      if (unwanted.includes(tag)) continue
-    }
+  const joined = dedupeBlocks(blocks).join('\n')
 
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = normalizeWhitespace(node.nodeValue ?? '')
-      if (text.length >= MIN_LINE_LENGTH) blocks.push(text)
-      continue
-    }
-
-    if (isElement(node)) {
-      const tag = node.tagName
-      if ((TEXT_TAGS as readonly string[]).includes(tag)) {
-        const text = normalizeWhitespace(node.textContent ?? '')
-        if (text.length >= MIN_LINE_LENGTH) blocks.push(text)
-      }
-    }
-  }
-
-  // 3. Склеим и ограничим размер
-  const joined = blocks.join('\n')
   return joined.length > MAX_CHARS ? joined.slice(0, MAX_CHARS) : joined
 }

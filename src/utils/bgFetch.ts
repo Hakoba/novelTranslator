@@ -25,12 +25,14 @@ export async function sendBgFetch(
   init: BgFetchInit,
   signal?: AbortSignal,
 ): Promise<BgFetchResponse> {
+  console.info('[nt] запрос в background:', url)
   const request = browser.runtime.sendMessage({ type: 'llm/fetch', url, init })
   // abort только перестаёт ждать ответ — запрос в background уже ушёл и доживёт сам
   const res: unknown = signal ? await Promise.race([request, abortSignalPromise(signal)]) : await request
+  console.info('[nt] ответ background:', res)
 
   if (!isObject(res)) {
-    throw new Error('Bad background response')
+    throw new Error('Background не ответил на запрос к модели — перезагрузите расширение')
   }
 
   return {

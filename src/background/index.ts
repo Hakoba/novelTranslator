@@ -55,6 +55,8 @@ async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResp
     : undefined
   const body = initRaw && typeof initRaw.body === 'string' ? initRaw.body : undefined
 
+  console.info('[nt] fetch:', url, 'ключ передан:', Boolean(headers?.Authorization))
+
   try {
     const res = await fetch(url, { method, headers, body })
     // Try JSON first, fallback to text
@@ -64,9 +66,13 @@ async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResp
     } catch {
       data = await res.text()
     }
+    console.info('[nt] ответ модели:', res.status)
+
     return { ok: res.ok, status: res.status, data }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error'
+    console.info('[nt] fetch упал:', msg)
+
     return { ok: false, status: 0, error: msg }
   }
 }

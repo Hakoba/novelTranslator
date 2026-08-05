@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AccessSites from '@/components/accessSites.vue'
 import {
+  HAS_DEV_YANDEX_CREDENTIALS,
   LOCAL_PRESET,
-  YANDEX_BASE_URL,
+  YANDEX_PRESET,
   useLlmSettings,
-  yandexModelUri,
 } from '@/composables/useLlmSettings'
 
 const { settings } = useLlmSettings()
@@ -15,11 +15,8 @@ function applyLocalPreset(): void {
 }
 
 function applyYandexPreset(): void {
-  settings.value = {
-    baseUrl: YANDEX_BASE_URL,
-    model: yandexModelUri('<идентификатор каталога>'),
-    apiKey: settings.value.apiKey,
-  }
+  // в dev-сборке пресет уже содержит ключ и каталог из .env
+  settings.value = { ...YANDEX_PRESET, apiKey: YANDEX_PRESET.apiKey || settings.value.apiKey }
 }
 </script>
 
@@ -88,7 +85,7 @@ function applyYandexPreset(): void {
             @click="applyLocalPreset"
           />
           <Button
-            label="Yandex AI Studio"
+            :label="HAS_DEV_YANDEX_CREDENTIALS ? 'Yandex AI Studio (ключ из .env)' : 'Yandex AI Studio'"
             severity="secondary"
             size="small"
             @click="applyYandexPreset"
