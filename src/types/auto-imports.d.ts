@@ -14,7 +14,9 @@ declare global {
   const DEFAULT_LLM_SETTINGS: typeof import('../composables/useLlmSettings').DEFAULT_LLM_SETTINGS
   const DEFAULT_TEXT: typeof import('../utils/llmClient')['DEFAULT_TEXT']
   const EffectScope: typeof import('vue').EffectScope
+  const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
   const MODEL: typeof import('../utils/llmClient')['MODEL']
+  const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
   const appRouter: typeof import('../utils/router/index').appRouter
   const applyTheme: typeof import('../composables/useTheme').applyTheme
@@ -370,6 +372,7 @@ declare global {
   const watchTriggerable: typeof import('@vueuse/core').watchTriggerable
   const watchWithFilter: typeof import('@vueuse/core').watchWithFilter
   const whenever: typeof import('@vueuse/core').whenever
+  const yandexModelUri: typeof import('../composables/useLlmSettings').yandexModelUri
 }
 // for type re-export
 declare global {
@@ -398,6 +401,8 @@ declare module 'vue' {
     readonly CONTRACT_PROMPT_WORDS: UnwrapRef<typeof import('../utils/llmClient')['CONTRACT_PROMPT_WORDS']>
     readonly DEFAULT_LLM_SETTINGS: UnwrapRef<typeof import('../composables/useLlmSettings')['DEFAULT_LLM_SETTINGS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
+    readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
     readonly applyTheme: UnwrapRef<typeof import('../composables/useTheme')['applyTheme']>
@@ -722,5 +727,6 @@ declare module 'vue' {
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
+    readonly yandexModelUri: UnwrapRef<typeof import('../composables/useLlmSettings')['yandexModelUri']>
   }
 }

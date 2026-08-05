@@ -1,12 +1,25 @@
 <script setup lang="ts">
 import AccessSites from '@/components/accessSites.vue'
-import { DEFAULT_LLM_SETTINGS, useLlmSettings } from '@/composables/useLlmSettings'
+import {
+  LOCAL_PRESET,
+  YANDEX_BASE_URL,
+  useLlmSettings,
+  yandexModelUri,
+} from '@/composables/useLlmSettings'
 
 const { settings } = useLlmSettings()
 
 // методы
-function resetLlm(): void {
-  settings.value = { ...DEFAULT_LLM_SETTINGS }
+function applyLocalPreset(): void {
+  settings.value = { ...LOCAL_PRESET }
+}
+
+function applyYandexPreset(): void {
+  settings.value = {
+    baseUrl: YANDEX_BASE_URL,
+    model: yandexModelUri('<идентификатор каталога>'),
+    apiKey: settings.value.apiKey,
+  }
 }
 </script>
 
@@ -16,7 +29,7 @@ function resetLlm(): void {
       Модель
     </template>
     <template #subtitle>
-      Любой OpenAI-совместимый сервер: LM Studio, Ollama, llama.cpp
+      Любой сервер с OpenAI-совместимым API: LM Studio, Ollama, llama.cpp, Yandex AI Studio
     </template>
     <template #content>
       <div class="flex flex-col gap-4 pt-2">
@@ -46,14 +59,39 @@ function resetLlm(): void {
             v-model="settings.model"
             placeholder="gpt-oss"
           />
+          <small class="text-muted">
+            У Яндекса имя модели выглядит как gpt://&lt;каталог&gt;/yandexgpt/latest
+          </small>
         </div>
 
-        <div>
+        <div class="flex flex-col gap-2">
+          <label
+            for="llm-key"
+            class="text-muted"
+          >
+            Ключ API
+          </label>
+          <InputText
+            id="llm-key"
+            v-model="settings.apiKey"
+            type="password"
+            autocomplete="off"
+            placeholder="для локальной модели не нужен"
+          />
+        </div>
+
+        <div class="flex flex-wrap gap-2">
           <Button
-            label="Сбросить"
+            label="Локальная модель"
             severity="secondary"
             size="small"
-            @click="resetLlm"
+            @click="applyLocalPreset"
+          />
+          <Button
+            label="Yandex AI Studio"
+            severity="secondary"
+            size="small"
+            @click="applyYandexPreset"
           />
         </div>
       </div>

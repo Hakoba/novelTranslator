@@ -14,6 +14,7 @@
     "ExtractPropTypes": true,
     "ExtractPublicPropTypes": true,
     "InjectionKey": true,
+    "LOCAL_PRESET": true,
     "LlmSettings": true,
     "MaybeRef": true,
     "MaybeRefOrGetter": true,
@@ -25,6 +26,7 @@
     "ThemeMode": true,
     "VNode": true,
     "WritableComputedRef": true,
+    "YANDEX_BASE_URL": true,
     "acceptHMRUpdate": true,
     "appRouter": true,
     "applyTheme": true,
@@ -348,6 +350,7 @@
     "watchThrottled": true,
     "watchTriggerable": true,
     "watchWithFilter": true,
-    "whenever": true
+    "whenever": true,
+    "yandexModelUri": true
   }
 }

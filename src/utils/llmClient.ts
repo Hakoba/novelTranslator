@@ -6,16 +6,20 @@ import { getLlmSettings } from '@/composables/useLlmSettings'
 export const CONTRACT_PROMPT_WORDS = 'Return ONLY valid JSON array of objects with fields: original: string, translate: string. "original" — оригинальное английское слово/фраза; "translate" — краткий перевод на русский. No markdown, no code fences, no comments, no extra text.'
 
 const SYSTEM_PROMPT = 'You are a helpful assistant for translators.'
+const TEMPERATURE = 0.2
 
 type ChatMessage = { role: 'system' | 'user'; content: string }
 
 async function chat(messages: ChatMessage[], signal?: AbortSignal): Promise<string> {
-  const { baseUrl, model } = await getLlmSettings()
+  const { baseUrl, model, apiKey } = await getLlmSettings()
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (apiKey) headers.Authorization = `Bearer ${apiKey}`
 
   const res = await sendBgFetch(`${baseUrl.replace(/\/$/, '')}/v1/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, temperature: 0.2, messages }),
+    headers,
+    body: JSON.stringify({ model, temperature: TEMPERATURE, messages }),
   }, signal)
 
   if (!res.ok) {
