@@ -1,52 +1,48 @@
-# Vite Vue 3 Browser Extension (Manifest V3)
+# Novel Translator
 
-[![Build Status](https://github.com/mubaidr/vite-vue3-browser-extension-v3/actions/workflows/build.yml/badge.svg)](https://github.com/mubaidr/vite-vue3-browser-extension-v3/actions/workflows/build.yml)
+Браузерное расширение (Manifest V3, Chrome + Firefox) для чтения англоязычных новелл.
+Разбирает текст главы через локальную LLM и показывает сложные слова и фразы уровня B1
+с переводом на русский; найденные слова подсвечиваются прямо в тексте страницы.
 
+Работает только на сайтах из списка разрешённых — по умолчанию `novelbin.com`.
 
-Modern, opinionated starter template for browser extensions using [Vite](https://vitejs.dev/), [Vue 3](https://vuejs.org/), and Manifest V3. Supports Chrome, Firefox, and more. Includes file-based routing, state management, composables, and rich UI components.
+## Что уже работает
 
+- **Разбор главы.** Оверлей собирает читаемый текст страницы, отправляет в модель и
+  показывает список «слово — перевод»; по клику подтягивается пояснение к слову.
+- **Подсветка.** Найденные слова и фразы подсвечиваются в тексте главы.
+- **Своя модель.** Адрес OpenAI-совместимого сервера (LM Studio, Ollama, llama.cpp) и имя
+  модели задаются в настройках расширения.
+- **Список сайтов.** Правится в popup и в настройках, синхронизируется через `storage.sync`.
+- **Тема.** Светлая/тёмная, запоминается между сессиями.
 
+## Чего пока нет
 
-## Features
+- Словарь сохранённых слов (кнопка «в словарь» в оверлее пока ничего не делает)
+- Перевод выделенного текста через Яндекс.Переводчик
+- Экспорт словаря в Anki
 
-- Multi-context: background, popup, options, content script, devtools, side panel, offscreen
-- File-based routing (auto-register UI pages)
-- Vue 3 Composition API, Pinia, composables
-- WebExtension utilities: `webext-bridge`, `webextension-polyfill`
+## Требования
 
+Запущенный OpenAI-совместимый сервер с моделью, отвечающий на
+`POST {baseUrl}/v1/chat/completions`. Адрес указывается в настройках расширения
+(по умолчанию `http://localhost:1234` — порт LM Studio).
 
-
-## Quick Start
+## Разработка
 
 ```bash
-npx degit mubaidr/vite-vue3-browser-extension-v3 my-webext
-cd my-webext
 npm install
-npm run dev
+npm run dev:chrome     # dev-сборка Chrome
+npm run dev:firefox    # dev-сборка Firefox (watch)
+npm run build          # прод-сборка обоих браузеров
+npm run typecheck      # vue-tsc --noEmit
+npm run lint           # eslint --fix
+npm test               # node:test через tsx
 ```
 
-- **Build**: `npm run build`
-- **Lint**: `npm run lint`
-- **Dev (Chrome/Firefox)**: `npm run dev:chrome` / `npm run dev:firefox`
+Расширение загружается из `dist/chrome` (`chrome://extensions` → режим разработчика →
+загрузить распакованное) или `dist/firefox` (`about:debugging` → загрузить временное дополнение).
 
-Load the extension from the `dist/chrome` or `dist/firefox` folder in your browser.
+Архитектура и конвенции: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [.junie/guidelines.md](.junie/guidelines.md).
 
-
-
----
-
-## Developer Documentation
-
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for architecture, design principles, folder structure, and best practices.
-
----
-
-## Contributing
-
-Contributions are welcome! Please open issues or submit pull requests for improvements or new features.
-
----
-
-## Support
-
-If you find this project useful, please consider [supporting the author](https://www.patreon.com/c/mubaidr) and starring ⭐ the repository.
+Собрано на основе шаблона [vite-vue3-browser-extension-v3](https://github.com/mubaidr/vite-vue3-browser-extension-v3).

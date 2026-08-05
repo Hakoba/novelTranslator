@@ -1,47 +1,53 @@
 # Developer Guide
 
-## Project Architecture
+## Архитектура
 
-- **Multi-Context Extension**: Supports background, popup, options, content script, devtools, side panel, and offscreen pages.
-- **File-Based Routing**: UI routes are auto-registered from `src/ui/*/pages`.
-- **Composable & Modular**: Uses Vue 3 Composition API, Pinia for state, and composables for i18n, theme, storage, etc.
-- **UI**: PrimeVue for all UI components, styled with Tailwind CSS 4.
-- **WebExtension Utilities**: Uses `webext-bridge` and `webextension-polyfill` for browser API compatibility.
+- **Контексты расширения**: background (service worker), content script, popup, options, setup,
+  devtools, offscreen.
+- **File-based routing**: маршруты страниц автоматически собираются из `src/ui/*/pages`.
+- **UI**: PrimeVue (единственная UI-библиотека) + Tailwind CSS 4. Компоненты PrimeVue
+  автоимпортируются через `PrimeVueResolver`, тема — Aura, переключение по классу `.dark`.
+- **Состояние**: Pinia + composables поверх `chrome.storage` (`useBrowserStorage`).
+- **WebExtension API**: `webextension-polyfill` (promise-стиль, кроссбраузерно).
 
-## Folder Structure
+## Структура
 
-- `src/assets/`: Global assets (CSS, images)
-- `src/background/`: Background scripts (lifecycle, install/update logic)
-- `src/components/`: Shared Vue components
-- `src/composables/`: Vue composables (hooks)
-- `src/content-script/`: Content scripts (DOM injection, page interaction)
-- `src/devtools/`, `src/offscreen/`, `src/side-panel/`: Specialized extension contexts
-- `src/stores/`: Pinia stores (state management)
-- `src/types/`: TypeScript definitions
-- `src/ui/`: UI entrypoints (popup, options, setup, etc.)
-- `src/utils/`: Shared utilities (router, i18n, pinia, etc.)
+- `src/assets/` — глобальные стили страниц расширения (`base.css`) и логотип
+- `src/background/` — service worker: install/update, прокси fetch к LLM
+- `src/components/` — общие Vue-компоненты (список сайтов, переключатель темы)
+- `src/composables/` — storage, список сайтов, настройки LLM, тема, разбор главы
+- `src/content-script/` — оверлей на странице: Shadow DOM, стили, компоненты оверлея
+- `src/ui/<context>/` — точки входа страниц (`index.ts`, `app.vue`, `pages/`)
+- `src/utils/` — LLM-клиент и парсер ответов, мост в background, подсветка, роутер, pinia
+- `src/types/` — ручные типы и файлы, генерируемые плагинами (не редактировать)
 
-## Design Principles
+## Ключевые решения
 
-- **Type Safety**: Strict TypeScript everywhere.
-- **Composition API**: Use `<script setup>` and composables for logic reuse.
-- **Auto-Imports**: Functions, stores, and components are auto-imported.
-- **Single Responsibility**: Each file/folder has a clear, focused purpose.
-- **Minimal Boilerplate**: Prefer concise, readable code.
+- **Оверлей живёт в Shadow DOM.** В документ сайта не попадает ни строчки нашего CSS:
+  стили оверлея инлайнятся в shadow root (`overlay.css?inline`), стили PrimeVue зеркалятся
+  из `document.head` (`mirrorStyles.ts`), подсветка слов ставится инлайном на элемент.
+- **Запросы к LLM идут через background.** Content script на https-странице не может
+  обратиться к http-адресу локальной модели, service worker — может (`bgFetch`).
+- **Ответ модели парсится терпимо**: markdown-фенсы и текст вокруг JSON отбрасываются
+  (`llmParse.ts`).
+- **PrimeVue Dialog не годится для оверлея** — он рендерится в `document.body`, вне shadow root.
 
-## Coding Conventions
+## Конвенции
 
-- Use TypeScript and Vue 3 Composition API.
-- Enforce code style with ESLint and Prettier.
-- Use Pinia for state, Vue Router for navigation.
-- Place new UI pages in `src/ui/<context>/pages/`.
-- Use composables for cross-cutting concerns (theme, i18n, storage).
-- Handle errors gracefully; log with `console.info` in background/content scripts.
+- Строгий TypeScript: типы у `ref`/`computed`, return-типы функций, никаких `as` — только
+  type guards. Полный список: `.junie/guidelines.md`.
+- `<script setup>`, порядок блоков: props → composables → state → computed → watchers →
+  lifecycle → методы.
+- Семантическая вёрстка: списки — `ul/li`, кнопки — `button` (или `Button` PrimeVue),
+  у иконочных кнопок обязателен `aria-label`.
+- Новые страницы — в `src/ui/<context>/pages/`, общая инициализация — `createPage`.
+- Логика с ветвлениями выносится в модуль без браузерных API и покрывается тестом
+  (`node:test` + `tsx`, файлы `*.test.ts` рядом с кодом).
 
-## Best Practices
+## Проверки
 
-- Keep components small and focused.
-- Use file-based routing for UI.
-- Prefer composables for shared logic.
-- Test in both Chrome and Firefox.
-- Use shadcn-vue for accessible, customizable UI components.
+```bash
+npm run typecheck && npm run lint && npm test && npm run build
+```
+
+Проверять расширение нужно и в Chrome, и в Firefox: сборки собираются раздельно.

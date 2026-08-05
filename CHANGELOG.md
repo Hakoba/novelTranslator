@@ -1,18 +1,23 @@
 # Change Log
 
-## Example update
+## Не выпущено
 
-- Update README.md
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies aliquam, nunc nisl ultricies nunc, vitae ultricies.
+### Исправлено
 
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies aliquam, nunc nisl ultricies nunc, vitae ultricies.
+- Вёрстка сайта больше не ломается: content script не инжектит глобальный CSS,
+  оверлей рендерится в Shadow DOM
+- Починен путь запросов к LLM: восстановлен мост в background, снята отладочная
+  заглушка, ответ модели парсится даже в markdown-фенсах
+- Валидация адреса при добавлении сайта в список (раньше принимался любой текст)
+- Сборка Firefox/Chrome падала из-за ссылок манифеста на удалённые страницы
 
-- [x] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies aliquam, nunc nisl ultricies nunc, vitae ultricies.
+### Добавлено
 
-- [ ] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget ultricies aliquam, nunc nisl ultricies nunc, vitae ultricies.
+- Настройки: адрес OpenAI-совместимого сервера и имя модели (вместо хардкода)
+- Оверлей показывает ошибку модели и кнопку повтора
+- Тесты парсера ответов модели и матчинга разрешённых сайтов (`npm test`)
 
-| Left columns | Right columns | Center Align |
-| ------------ | ------------: | :----------: |
-| left foo     |     right foo |  center foo  |
-| left bar     |     right bar |  center bar  |
-| left baz     |     right baz |  center baz  |
+### Изменено
+
+- UI переведён на PrimeVue + Tailwind 4; `@nuxt/ui`, shadcn-остатки и i18n удалены
+- Страницы popup, options и setup переписаны с нуля, шаблонный код удалён

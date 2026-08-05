@@ -2,52 +2,45 @@
 
 ## Project Overview
 
-- This is a modern, multi-context browser extension template using Vite, Vue 3, and Manifest V3.
-- Major contexts: background, popup, options, content script, devtools, side panel, offscreen (see `src/` subfolders).
-- UI is modular, file-based, and auto-routed from `src/ui/*/pages`.
-- State is managed with Pinia; cross-context communication uses `webext-bridge` and `webextension-polyfill`.
-- UI components: PrimeVue, Tailwind CSS 4.
+- Novel Translator — расширение (Manifest V3, Chrome + Firefox): разбирает главу
+  англоязычной новеллы через локальную LLM и показывает сложные слова с переводом.
+- Контексты: background, content script (оверлей), popup, options, setup, devtools, offscreen.
+- Состояние — Pinia и composables поверх `chrome.storage`; браузерные API — `webextension-polyfill`.
+- UI — PrimeVue + Tailwind CSS 4, компоненты автоимпортируются, иконки `lucide-vue-next`.
 
 ## Key Workflows
 
-- **Development**: `npm run dev` (runs Chrome and Firefox dev builds concurrently)
-- **Build**: `npm run build` (builds for both Chrome and Firefox)
-- **Lint**: `npm run lint` (ESLint + Prettier)
-- **Typecheck**: `npm run typecheck` (Vue TSC)
-- **Load extension**: Use `dist/chrome` or `dist/firefox` in browser
+- **Development**: `npm run dev` (Chrome и Firefox параллельно)
+- **Build**: `npm run build`
+- **Lint**: `npm run lint`
+- **Typecheck**: `npm run typecheck`
+- **Tests**: `npm test` (node:test через tsx)
+- **Load extension**: `dist/chrome` или `dist/firefox`
 
 ## Architecture & Patterns
 
-- **File-based Routing**: Add Vue files to `src/ui/<context>/pages/` for auto-registration as routes.
-- **Composables**: Shared logic in `src/composables/` (e.g., theme, i18n, browser storage)
-- **Pinia Stores**: State in `src/stores/`, auto-imported where needed
-- **TypeScript**: Strict, enforced everywhere
-- **Auto-imports**: Functions, stores, and components are auto-imported (see Vite config)
-- **Error Handling**: Use `console.info` for logging in background/content scripts
-- **Cross-context Communication**: Use `webext-bridge` for messaging between extension contexts
+- **File-based routing**: страницы — в `src/ui/<context>/pages/`, инициализация — `createPage`.
+- **Composables**: общая логика в `src/composables/` (storage, настройки LLM, тема, сайты).
+- **Shadow DOM**: оверлей рендерится в shadow root, глобальный CSS в документ сайта не попадает.
+- **LLM через background**: запросы идут `bgFetch` → service worker, иначе mixed content.
+- **TypeScript строгий**, без `as` — только type guards.
+- **Логи**: `console.info` в background и content script.
 
 ## Integration Points
 
-- **Browser APIs**: Use `webextension-polyfill` for compatibility
-- **UI Components**: Use PrimeVue
-- **i18n**: Locales in `src/locales/`, managed via Vue I18n
-
-## Project-specific Conventions
-
-- Place new UI pages in `src/ui/<context>/pages/`
-- Use composables for shared logic, not mixins
-- Keep components small and focused
-- Use strict TypeScript and auto-imports
-- Prefer file-based routing and modular structure
+- **Browser APIs**: `webextension-polyfill`
+- **UI**: PrimeVue (единственная библиотека компонентов)
+- **LLM**: любой OpenAI-совместимый сервер, адрес и модель — в настройках расширения
 
 ## Examples
 
-- See `src/background/index.ts` for install/update logic
-- See `src/content-script/index.ts` for DOM injection
-- See `src/ui/action-popup/app.vue` for UI entrypoint pattern
-- See `src/utils/router/index.ts` for router setup
+- `src/background/index.ts` — install/update и прокси fetch
+- `src/content-script/index.ts` — монтирование оверлея в Shadow DOM
+- `src/utils/llmParse.ts` — разбор ответа модели (и тест рядом)
+- `src/ui/options-page/pages/index.vue` — страница настроек
 
 ## References
 
-- For detailed architecture and design principles, see [docs/DEVELOPMENT.md](../docs/DEVELOPMENT.md)
-- For usage and contribution, see [README.md](../README.md)
+- Архитектура и решения: [docs/DEVELOPMENT.md](../docs/DEVELOPMENT.md)
+- Состояние фич: [docs/projectInfo.md](../docs/projectInfo.md)
+- Конвенции кода: [.junie/guidelines.md](../.junie/guidelines.md)

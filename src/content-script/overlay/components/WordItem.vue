@@ -71,7 +71,7 @@ async function toggleTips(): Promise<void> {
       <p
         v-show="isTipsOpen"
         :id="tipsId"
-        class="m-0 rounded-md bg-black/5 px-3 py-2 dark:bg-white/10"
+        class="m-0 border-l-2 border-line pl-3 text-muted"
       >
         {{ isExplanationLoading ? 'Загрузка…' : explanation || '—' }}
       </p>

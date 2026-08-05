@@ -5,12 +5,11 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 ## Project Overview
 
 **novelTranslator** — браузерное расширение (Manifest V3, Chrome + Firefox) для чтения
-англоязычных новелл на novelbin.com: парсит текст главы, прогоняет через LLM, показывает
-сложные слова/фразы уровня B1 с переводом и объяснением, даёт сохранять выделенное в личный
-словарь (синк через `chrome.storage.sync`).
+англоязычных новелл: собирает текст главы, прогоняет через локальную LLM, показывает сложные
+слова и фразы уровня B1 с переводом и пояснением, подсвечивает их в тексте страницы.
+Работает только на сайтах из списка разрешённых (по умолчанию `novelbin.com`).
 
-Скоуп MVP и что вынесено за него: `docs/projectInfo.md`. Текущий план работ: `plan.md`.
-Шаблон, на котором собран проект: `docs/info.md`, `README.md`.
+Что готово и что дальше — `docs/projectInfo.md`. Архитектура — `docs/DEVELOPMENT.md`.
 
 ## Commands
 
@@ -21,33 +20,45 @@ npm run dev            # обе сразу
 npm run build          # прод-сборка обоих браузеров → dist/chrome, dist/firefox
 npm run typecheck      # vue-tsc --noEmit
 npm run lint           # eslint --fix --cache
+npm test               # node:test через tsx (*.test.ts рядом с кодом)
 npm run lint:manifest  # web-ext lint
 npm run launch         # запустить браузер с загруженным расширением (scripts/launch.ts)
 ```
 
-Расширение грузится из `dist/chrome` / `dist/firefox`.
-
 ## Architecture
 
-Архитектура, структура папок и принципы — `docs/DEVELOPMENT.md`. Кратко:
+- Контексты: `src/background` (service worker), `src/content-script` (оверлей),
+  `src/ui/*` (popup, options, setup), `src/devtools`, `src/offscreen`.
+- File-based routing по `src/ui/*/pages`; общая инициализация страниц — `src/utils/createPage.ts`.
+- UI — **только PrimeVue** + Tailwind 4, компоненты автоимпортируются (`PrimeVueResolver`),
+  тема Aura, тёмная тема по классу `.dark`. Иконки — `lucide-vue-next`.
+- Состояние — Pinia и composables поверх `chrome.storage` (`useBrowserStorage`).
+- Браузерные API — `webextension-polyfill` (promise-стиль).
+- Манифест — `manifest.config.ts` (+ chrome/firefox варианты), сборка — `vite.*.config.ts`.
 
-- Мультиконтекст: `src/background`, `src/content-script`, `src/ui/*` (popup, options, …),
-  `src/devtools`, `src/offscreen`.
-- File-based routing по `src/ui/*/pages`, автоимпорты (компоненты, сторы, composables).
-- Состояние — Pinia (`src/stores`), UI — PrimeVue + Tailwind 4, i18n — vue-i18n (`src/locales`).
-- Кросс-контекстные сообщения — `webext-bridge`, браузерные API — `webextension-polyfill`.
-- Манифест собирается из `manifest.config.ts` (+ `manifest.chrome.config.ts` /
-  `manifest.firefox.config.ts`), сборка — `vite.chrome.config.ts` / `vite.firefox.config.ts`.
-- UI на странице — только Shadow DOM, без iframe (стили сайта не должны ломать карточку).
+Ключевые инварианты (нарушение ломает вёрстку сайта или запросы к модели):
+
+- **Никакого глобального CSS в документ страницы.** Оверлей рендерится в Shadow DOM, стили
+  инлайнятся внутрь (`overlay.css?inline`), стили PrimeVue зеркалятся из `document.head`
+  (`src/content-script/mirrorStyles.ts`), подсветка ставится инлайном на элемент.
+- **PrimeVue Dialog/Popover в оверлее не использовать** — они рендерятся в `document.body`,
+  вне shadow root, и остаются без стилей. Верстать панели вручную.
+- **Запросы к LLM только через background** (`src/utils/bgFetch.ts`): со https-страницы
+  content script не достучится до http-адреса локальной модели.
+- **Адрес модели и ключи — в настройках** (`useLlmSettings`), не в коде: репозиторий публичный.
 
 ## Code Conventions
 
-Обязательны к соблюдению: `.junie/guidelines.md` (типизация, структура Vue-компонентов,
-семантическая вёрстка, именование). Ключевое: строгие типы у `ref`/`computed` и return-типы
-функций, никаких `as Type` — только type guards, ref на DOM через `$`-префикс.
+Обязательны: `.junie/guidelines.md` (типизация, структура компонентов, семантическая вёрстка,
+именование). Ключевое: типы у `ref`/`computed` и return-типы функций, никаких `as Type` —
+только type guards, ref на DOM через `$`-префикс.
+
+Логику с ветвлениями выносить в модуль без браузерных API и покрывать тестом рядом
+(`llmParse.ts` / `matchesSite.ts` — образцы).
 
 ## Agent tooling
 
 - `.claude/skills/` — скиллы (симлинки в `.agents/skills/`, версии в `skills-lock.json`).
+  Полезны: `kill-ai-slop` (есть скрипт `scripts/scan.mjs <dir>`), `design-taste-frontend`.
 - `.claude/commands/opsx/` — команды openspec (propose / apply / archive / explore),
   спеки живут в `openspec/`.
