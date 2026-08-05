@@ -5,6 +5,7 @@ import { createApp, defineComponent, h } from "vue"
 import PrimeVue from "primevue/config"
 import Aura from '@primeuix/themes/aura'
 import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
+import { useAccessSites } from "@/composables/useAccessSites"
 
 // helpers
 function createStartButton(label: string): HTMLButtonElement {
@@ -56,15 +57,23 @@ function unmountOverlay(): void {
   container = null
 }
 
-const btn = createStartButton("Начать работу")
-if (document.body) {
-  // document.body.append(btn)
-  // btn.addEventListener("click", (): void => {
-  //   mountOverlay()
-  //   btn.style.display = "none"
-  // })
-  mountOverlay()
-}
+const { isCurrentSiteAllowed, promise } = useAccessSites()
+
+promise.then(() => {
+  if (isCurrentSiteAllowed()) {
+    const btn = createStartButton("Начать работу")
+    if (document.body) {
+      // document.body.append(btn)
+      // btn.addEventListener("click", (): void => {
+      //   mountOverlay()
+      //   btn.style.display = "none"
+      // })
+      mountOverlay()
+    }
+  } else {
+    console.info("Novel Translator: текущий сайт не в списке разрешенных")
+  }
+})
 
 self.onerror = function (message, source, lineno, colno, error) {
   console.info("Error: " + message)

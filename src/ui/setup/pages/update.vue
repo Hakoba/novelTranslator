@@ -24,7 +24,7 @@ const version = __VERSION__
         Change Log
       </RouterLink>
     </p>
-
+    <access-sites></access-sites>
     <hr />
     <h2>App Routes:</h2>
     <div class="flex flex-wrap gap-2">

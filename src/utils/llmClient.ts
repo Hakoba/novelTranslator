@@ -25,6 +25,7 @@ function isRecord(val: unknown): val is Record<string, unknown> {
 import { sendBgFetch } from '@/utils/bgFetch'
 
 export async function requestDifficultWords(text: string, signal?: AbortSignal): Promise<WordWithExplanation[]> {
+  console.log('requestDifwo!!!')
   const body = {
     model: MODEL,
     temperature: 0.2,

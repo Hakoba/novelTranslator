@@ -1,5 +1,6 @@
 {
   "globals": {
+    "AccessSite": true,
     "BASE_URL": true,
     "BgFetchResponse": true,
     "CONTRACT_PROMPT_WORDS": true,
@@ -176,6 +177,7 @@
     "unref": true,
     "unrefElement": true,
     "until": true,
+    "useAccessSites": true,
     "useActiveElement": true,
     "useAnimate": true,
     "useAppConfig": true,
