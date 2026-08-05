@@ -21,6 +21,7 @@ declare module 'vue-router/auto-routes' {
     '/action-popup/': RouteRecordInfo<'/action-popup/', '/action-popup', Record<never, never>, Record<never, never>>,
     '/options-page/': RouteRecordInfo<'/options-page/', '/options-page', Record<never, never>, Record<never, never>>,
     '/options-page/dictionary': RouteRecordInfo<'/options-page/dictionary', '/options-page/dictionary', Record<never, never>, Record<never, never>>,
+    '/options-page/training': RouteRecordInfo<'/options-page/training', '/options-page/training', Record<never, never>, Record<never, never>>,
     '/setup/install': RouteRecordInfo<'/setup/install', '/setup/install', Record<never, never>, Record<never, never>>,
     '/setup/update': RouteRecordInfo<'/setup/update', '/setup/update', Record<never, never>, Record<never, never>>,
   }

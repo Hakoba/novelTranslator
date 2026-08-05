@@ -1,4 +1,5 @@
 import { OVERLAY_ROOT_ID } from './overlayRoot'
+import { buildTermsPattern, matchedGroupIndex, normalizeTerms } from './terms'
 
 function isElement(node: Node): node is Element {
   return node.nodeType === Node.ELEMENT_NODE
@@ -55,18 +56,45 @@ function walkTextNodes(root: Node): Text[] {
   return result
 }
 
-function escapeRegExp(input: string): string {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+/** Инлайном, а не классом: подсветка живёт в документе сайта, своего CSS мы туда не добавляем */
+const STYLES: Record<HighlightVariant, string> = {
+  new: 'background:rgba(250,204,21,.35);color:inherit;border-radius:2px;padding:0 2px',
+  saved: 'background:rgba(34,197,94,.32);color:inherit;border-radius:2px;padding:0 2px',
 }
 
-function getUniqueTerms(terms: string[]): string[] {
-  const set = new Set<string>()
-  for (const t of terms) {
-    const v = t.trim()
-    if (v) set.add(v)
+export type HighlightVariant = 'new' | 'saved'
+
+function createMark(text: string, variant: HighlightVariant): HTMLElement {
+  const mark = document.createElement('mark')
+  mark.className = 'nt-highlight'
+  mark.setAttribute('data-nt-highlight', '1')
+  mark.style.cssText = STYLES[variant]
+  mark.textContent = text
+
+  return mark
+}
+
+/** Разбираем узел за один проход: собираем фрагмент и меняем его на исходный узел целиком */
+function highlightNode(node: Text, pattern: RegExp, variants: HighlightVariant[]): void {
+  const text = node.nodeValue ?? ''
+  pattern.lastIndex = 0
+
+  const fragment = document.createDocumentFragment()
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) fragment.append(text.slice(lastIndex, match.index))
+
+    const variant = variants[matchedGroupIndex(match)] ?? 'new'
+    fragment.append(createMark(match[0], variant))
+    lastIndex = match.index + match[0].length
   }
-  // сортируем по длине убыв., чтобы фразы подсвечивались прежде коротких слов
-  return Array.from(set).sort((a, b) => b.length - a.length)
+
+  if (!lastIndex) return
+  if (lastIndex < text.length) fragment.append(text.slice(lastIndex))
+
+  node.parentNode?.replaceChild(fragment, node)
 }
 
 export function clearHighlights(): void {
@@ -80,53 +108,29 @@ export function clearHighlights(): void {
   })
 }
 
-export function highlightTerms(terms: string[]): void {
-  clearHighlights()
-  const unique = getUniqueTerms(terms)
-  if (!unique.length) return
+export type HighlightGroup = {
+  terms: string[]
+  variant: HighlightVariant
+}
 
-  const patterns = unique.map((t) => ({
-    term: t,
-    re: new RegExp(escapeRegExp(t), 'gi'),
-  }))
+/**
+ * Все группы ищутся одним проходом: цвет определяется тем, какая скобка шаблона
+ * сработала. Проходить по очереди нельзя — второй проход получил бы уже
+ * нарезанный текст и проверял границу слова не по тому символу.
+ */
+export function highlightTerms(groups: HighlightGroup[]): void {
+  const active = groups
+    .map((group) => ({ variant: group.variant, terms: normalizeTerms(group.terms) }))
+    .filter((group) => group.terms.length)
 
-  const textNodes = walkTextNodes(document.body)
-  for (const tn of textNodes) {
-    let node: Text | null = tn
-    for (const { re } of patterns) {
-      if (!node) break
-      let match: RegExpExecArray | null
-      // we need to repeatedly find matches on current text node
-      while (true) {
-        const text = node?.nodeValue || ''
-        re.lastIndex = 0
-        match = re.exec(text)
-        if (!match || match.index < 0) break
-        const start = match.index
-        const end = start + match[0].length
-        const before = text.slice(0, start)
-        const middle = text.slice(start, end)
-        const after = text.slice(end)
+  const source = buildTermsPattern(active.map((group) => group.terms))
+  if (!source) return
 
-        const mark = document.createElement('mark')
-        mark.className = 'nt-highlight'
-        mark.setAttribute('data-nt-highlight', '1')
-        // инлайном, а не классом: подсветка живёт в документе сайта, своего CSS мы туда не добавляем
-        mark.style.cssText = 'background:rgba(250,204,21,.35);color:inherit;border-radius:2px;padding:0 2px'
-        mark.textContent = middle
+  const pattern = new RegExp(source, 'giu')
+  const variants = active.map((group) => group.variant)
 
-        const parent = node?.parentNode
-        if (!parent) break
-        if (before) parent.insertBefore(document.createTextNode(before), node)
-        parent.insertBefore(mark, node)
-        if (after) parent.insertBefore(document.createTextNode(after), node)
-        parent.removeChild(node as Text)
-
-        // continue on the tail text node (after)
-        const nextNode = mark.nextSibling
-        node = nextNode && isText(nextNode) ? nextNode : null
-        // loop will search re again on the new node
-      }
-    }
+  // список узлов снимаем заранее: замена узла на фрагмент ломает живой обход
+  for (const node of walkTextNodes(document.body)) {
+    highlightNode(node, pattern, variants)
   }
 }
