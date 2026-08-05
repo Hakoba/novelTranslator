@@ -43,7 +43,8 @@ function addToDictionary(word: WordWithExplanation): void {
 <template>
   <section
     class="fixed bottom-4 right-4 flex max-h-[70vh] w-[420px] max-w-[calc(100vw-2rem)] flex-col
-           overflow-hidden rounded-xl border border-line bg-surface text-content shadow-2xl"
+           overflow-hidden rounded-md border border-line bg-surface text-content
+           shadow-[0_2px_12px_rgba(0,0,0,.18)]"
     aria-label="Novel Translator"
   >
     <header class="border-b border-line px-3 py-2">
