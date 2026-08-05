@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { BookmarkPlus } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import type { WordWithExplanation } from '@/types/words'
+import { useDictionary } from '@/composables/useDictionary'
 import { requestExplanation } from '@/utils/llmClient'
-import { extractReadableText } from '@/utils/pageText'
 
-const props = defineProps<{ word: WordWithExplanation }>()
+const props = defineProps<{ word: WordWithExplanation; sourceText: string }>()
 
 const emit = defineEmits<{
   (e: 'addToDictionary', word: WordWithExplanation): void
 }>()
+
+// composables
+const { hasEntry } = useDictionary()
 
 // state
 const isTipsOpen = ref<boolean>(false)
@@ -21,6 +24,7 @@ const explanation = ref<string | undefined>(props.word.explanation)
 const tipsId = computed<string>(
   () => `nt-tips-${props.word.original.replace(/[^a-zA-Z0-9_-]+/g, '-')}`,
 )
+const isSaved = computed<boolean>(() => hasEntry(props.word.original))
 
 // методы
 async function toggleTips(): Promise<void> {
@@ -29,22 +33,20 @@ async function toggleTips(): Promise<void> {
   if (!isTipsOpen.value || explanation.value || isExplanationLoading.value) return
 
   isExplanationLoading.value = true
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 90000)
 
   try {
-    const text = await requestExplanation(
-      props.word.original,
-      extractReadableText(),
-      controller.signal,
-    )
+    const text = await requestExplanation(props.word.original, props.sourceText)
     explanation.value = text || 'Не удалось получить пояснение.'
   } catch {
     explanation.value = 'Не удалось получить пояснение.'
   } finally {
-    clearTimeout(timer)
     isExplanationLoading.value = false
   }
+}
+
+function addToDictionary(): void {
+  // пояснение могли раскрыть уже после разбора главы — сохраняем то, что есть сейчас
+  emit('addToDictionary', { ...props.word, explanation: explanation.value })
 }
 </script>
 
@@ -54,6 +56,12 @@ async function toggleTips(): Promise<void> {
       <p class="m-0 flex flex-wrap items-baseline gap-x-2">
         <span class="font-semibold">{{ word.original }}</span>
         <span class="text-muted">— {{ word.translate }}</span>
+        <span
+          v-if="word.level"
+          class="rounded border border-line px-1 text-xs text-muted"
+        >
+          {{ word.level }}
+        </span>
       </p>
 
       <div>
@@ -83,10 +91,18 @@ async function toggleTips(): Promise<void> {
       text
       rounded
       class="shrink-0"
-      aria-label="Добавить в словарь"
-      @click="emit('addToDictionary', word)"
+      :disabled="isSaved"
+      :aria-label="isSaved ? 'Уже в словаре' : 'Добавить в словарь'"
+      @click="addToDictionary"
     >
-      <BookmarkPlus :size="16" />
+      <BookmarkCheck
+        v-if="isSaved"
+        :size="16"
+      />
+      <BookmarkPlus
+        v-else
+        :size="16"
+      />
     </Button>
   </li>
 </template>

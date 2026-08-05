@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown, ChevronUp, X } from 'lucide-vue-next'
+import { ChevronDown, ChevronUp, SquareDashedMousePointer, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 
@@ -7,10 +7,12 @@ defineProps<{
   isMinimized: boolean
   wordsCount: number
   isLoading: boolean
+  isPicking: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'toggleMinimized'): void
+  (e: 'pickArea'): void
   (e: 'close'): void
 }>()
 </script>
@@ -31,6 +33,18 @@ const emit = defineEmits<{
       severity="info"
       aria-label="Найдено слов"
     />
+
+    <Button
+      text
+      rounded
+      :severity="isPicking ? 'primary' : 'secondary'"
+      size="small"
+      :aria-label="isPicking ? 'Отменить выбор области' : 'Выбрать область с текстом'"
+      title="Выбрать область с текстом"
+      @click="emit('pickArea')"
+    >
+      <SquareDashedMousePointer :size="16" />
+    </Button>
 
     <Button
       text

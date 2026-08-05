@@ -1,4 +1,4 @@
-type Predicate<T> = (value: T) => boolean
+import { OVERLAY_ROOT_ID } from './overlayRoot'
 
 function isElement(node: Node): node is Element {
   return node.nodeType === Node.ELEMENT_NODE
@@ -8,12 +8,9 @@ function isText(node: Node): node is Text {
 }
 
 function isInsideOverlay(node: Node): boolean {
-  let cur: Node | null = isElement(node) ? node : node.parentNode
-  while (cur) {
-    if (isElement(cur) && cur.id === 'novel-translator-overlay-root') return true
-    cur = cur.parentNode
-  }
-  return false
+  const element = isElement(node) ? node : node.parentElement
+
+  return Boolean(element?.closest(`#${OVERLAY_ROOT_ID}`))
 }
 
 function shouldSkipElement(el: Element): boolean {
@@ -27,26 +24,34 @@ function shouldSkipElement(el: Element): boolean {
   return ariaHidden || hidden
 }
 
-function walkTextNodes(root: Node, predicate?: Predicate<Text>): Text[] {
+function walkTextNodes(root: Node): Text[] {
   const result: Text[] = []
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT)
+  // FILTER_REJECT отсекает всё поддерево: иначе обход спускается внутрь script и style
+  // и подсветка встраивает <mark> прямо в их содержимое
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+    acceptNode: (node: Node): number => {
+      if (isElement(node)) {
+        return shouldSkipElement(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP
+      }
+
+      return NodeFilter.FILTER_ACCEPT
+    },
+  })
+
   while (true) {
     const node = walker.nextNode()
     if (!node) break
-    if (isElement(node)) {
-      if (shouldSkipElement(node)) walker.currentNode = node // continue; children will be skipped by style but keep walking
-      continue
-    }
-    if (isText(node)) {
-      const parent = node.parentElement
-      if (!parent) continue
-      if (isInsideOverlay(parent)) continue
-      if (parent.getAttribute('data-nt-highlight') === '1') continue
-      const text = node.nodeValue || ''
-      if (text.trim().length === 0) continue
-      if (!predicate || predicate(node)) result.push(node)
-    }
+    if (!isText(node)) continue
+
+    const parent = node.parentElement
+    if (!parent) continue
+    if (isInsideOverlay(parent)) continue
+    if (parent.getAttribute('data-nt-highlight') === '1') continue
+    if ((node.nodeValue ?? '').trim().length === 0) continue
+
+    result.push(node)
   }
+
   return result
 }
 

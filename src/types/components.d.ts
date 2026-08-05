@@ -14,10 +14,12 @@ declare module 'vue' {
     AccessSites: typeof import('./../components/accessSites.vue')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
+    DataView: typeof import('primevue/dataview')['default']
     InputText: typeof import('primevue/inputtext')['default']
     Message: typeof import('primevue/message')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Select: typeof import('primevue/select')['default']
     ThemeSwitch: typeof import('./../components/ThemeSwitch.vue')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
   }

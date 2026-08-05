@@ -5,8 +5,7 @@ import Aura from "@primeuix/themes/aura"
 import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 import { useAccessSites } from "@/composables/useAccessSites"
 import { mirrorPrimeVueStyles } from "@/content-script/mirrorStyles"
-
-const HOST_ID = "novel-translator-overlay-root"
+import { OVERLAY_ROOT_ID } from "@/utils/overlayRoot"
 
 let app: ReturnType<typeof createApp> | null = null
 let host: HTMLDivElement | null = null
@@ -18,7 +17,7 @@ let stopMirror: (() => void) | null = null
  */
 function createHost(): { host: HTMLDivElement; mount: HTMLDivElement; root: ShadowRoot } {
   const el = document.createElement("div")
-  el.id = HOST_ID
+  el.id = OVERLAY_ROOT_ID
 
   const root = el.attachShadow({ mode: "open" })
 

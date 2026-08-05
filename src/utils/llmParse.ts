@@ -1,4 +1,4 @@
-import type { WordWithExplanation } from '@/types/words'
+import { CEFR_LEVELS, type CefrLevel, type WordWithExplanation } from '@/types/words'
 
 // Разбор ответов LLM. Без зависимостей от браузерных API — чтобы можно было тестировать в node.
 
@@ -14,6 +14,14 @@ export function extractContent(data: unknown): string {
   return isObject(first) && isObject(first.message) && typeof first.message.content === 'string'
     ? first.message.content
     : ''
+}
+
+/** Уровень модель пишет как придётся: «b2», « B2 », «B2 (upper-intermediate)» — берём только точное совпадение */
+function parseLevel(value: unknown): CefrLevel | undefined {
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim().toUpperCase()
+
+  return CEFR_LEVELS.find((level) => level === normalized)
 }
 
 /**
@@ -35,10 +43,13 @@ export function parseWords(content: string): WordWithExplanation[] {
 
   return parsed
     .filter(isObject)
-    .map((o) => {
+    .map((o): WordWithExplanation | undefined => {
       const original = typeof o['original'] === 'string' ? o['original'] : ''
       const translate = typeof o['translate'] === 'string' ? o['translate'] : ''
-      return original && translate ? { original, translate } : undefined
+      if (!original || !translate) return undefined
+
+      const level = parseLevel(o['level'])
+      return level ? { original, translate, level } : { original, translate }
     })
     .filter((v): v is WordWithExplanation => typeof v !== 'undefined')
 }

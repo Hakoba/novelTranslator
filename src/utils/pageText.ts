@@ -1,58 +1,32 @@
+import { getAreaSelector } from '@/composables/useAreaSelectors'
+import { joinBlocks, normalizeWhitespace } from './extract/blocks'
+import { findRule } from './extract/rules'
+import { pickBestIndex, type CandidateStats } from './extract/score'
+
 const TEXT_TAGS = 'p, li, h1, h2, h3, h4, h5, h6, blockquote'
+
+/** Куда обычно кладут текст сайты с семантической вёрсткой */
 const CONTAINER_SELECTORS = [
-  '.cha-words',
-  '.cha-content',
-  '#chapterContent',
-  '.chapter-content',
-  '.chr-c',
-  '#chr-content',
-  '.entry-content',
   'article',
   'main',
   '[role="main"]',
+  '.entry-content',
+  '.post-content',
+  '#content',
+  '.chapter-content',
+  '#chapterContent',
 ] as const
-const MIN_LINE_LENGTH = 30
-const MAX_CHARS = 8000
 
-function normalizeWhitespace(input: string): string {
-  return input.replace(/\s+/g, ' ').trim()
-}
+/** Минимум абзацев, чтобы безымянный div сошёл за контейнер главы */
+const MIN_PARAGRAPHS = 3
 
-/**
- * Одна и та же строка приходит несколько раз: сайты дублируют абзацы в скрытых
- * блоках, а вложенные li/p дают текст родителя ещё раз. Модели это стоит токенов.
- */
-export function dedupeBlocks(blocks: string[]): string[] {
-  const seen = new Set<string>()
-
-  return blocks.filter((block) => {
-    if (seen.has(block)) return false
-    seen.add(block)
-
-    return true
-  })
-}
-
-/** Из кандидатов берём тот, в котором больше всего текста абзацев — это и есть глава */
-function findContentRoot(): Element {
-  const candidates = CONTAINER_SELECTORS.flatMap((selector) =>
-    Array.from(document.querySelectorAll(selector)),
-  )
-
-  let best: Element = document.body
-  let bestLength = 0
-
-  for (const candidate of candidates) {
-    const length = Array.from(candidate.querySelectorAll(TEXT_TAGS))
-      .reduce((sum, el) => sum + (el.textContent?.length ?? 0), 0)
-
-    if (length > bestLength) {
-      best = candidate
-      bestLength = length
-    }
+function queryAll(selector: string): Element[] {
+  try {
+    return Array.from(document.querySelectorAll(selector))
+  } catch {
+    // селектор мог прийти из настроек и оказаться невалидным
+    return []
   }
-
-  return best
 }
 
 function isHidden(element: Element): boolean {
@@ -62,17 +36,63 @@ function isHidden(element: Element): boolean {
   return styles.display === 'none' || styles.visibility === 'hidden'
 }
 
-export function extractReadableText(): string {
-  const root = findContentRoot()
-
-  const blocks = Array.from(root.querySelectorAll(TEXT_TAGS))
-    // вложенный абзац отдаёт свой текст сам, иначе родитель продублирует его
+/**
+ * Берём только листовые текстовые элементы: вложенный абзац отдаёт свой текст сам,
+ * иначе родитель продублирует его целиком.
+ */
+function collectBlocks(root: Element): string[] {
+  const leaves = Array.from(root.querySelectorAll(TEXT_TAGS))
     .filter((element) => !element.querySelector(TEXT_TAGS))
+
+  // у комментариев и коротких постов абзацев внутри может не быть вовсе
+  const elements = leaves.length ? leaves : [root]
+
+  return elements
     .filter((element) => !isHidden(element))
     .map((element) => normalizeWhitespace(element.textContent ?? ''))
-    .filter((text) => text.length >= MIN_LINE_LENGTH)
+}
 
-  const joined = dedupeBlocks(blocks).join('\n')
+function statsOf(element: Element): CandidateStats {
+  const linkTextLength = Array.from(element.querySelectorAll('a'))
+    .reduce((sum, link) => sum + (link.textContent?.length ?? 0), 0)
 
-  return joined.length > MAX_CHARS ? joined.slice(0, MAX_CHARS) : joined
+  return {
+    textLength: collectBlocks(element).join(' ').length,
+    linkTextLength,
+  }
+}
+
+function collectCandidates(): Element[] {
+  const bySelector = CONTAINER_SELECTORS.flatMap(queryAll)
+  // на сайтах без семантической вёрстки главу держит безымянный div — ищем по абзацам внутри
+  const byParagraphs = Array.from(document.querySelectorAll('div, section'))
+    .filter((element) => element.querySelectorAll(':scope > p').length >= MIN_PARAGRAPHS)
+
+  return Array.from(new Set([...bySelector, ...byParagraphs]))
+}
+
+/**
+ * Три источника по убыванию доверия: выбранная пользователем область →
+ * правило для сайта → общий скоринг по плотности текста.
+ */
+async function findContentRoots(): Promise<Element[]> {
+  const manualSelector = await getAreaSelector(location.host)
+  const manual = manualSelector ? queryAll(manualSelector) : []
+  if (manual.length) return manual
+
+  const rule = findRule(location.host)
+  const byRule = rule ? rule.selectors.flatMap(queryAll) : []
+  if (byRule.length) return byRule
+
+  const candidates = collectCandidates()
+  const bestIndex = pickBestIndex(candidates.map(statsOf))
+  const best = candidates[bestIndex]
+
+  return best ? [best] : [document.body]
+}
+
+export async function extractReadableText(): Promise<string> {
+  const roots = await findContentRoots()
+
+  return joinBlocks(roots.flatMap(collectBlocks))
 }
