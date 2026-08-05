@@ -1,0 +1,29 @@
+schema: spec-driven
+
+context: |
+  novelTranslator — браузерное расширение (Manifest V3, Chrome + Firefox) для чтения
+  англоязычных новелл: парсит главу, через LLM достаёт сложные слова/фразы уровня B1
+  с переводом на русский, сохраняет их в личный словарь (chrome.storage.sync).
+  Основной сайт — novelbin.com.
+  Стек: Vue 3 (script setup) + TypeScript + Vite + Pinia + PrimeVue + Tailwind 4,
+  webext-bridge / webextension-polyfill, UI на странице только через Shadow DOM.
+  Конвенции кода — .junie/guidelines.md, архитектура — docs/DEVELOPMENT.md, обзор — CLAUDE.md.
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
