@@ -8,8 +8,6 @@
 // biome-ignore lint: disable
 export {}
 declare global {
-  const BASE_URL: typeof import('../utils/llmClient')['BASE_URL']
-  const CONTRACT_PROMPT: typeof import('../utils/llmClient')['CONTRACT_PROMPT']
   const CONTRACT_PROMPT_WORDS: typeof import('../utils/llmClient').CONTRACT_PROMPT_WORDS
   const CREATE_TABLES: typeof import('../utils/ankiSchema').CREATE_TABLES
   const DECK_NAME: typeof import('../utils/ankiSchema').DECK_NAME
@@ -18,19 +16,16 @@ declare global {
   const DEFAULT_DICT_SETTINGS: typeof import('../composables/useDictSettings').DEFAULT_DICT_SETTINGS
   const DEFAULT_LLM_SETTINGS: typeof import('../composables/useLlmSettings').DEFAULT_LLM_SETTINGS
   const DEFAULT_READER_SETTINGS: typeof import('../composables/useReaderSettings').DEFAULT_READER_SETTINGS
-  const DEFAULT_TEXT: typeof import('../utils/llmClient')['DEFAULT_TEXT']
   const EMPTY_FILTERS: typeof import('../utils/dictionary').EMPTY_FILTERS
   const EffectScope: typeof import('vue').EffectScope
   const FIELD_NAMES: typeof import('../utils/ankiSchema').FIELD_NAMES
   const HAS_DEV_YANDEX_CREDENTIALS: typeof import('../composables/useLlmSettings').HAS_DEV_YANDEX_CREDENTIALS
   const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
-  const MAX_CHARS: typeof import('../utils/extract/blocks').MAX_CHARS
-  const MIN_LINE_LENGTH: typeof import('../utils/extract/blocks').MIN_LINE_LENGTH
-  const MODEL: typeof import('../utils/llmClient')['MODEL']
   const MODEL_NAME: typeof import('../utils/ankiSchema').MODEL_NAME
   const OVERLAY_ROOT_ID: typeof import('../utils/overlayRoot').OVERLAY_ROOT_ID
   const REQUEST_TIMEOUT_MS: typeof import('../utils/llmClient').REQUEST_TIMEOUT_MS
   const SITE_RULES: typeof import('../utils/extract/rules').SITE_RULES
+  const TRANSLATE_ATTR: typeof import('../utils/highlight').TRANSLATE_ATTR
   const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
   const YANDEX_DICT_KEY_URL: typeof import('../composables/useDictSettings').YANDEX_DICT_KEY_URL
   const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
@@ -39,13 +34,11 @@ declare global {
   const applyTheme: typeof import('../composables/useTheme').applyTheme
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
-  const avatarGroupInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useAvatarGroup.js')['avatarGroupInjectionKey']
   const browser: typeof import('webextension-polyfill')
   const buildApkg: typeof import('../utils/anki').buildApkg
   const buildDeck: typeof import('../utils/ankiSchema').buildDeck
   const buildModel: typeof import('../utils/ankiSchema').buildModel
   const buildTermsPattern: typeof import('../utils/terms').buildTermsPattern
-  const buttonGroupInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useButtonGroup.js')['buttonGroupInjectionKey']
   const clearHighlights: typeof import('../utils/highlight').clearHighlights
   const collectLevels: typeof import('../utils/dictionary').collectLevels
   const computed: typeof import('vue').computed
@@ -74,27 +67,18 @@ declare global {
   const dedupeBlocks: typeof import('../utils/extract/blocks').dedupeBlocks
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
-  const defineLocale: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineLocale.js')['defineLocale']
   const definePage: typeof import('vue-router/auto').definePage
-  const defineShortcuts: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineShortcuts.js')['defineShortcuts']
   const defineStore: typeof import('pinia').defineStore
   const dictionaryLinks: typeof import('../utils/dict/links').dictionaryLinks
   const dueEntries: typeof import('../utils/srs').dueEntries
   const eagerComputed: typeof import('@vueuse/core').eagerComputed
   const effectScope: typeof import('vue').effectScope
-  const extendLocale: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineLocale.js')['extendLocale']
   const extendRef: typeof import('@vueuse/core').extendRef
   const extractContent: typeof import('../utils/llmParse').extractContent
   const extractReadableText: typeof import('../utils/pageText').extractReadableText
-  const extractShortcuts: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineShortcuts.js')['extractShortcuts']
   const findRule: typeof import('../utils/extract/rules').findRule
   const findSentence: typeof import('../utils/sentence').findSentence
   const firstTranslation: typeof import('../utils/dict/parse').firstTranslation
-  const formBusInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formBusInjectionKey']
-  const formFieldInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formFieldInjectionKey']
-  const formInputsInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formInputsInjectionKey']
-  const formLoadingInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formLoadingInjectionKey']
-  const formOptionsInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['formOptionsInjectionKey']
   const getActivePinia: typeof import('pinia').getActivePinia
   const getAreaSelector: typeof import('../composables/useAreaSelectors').getAreaSelector
   const getCurrentInstance: typeof import('vue').getCurrentInstance
@@ -105,11 +89,9 @@ declare global {
   const getReaderSettings: typeof import('../composables/useReaderSettings').getReaderSettings
   const h: typeof import('vue').h
   const highlightTerms: typeof import('../utils/highlight').highlightTerms
-  const i18n: typeof import('../utils/i18n')['i18n']
   const ignorableWatch: typeof import('@vueuse/core').ignorableWatch
   const inject: typeof import('vue').inject
   const injectLocal: typeof import('@vueuse/core').injectLocal
-  const inputIdInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['inputIdInjectionKey']
   const intervalDays: typeof import('../utils/srs').intervalDays
   const isDefined: typeof import('@vueuse/core').isDefined
   const isProxy: typeof import('vue').isProxy
@@ -119,9 +101,7 @@ declare global {
   const isShallow: typeof import('vue').isShallow
   const isValidUrl: typeof import('../composables/matchesSite').isValidUrl
   const joinBlocks: typeof import('../utils/extract/blocks').joinBlocks
-  const kbdKeysMap: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useKbd.js')['kbdKeysMap']
   const levelFilterOptions: typeof import('../utils/dictionary').levelFilterOptions
-  const localeContextInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useLocale.js')['localeContextInjectionKey']
   const lookupFreeDictionary: typeof import('../utils/dictClient').lookupFreeDictionary
   const lookupTerm: typeof import('../utils/dictClient').lookupTerm
   const lookupYandex: typeof import('../utils/dictClient').lookupYandex
@@ -162,13 +142,14 @@ declare global {
   const onUnmounted: typeof import('vue').onUnmounted
   const onUpdated: typeof import('vue').onUpdated
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const parseApkg: typeof import('../utils/anki').parseApkg
   const parseFreeDictionary: typeof import('../utils/dict/parse').parseFreeDictionary
   const parseWords: typeof import('../utils/llmParse').parseWords
   const parseYandexLookup: typeof import('../utils/dict/parse').parseYandexLookup
   const pausableWatch: typeof import('@vueuse/core').pausableWatch
   const pickBestIndex: typeof import('../utils/extract/score').pickBestIndex
   const pinia: typeof import('../utils/pinia').pinia
-  const portalTargetInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/usePortal.js')['portalTargetInjectionKey']
+  const promise: typeof import('../composables/useReaderSettings').promise
   const provide: typeof import('vue').provide
   const provideLocal: typeof import('@vueuse/core').provideLocal
   const queryEntries: typeof import('../utils/dictionary').queryEntries
@@ -200,9 +181,9 @@ declare global {
   const shallowReadonly: typeof import('vue').shallowReadonly
   const shallowRef: typeof import('vue').shallowRef
   const storeToRefs: typeof import('pinia').storeToRefs
+  const stripHtml: typeof import('../utils/anki').stripHtml
   const syncRef: typeof import('@vueuse/core').syncRef
   const syncRefs: typeof import('@vueuse/core').syncRefs
-  const t: typeof import('vue-i18n')['t']
   const templateRef: typeof import('@vueuse/core').templateRef
   const throttledRef: typeof import('@vueuse/core').throttledRef
   const throttledWatch: typeof import('@vueuse/core').throttledWatch
@@ -225,7 +206,6 @@ declare global {
   const useActiveElement: typeof import('@vueuse/core').useActiveElement
   const useAnimate: typeof import('@vueuse/core').useAnimate
   const useAnkiExport: typeof import('../composables/useAnkiExport').useAnkiExport
-  const useAppConfig: typeof import('../../node_modules/@nuxt/ui/dist/runtime/vue/composables/useAppConfig.js')['useAppConfig']
   const useAreaSelectors: typeof import('../composables/useAreaSelectors').useAreaSelectors
   const useArrayDifference: typeof import('@vueuse/core').useArrayDifference
   const useArrayEvery: typeof import('@vueuse/core').useArrayEvery
@@ -242,7 +222,6 @@ declare global {
   const useAsyncQueue: typeof import('@vueuse/core').useAsyncQueue
   const useAsyncState: typeof import('@vueuse/core').useAsyncState
   const useAttrs: typeof import('vue').useAttrs
-  const useAvatarGroup: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useAvatarGroup.js')['useAvatarGroup']
   const useBase64: typeof import('@vueuse/core').useBase64
   const useBattery: typeof import('@vueuse/core').useBattery
   const useBluetooth: typeof import('@vueuse/core').useBluetooth
@@ -251,13 +230,11 @@ declare global {
   const useBrowserLocalStorage: typeof import('../composables/useBrowserStorage').useBrowserLocalStorage
   const useBrowserLocation: typeof import('@vueuse/core').useBrowserLocation
   const useBrowserSyncStorage: typeof import('../composables/useBrowserStorage').useBrowserSyncStorage
-  const useButtonGroup: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useButtonGroup.js')['useButtonGroup']
   const useCached: typeof import('@vueuse/core').useCached
   const useClipboard: typeof import('@vueuse/core').useClipboard
   const useClipboardItems: typeof import('@vueuse/core').useClipboardItems
   const useCloned: typeof import('@vueuse/core').useCloned
   const useColorMode: typeof import('@vueuse/core').useColorMode
-  const useComponentIcons: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useComponentIcons.js')['useComponentIcons']
   const useConfirmDialog: typeof import('@vueuse/core').useConfirmDialog
   const useCountdown: typeof import('@vueuse/core').useCountdown
   const useCounter: typeof import('@vueuse/core').useCounter
@@ -295,15 +272,13 @@ declare global {
   const useFetch: typeof import('@vueuse/core').useFetch
   const useFileDialog: typeof import('@vueuse/core').useFileDialog
   const useFileSystemAccess: typeof import('@vueuse/core').useFileSystemAccess
-  const useFileUpload: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFileUpload.js')['useFileUpload']
   const useFocus: typeof import('@vueuse/core').useFocus
   const useFocusWithin: typeof import('@vueuse/core').useFocusWithin
-  const useFormField: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['useFormField']
   const useFps: typeof import('@vueuse/core').useFps
   const useFullscreen: typeof import('@vueuse/core').useFullscreen
   const useGamepad: typeof import('@vueuse/core').useGamepad
   const useGeolocation: typeof import('@vueuse/core').useGeolocation
-  const useI18n: typeof import('vue-i18n')['useI18n']
+  const useHighlightHover: typeof import('../composables/useHighlightHover').useHighlightHover
   const useId: typeof import('vue').useId
   const useIdle: typeof import('@vueuse/core').useIdle
   const useImage: typeof import('@vueuse/core').useImage
@@ -311,13 +286,11 @@ declare global {
   const useIntersectionObserver: typeof import('@vueuse/core').useIntersectionObserver
   const useInterval: typeof import('@vueuse/core').useInterval
   const useIntervalFn: typeof import('@vueuse/core').useIntervalFn
-  const useKbd: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useKbd.js')['useKbd']
   const useKeyModifier: typeof import('@vueuse/core').useKeyModifier
   const useLastChanged: typeof import('@vueuse/core').useLastChanged
   const useLink: typeof import('vue-router').useLink
   const useLlmSettings: typeof import('../composables/useLlmSettings').useLlmSettings
   const useLocalStorage: typeof import('@vueuse/core').useLocalStorage
-  const useLocale: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useLocale.js')['useLocale']
   const useMagicKeys: typeof import('@vueuse/core').useMagicKeys
   const useManualRefHistory: typeof import('@vueuse/core').useManualRefHistory
   const useMediaControls: typeof import('@vueuse/core').useMediaControls
@@ -336,8 +309,6 @@ declare global {
   const useObjectUrl: typeof import('@vueuse/core').useObjectUrl
   const useOffsetPagination: typeof import('@vueuse/core').useOffsetPagination
   const useOnline: typeof import('@vueuse/core').useOnline
-  const useOptionsStore: typeof import('../stores/options.store')['useOptionsStore']
-  const useOverlay: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useOverlay.js')['useOverlay']
   const usePageLeave: typeof import('@vueuse/core').usePageLeave
   const useParallax: typeof import('@vueuse/core').useParallax
   const useParentElement: typeof import('@vueuse/core').useParentElement
@@ -346,7 +317,6 @@ declare global {
   const usePointer: typeof import('@vueuse/core').usePointer
   const usePointerLock: typeof import('@vueuse/core').usePointerLock
   const usePointerSwipe: typeof import('@vueuse/core').usePointerSwipe
-  const usePortal: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/usePortal.js')['usePortal']
   const usePreferredColorScheme: typeof import('@vueuse/core').usePreferredColorScheme
   const usePreferredContrast: typeof import('@vueuse/core').usePreferredContrast
   const usePreferredDark: typeof import('@vueuse/core').usePreferredDark
@@ -380,7 +350,6 @@ declare global {
   const useSwipe: typeof import('@vueuse/core').useSwipe
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTemplateRefsList: typeof import('@vueuse/core').useTemplateRefsList
-  const useTestStore: typeof import('../stores/test.store')['useTestStore']
   const useTextDirection: typeof import('@vueuse/core').useTextDirection
   const useTextSelection: typeof import('../composables/useTextSelection').useTextSelection
   const useTextareaAutosize: typeof import('@vueuse/core').useTextareaAutosize
@@ -396,7 +365,6 @@ declare global {
   const useTitle: typeof import('@vueuse/core').useTitle
   const useToNumber: typeof import('@vueuse/core').useToNumber
   const useToString: typeof import('@vueuse/core').useToString
-  const useToast: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useToast.js')['useToast']
   const useToggle: typeof import('@vueuse/core').useToggle
   const useTransition: typeof import('@vueuse/core').useTransition
   const useUrlSearchParams: typeof import('@vueuse/core').useUrlSearchParams
@@ -449,6 +417,9 @@ declare global {
   export type { NewDictionaryEntry } from '../composables/useDictionary'
   import('../composables/useDictionary')
   // @ts-ignore
+  export type { HoverHint } from '../composables/useHighlightHover'
+  import('../composables/useHighlightHover')
+  // @ts-ignore
   export type { LlmSettings } from '../composables/useLlmSettings'
   import('../composables/useLlmSettings')
   // @ts-ignore
@@ -461,7 +432,7 @@ declare global {
   export type { ThemeMode } from '../composables/useTheme'
   import('../composables/useTheme')
   // @ts-ignore
-  export type { ApkgOptions } from '../utils/anki'
+  export type { ApkgOptions, ImportedNote } from '../utils/anki'
   import('../utils/anki')
   // @ts-ignore
   export type { BgFetchResponse, BgFetchInit } from '../utils/bgFetch'
@@ -482,7 +453,7 @@ declare global {
   export type { CandidateStats } from '../utils/extract/score'
   import('../utils/extract/score')
   // @ts-ignore
-  export type { HighlightVariant, HighlightGroup } from '../utils/highlight'
+  export type { HighlightVariant, HighlightTerm, HighlightGroup } from '../utils/highlight'
   import('../utils/highlight')
   // @ts-ignore
   export type { ReviewProgress } from '../utils/srs'
@@ -511,6 +482,7 @@ declare module 'vue' {
     readonly OVERLAY_ROOT_ID: UnwrapRef<typeof import('../utils/overlayRoot')['OVERLAY_ROOT_ID']>
     readonly REQUEST_TIMEOUT_MS: UnwrapRef<typeof import('../utils/llmClient')['REQUEST_TIMEOUT_MS']>
     readonly SITE_RULES: UnwrapRef<typeof import('../utils/extract/rules')['SITE_RULES']>
+    readonly TRANSLATE_ATTR: UnwrapRef<typeof import('../utils/highlight')['TRANSLATE_ATTR']>
     readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
     readonly YANDEX_DICT_KEY_URL: UnwrapRef<typeof import('../composables/useDictSettings')['YANDEX_DICT_KEY_URL']>
     readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
@@ -627,12 +599,14 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly parseApkg: UnwrapRef<typeof import('../utils/anki')['parseApkg']>
     readonly parseFreeDictionary: UnwrapRef<typeof import('../utils/dict/parse')['parseFreeDictionary']>
     readonly parseWords: UnwrapRef<typeof import('../utils/llmParse')['parseWords']>
     readonly parseYandexLookup: UnwrapRef<typeof import('../utils/dict/parse')['parseYandexLookup']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly pickBestIndex: UnwrapRef<typeof import('../utils/extract/score')['pickBestIndex']>
     readonly pinia: UnwrapRef<typeof import('../utils/pinia')['pinia']>
+    readonly promise: UnwrapRef<typeof import('../composables/useReaderSettings')['promise']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
     readonly queryEntries: UnwrapRef<typeof import('../utils/dictionary')['queryEntries']>
@@ -664,6 +638,7 @@ declare module 'vue' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
+    readonly stripHtml: UnwrapRef<typeof import('../utils/anki')['stripHtml']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
@@ -760,6 +735,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
+    readonly useHighlightHover: UnwrapRef<typeof import('../composables/useHighlightHover')['useHighlightHover']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>

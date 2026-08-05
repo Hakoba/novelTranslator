@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { BookA, Check, Download, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
+import { BookA, Check, Download, Pencil, Plus, Trash2, Upload, X } from 'lucide-vue-next'
+// путь до wasm даёт сборщик: в расширении относительные пути sql.js не находит
+import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
+import { parseApkg } from '@/utils/anki'
 import LookupPanel from '@/components/LookupPanel.vue'
 import { firstTranslation } from '@/utils/dict/parse'
 import { lookupTerm } from '@/utils/dictClient'
@@ -37,6 +40,12 @@ const editedTranslate = ref<string>('')
 const lookupId = ref<string>('')
 const isFormOpen = ref<boolean>(false)
 const isSuggesting = ref<boolean>(false)
+const importState = ref<{ busy: boolean; message: string; failed: boolean }>({
+  busy: false,
+  message: '',
+  failed: false,
+})
+const $file = ref<HTMLInputElement | undefined>(undefined)
 const draft = ref<{ original: string; translate: string; level: CefrLevel | null }>({
   original: '',
   translate: '',
@@ -92,6 +101,42 @@ async function suggestTranslation(force = false): Promise<void> {
   }
 }
 
+/** Дубли отсекает сам словарь: `addEntry` ищет запись по нормализованному слову */
+async function importFromAnki(event: Event): Promise<void> {
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
+
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+
+  importState.value = { busy: true, message: '', failed: false }
+
+  try {
+    const known = new Set(entries.value.map((entry) => normalizeTerm(entry.original)))
+    const notes = await parseApkg(new Uint8Array(await file.arrayBuffer()), {
+      locateFile: () => sqlWasmUrl,
+    })
+
+    notes.forEach((note) => addEntry(note))
+    const added = notes.filter((note) => !known.has(normalizeTerm(note.original))).length
+
+    importState.value = {
+      busy: false,
+      failed: false,
+      message: added
+        ? `Добавлено слов: ${added}, уже было: ${notes.length - added}`
+        : `Все ${notes.length} слов(а) уже в словаре`,
+    }
+  } catch (error) {
+    importState.value = {
+      busy: false,
+      failed: true,
+      message: error instanceof Error ? error.message : 'Не удалось прочитать колоду',
+    }
+  }
+}
+
 function submitDraft(): void {
   if (!isDraftValid.value) return
 
@@ -128,6 +173,25 @@ function submitDraft(): void {
           <Button
             size="small"
             severity="secondary"
+            outlined
+            :disabled="importState.busy"
+            :label="importState.busy ? 'Читаю колоду…' : 'Из Anki'"
+            @click="$file?.click()"
+          >
+            <template #icon>
+              <Upload :size="16" />
+            </template>
+          </Button>
+          <input
+            ref="$file"
+            type="file"
+            accept=".apkg"
+            class="hidden"
+            @change="importFromAnki"
+          >
+          <Button
+            size="small"
+            severity="secondary"
             :label="isFormOpen ? 'Отмена' : 'Добавить слово'"
             @click="isFormOpen = !isFormOpen"
           >
@@ -158,6 +222,14 @@ function submitDraft(): void {
           :closable="false"
         >
           {{ exportError }}
+        </Message>
+
+        <Message
+          v-if="importState.message"
+          :severity="importState.failed ? 'error' : 'success'"
+          :closable="false"
+        >
+          {{ importState.message }}
         </Message>
 
         <form

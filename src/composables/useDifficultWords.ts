@@ -31,7 +31,7 @@ export function useDifficultWords(): {
     sourceText.value = ''
 
     if (!parsedText) {
-      errorMessage.value = 'На странице не нашлось текста главы'
+      errorMessage.value = 'На странице не нашлось текста для разбора'
       return
     }
 

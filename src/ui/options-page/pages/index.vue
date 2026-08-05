@@ -49,7 +49,7 @@ function applyYandexPreset(): void {
         />
         <small class="text-muted">
           При B2 модель отдаёт только C1 и выше. Уровень уходит в запрос, а не фильтрует
-          ответ на месте, — поэтому смена уровня видна после следующего разбора главы.
+          ответ на месте, — поэтому смена уровня видна после следующего разбора.
         </small>
       </div>
     </template>
@@ -111,6 +111,20 @@ function applyYandexPreset(): void {
             placeholder="для локальной модели не нужен"
           />
         </div>
+
+        <div class="flex items-center gap-2">
+          <ToggleSwitch
+            v-model="readerSettings.autoAnalyze"
+            input-id="auto-analyze"
+          />
+          <label for="auto-analyze">
+            Разбирать страницу сразу при открытии
+          </label>
+        </div>
+        <small class="-mt-2 text-muted">
+          Выключено — оверлей ждёт кнопки «Разобрать страницу». Подсветка сохранённых слов
+          и переводы при наведении работают и без модели.
+        </small>
 
         <div class="flex flex-wrap gap-2">
           <Button

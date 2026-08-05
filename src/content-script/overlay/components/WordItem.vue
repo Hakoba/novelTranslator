@@ -45,7 +45,7 @@ async function loadExplanation(): Promise<void> {
 }
 
 function addToDictionary(): void {
-  // пояснение могли раскрыть уже после разбора главы — сохраняем то, что есть сейчас
+  // пояснение могли раскрыть уже после разбора — сохраняем то, что есть сейчас
   emit('addToDictionary', { ...props.word, explanation: explanation.value })
 }
 </script>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Check, X } from 'lucide-vue-next'
 import { useDictionary } from '@/composables/useDictionary'
 import { countNew, dueEntries, nextDueAt, reviewEntry } from '@/utils/srs'
@@ -57,6 +57,46 @@ function answer(isKnown: boolean): void {
   isAnswerVisible.value = false
   currentIndex.value += 1
 }
+
+/**
+ * Пробел показывает перевод, 1/2 — оценка. Enter начинает следующую пачку,
+ * когда карточек на экране нет.
+ */
+function onKeyDown(event: KeyboardEvent): void {
+  if (event.metaKey || event.ctrlKey || event.altKey) return
+
+  if (!current.value) {
+    if (event.key === 'Enter' && dueCount.value) {
+      event.preventDefault()
+      startSession()
+    }
+
+    return
+  }
+
+  if (!isAnswerVisible.value) {
+    if (event.key !== ' ' && event.key !== 'Enter') return
+
+    // иначе пробел заодно нажмёт сфокусированную кнопку и пролистает карточку
+    event.preventDefault()
+    isAnswerVisible.value = true
+
+    return
+  }
+
+  if (event.key === '1') answer(false)
+  else if (event.key === '2') answer(true)
+  else if (event.key === ' ' || event.key === 'Enter') event.preventDefault()
+}
+
+// lifecycle
+onMounted((): void => {
+  window.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted((): void => {
+  window.removeEventListener('keydown', onKeyDown)
+})
 </script>
 
 <template>
@@ -184,6 +224,10 @@ function answer(isKnown: boolean): void {
               </Button>
             </template>
           </div>
+
+          <p class="m-0 text-center text-sm text-muted">
+            {{ isAnswerVisible ? '1 — не знал, 2 — знал' : 'Пробел — показать перевод' }}
+          </p>
         </div>
 
         <div

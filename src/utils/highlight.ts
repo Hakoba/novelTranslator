@@ -1,3 +1,4 @@
+import { normalizeTerm } from './dictionary'
 import { OVERLAY_ROOT_ID } from './overlayRoot'
 import { buildTermsPattern, matchedGroupIndex, normalizeTerms } from './terms'
 
@@ -57,25 +58,38 @@ function walkTextNodes(root: Node): Text[] {
 }
 
 /** Инлайном, а не классом: подсветка живёт в документе сайта, своего CSS мы туда не добавляем */
+/** Перевод для тултипа: читает `useHighlightHover` при наведении */
+export const TRANSLATE_ATTR = 'data-nt-translate'
+
+// cursor:help, а не pointer: клик по слову ничего не делает, есть только тултип
+const BASE_STYLE = 'color:inherit;border-radius:2px;padding:0 2px;cursor:help'
+
 const STYLES: Record<HighlightVariant, string> = {
-  new: 'background:rgba(250,204,21,.35);color:inherit;border-radius:2px;padding:0 2px',
-  saved: 'background:rgba(34,197,94,.32);color:inherit;border-radius:2px;padding:0 2px',
+  new: `background:rgba(250,204,21,.35);${BASE_STYLE}`,
+  saved: `background:rgba(34,197,94,.32);${BASE_STYLE}`,
 }
 
 export type HighlightVariant = 'new' | 'saved'
 
-function createMark(text: string, variant: HighlightVariant): HTMLElement {
+function createMark(text: string, variant: HighlightVariant, title?: string): HTMLElement {
   const mark = document.createElement('mark')
   mark.className = 'nt-highlight'
   mark.setAttribute('data-nt-highlight', '1')
   mark.style.cssText = STYLES[variant]
+  // не `title`: нативный тултип ждёт около секунды, а свой оверлей рисует сразу
+  if (title) mark.setAttribute(TRANSLATE_ATTR, title)
   mark.textContent = text
 
   return mark
 }
 
 /** Разбираем узел за один проход: собираем фрагмент и меняем его на исходный узел целиком */
-function highlightNode(node: Text, pattern: RegExp, variants: HighlightVariant[]): void {
+function highlightNode(
+  node: Text,
+  pattern: RegExp,
+  variants: HighlightVariant[],
+  titles: Map<string, string>,
+): void {
   const text = node.nodeValue ?? ''
   pattern.lastIndex = 0
 
@@ -87,7 +101,7 @@ function highlightNode(node: Text, pattern: RegExp, variants: HighlightVariant[]
     if (match.index > lastIndex) fragment.append(text.slice(lastIndex, match.index))
 
     const variant = variants[matchedGroupIndex(match)] ?? 'new'
-    fragment.append(createMark(match[0], variant))
+    fragment.append(createMark(match[0], variant, titles.get(normalizeTerm(match[0]))))
     lastIndex = match.index + match[0].length
   }
 
@@ -108,8 +122,14 @@ export function clearHighlights(): void {
   })
 }
 
+export type HighlightTerm = {
+  text: string
+  /** Показывается в тултипе при наведении */
+  translate?: string
+}
+
 export type HighlightGroup = {
-  terms: string[]
+  terms: HighlightTerm[]
   variant: HighlightVariant
 }
 
@@ -120,7 +140,10 @@ export type HighlightGroup = {
  */
 export function highlightTerms(groups: HighlightGroup[]): void {
   const active = groups
-    .map((group) => ({ variant: group.variant, terms: normalizeTerms(group.terms) }))
+    .map((group) => ({
+      variant: group.variant,
+      terms: normalizeTerms(group.terms.map((term) => term.text)),
+    }))
     .filter((group) => group.terms.length)
 
   const source = buildTermsPattern(active.map((group) => group.terms))
@@ -128,9 +151,16 @@ export function highlightTerms(groups: HighlightGroup[]): void {
 
   const pattern = new RegExp(source, 'giu')
   const variants = active.map((group) => group.variant)
+  // по нормализованному тексту: в тексте слово встретится и с заглавной, и в другом отступе
+  const titles = new Map<string, string>(
+    groups
+      .flatMap((group) => group.terms)
+      .filter((term) => term.translate)
+      .map((term) => [normalizeTerm(term.text), term.translate ?? '']),
+  )
 
   // список узлов снимаем заранее: замена узла на фрагмент ломает живой обход
   for (const node of walkTextNodes(document.body)) {
-    highlightNode(node, pattern, variants)
+    highlightNode(node, pattern, variants, titles)
   }
 }
