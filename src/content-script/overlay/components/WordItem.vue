@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { BookmarkCheck, BookmarkPlus } from 'lucide-vue-next'
 import Button from 'primevue/button'
+import LookupPanel from '@/components/LookupPanel.vue'
 import type { WordWithExplanation } from '@/types/words'
 import { useDictionary } from '@/composables/useDictionary'
 import { requestExplanation } from '@/utils/llmClient'
@@ -27,10 +28,9 @@ const tipsId = computed<string>(
 const isSaved = computed<boolean>(() => hasEntry(props.word.original))
 
 // методы
-async function toggleTips(): Promise<void> {
-  isTipsOpen.value = !isTipsOpen.value
-
-  if (!isTipsOpen.value || explanation.value || isExplanationLoading.value) return
+/** Пояснение модели — отдельной кнопкой: раскрытие карточки должно оставаться бесплатным */
+async function loadExplanation(): Promise<void> {
+  if (explanation.value || isExplanationLoading.value) return
 
   isExplanationLoading.value = true
 
@@ -51,38 +51,57 @@ function addToDictionary(): void {
 </script>
 
 <template>
-  <li class="flex items-start gap-3 rounded-md border border-line px-3 py-2">
-    <div class="flex min-w-0 flex-1 flex-col gap-1">
-      <p class="m-0 flex flex-wrap items-baseline gap-x-2">
+  <!-- фон, а не только рамка: на тёмной теме граница почти сливается с панелью -->
+  <li class="flex items-start gap-2 rounded-lg border border-line bg-surface-hover px-3 py-2.5">
+    <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+      <p class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span class="font-semibold">{{ word.original }}</span>
-        <span class="text-muted">— {{ word.translate }}</span>
+        <span class="text-muted">{{ word.translate }}</span>
         <span
           v-if="word.level"
-          class="rounded border border-line px-1 text-xs text-muted"
+          class="rounded bg-surface px-1.5 py-0.5 text-[11px] font-medium text-muted"
         >
           {{ word.level }}
         </span>
       </p>
 
-      <div>
+      <div class="-mx-2">
         <Button
           size="small"
           severity="secondary"
           text
-          :label="isTipsOpen ? 'Скрыть пояснение' : 'Пояснение'"
+          :label="isTipsOpen ? 'Скрыть' : 'Подробнее'"
           :aria-expanded="isTipsOpen"
           :aria-controls="tipsId"
-          @click="toggleTips"
+          @click="isTipsOpen = !isTipsOpen"
         />
       </div>
 
-      <p
-        v-show="isTipsOpen"
+      <div
+        v-if="isTipsOpen"
         :id="tipsId"
-        class="m-0 border-l-2 border-line pl-3 text-muted"
+        class="flex flex-col gap-2 border-l-2 border-line pl-3"
       >
-        {{ isExplanationLoading ? 'Загрузка…' : explanation || '—' }}
-      </p>
+        <!-- v-if, а не v-show: панель запрашивает словари при монтировании -->
+        <LookupPanel :term="word.original" />
+
+        <p
+          v-if="explanation || isExplanationLoading"
+          class="m-0 text-muted"
+        >
+          {{ isExplanationLoading ? 'Спрашиваю модель…' : explanation }}
+        </p>
+
+        <div v-else>
+          <Button
+            size="small"
+            severity="secondary"
+            outlined
+            label="Пояснение модели"
+            @click="loadExplanation"
+          />
+        </div>
+      </div>
     </div>
 
     <Button

@@ -4,6 +4,7 @@ import type { DictionaryEntry } from '@/types/words'
 import {
   EMPTY_FILTERS,
   collectLevels,
+  levelFilterOptions,
   normalizeTerm,
   queryEntries,
 } from './dictionary'
@@ -75,4 +76,25 @@ test('queryEntries: исходный массив не мутируется', ()
 
 test('collectLevels: только встречающиеся уровни, без удалённых, по порядку', () => {
   assert.deepEqual(collectLevels(ENTRIES), ['B1', 'C1'])
+})
+
+test('queryEntries: фильтр «без уровня» — только записи без level', () => {
+  const withoutLevel = entry({ original: 'baritone', translate: 'баритон', addedAt: 50 })
+  const result = queryEntries([...ENTRIES, withoutLevel], { ...EMPTY_FILTERS, level: 'none' }, 'newest')
+
+  // удалённая запись тоже без уровня, но надгробия наружу не отдаются
+  assert.deepEqual(result.map((item) => item.original), ['baritone'])
+})
+
+test('levelFilterOptions: «Без уровня» появляется, только когда такие записи есть', () => {
+  assert.deepEqual(
+    levelFilterOptions(ENTRIES).map((option) => option.value),
+    ['B1', 'C1'],
+  )
+
+  const withoutLevel = entry({ original: 'baritone', translate: 'баритон' })
+  assert.deepEqual(
+    levelFilterOptions([...ENTRIES, withoutLevel]).map((option) => option.value),
+    ['B1', 'C1', 'none'],
+  )
 })

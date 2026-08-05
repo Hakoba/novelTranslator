@@ -3,8 +3,15 @@
 /* Стили живут внутри Shadow DOM оверлея: preflight отсюда не выходит наружу и вёрстку сайта не трогает */
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+/*
+ * inline обязателен: без него утилита ссылается на --color-surface, а та объявлена
+ * на :host — там же, где PrimeVue зеркалит светлые токены, и вниз приходит уже
+ * вычисленный светлый цвет. С inline var(--p-*) попадает в саму утилиту и читается
+ * на элементе, где действует класс .dark.
+ */
+@theme inline {
   --color-surface: var(--p-content-background);
+  --color-surface-hover: var(--p-content-hover-background);
   --color-content: var(--p-text-color);
   --color-muted: var(--p-text-muted-color);
   --color-line: var(--p-content-border-color);

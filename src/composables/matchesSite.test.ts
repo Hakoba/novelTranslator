@@ -16,6 +16,12 @@ test('matchesSite: путь как префикс', () => {
   assert.equal(matchesSite('https://novelbin.com/news', 'https://novelbin.com/book'), false)
 })
 
+test('matchesSite: www не мешает совпадению', () => {
+  assert.equal(matchesSite('https://www.reddit.com/r/nosleep/', 'https://reddit.com/'), true)
+  assert.equal(matchesSite('https://reddit.com/r/nosleep/', 'https://www.reddit.com/'), true)
+  assert.equal(matchesSite('https://old.reddit.com/', 'https://reddit.com/'), false)
+})
+
 test('matchesSite: поддомены через *.', () => {
   assert.equal(matchesSite('https://www.novelbin.com/', 'https://*.novelbin.com/'), true)
   assert.equal(matchesSite('https://novelbin.com/', 'https://*.novelbin.com/'), true)

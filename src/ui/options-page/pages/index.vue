@@ -7,10 +7,12 @@ import {
   useLlmSettings,
 } from '@/composables/useLlmSettings'
 import { useReaderSettings } from '@/composables/useReaderSettings'
+import { YANDEX_DICT_KEY_URL, useDictSettings } from '@/composables/useDictSettings'
 import { CEFR_LEVELS } from '@/types/words'
 
 const { settings } = useLlmSettings()
 const { settings: readerSettings } = useReaderSettings()
+const { settings: dictSettings } = useDictSettings()
 
 // методы
 function applyLocalPreset(): void {
@@ -124,6 +126,58 @@ function applyYandexPreset(): void {
             @click="applyYandexPreset"
           />
         </div>
+      </div>
+    </template>
+  </Card>
+
+  <Card>
+    <template #title>
+      Словари
+    </template>
+    <template #subtitle>
+      Перевод и толкования из готовых словарей — бесплатно и без запросов к модели
+    </template>
+    <template #content>
+      <div class="flex flex-col gap-4 pt-2">
+        <div class="flex flex-col gap-2">
+          <label
+            for="dict-yandex-key"
+            class="text-muted"
+          >
+            Ключ Яндекс.Словаря
+          </label>
+          <InputText
+            id="dict-yandex-key"
+            v-model="dictSettings.yandexKey"
+            type="password"
+            autocomplete="off"
+            placeholder="dict.1.1..."
+          />
+          <small class="text-muted">
+            Бесплатный ключ выдают в
+            <a
+              :href="YANDEX_DICT_KEY_URL"
+              target="_blank"
+              rel="noreferrer noopener"
+              class="underline underline-offset-2"
+            >кабинете разработчика Яндекса</a>.
+            Без ключа остаются англо-английские толкования и ссылки на внешние словари.
+          </small>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <ToggleSwitch
+            v-model="dictSettings.preferDictionary"
+            input-id="prefer-dictionary"
+          />
+          <label for="prefer-dictionary">
+            Одиночные слова переводить словарём, а не моделью
+          </label>
+        </div>
+        <small class="-mt-2 text-muted">
+          Касается перевода выделенного текста. Фразы всё равно уходят к модели: словарь их
+          не знает. Уровень CEFR ставит только модель, у слов из словаря его не будет.
+        </small>
       </div>
     </template>
   </Card>

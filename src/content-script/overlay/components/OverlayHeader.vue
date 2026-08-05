@@ -20,7 +20,7 @@ const emit = defineEmits<{
 <template>
   <div class="flex w-full items-center gap-2">
     <strong
-      class="flex-1"
+      class="flex-1 truncate"
       role="heading"
       aria-level="2"
     >

@@ -46,8 +46,13 @@ npm run launch         # запустить браузер с загруженн
   (`src/content-script/mirrorStyles.ts`), подсветка ставится инлайном на элемент.
 - **PrimeVue Dialog/Popover в оверлее не использовать** — они рендерятся в `document.body`,
   вне shadow root, и остаются без стилей. Верстать панели вручную.
-- **Запросы к LLM только через background** (`src/utils/bgFetch.ts`): со https-страницы
-  content script не достучится до http-адреса локальной модели.
+- **Тема оверлея — класс `.dark` на `.nt-overlay` внутри shadow root**, не на `<html>` сайта:
+  PrimeVue кладёт светлые токены на `:root,:host`, а `:host` — сам хост оверлея, он
+  перебивает всё наследуемое снаружи. По той же причине `overlay.css` объявляет цвета через
+  **`@theme inline`**: без `inline` `var(--p-*)` вычисляется на `:host` и вниз приходит светлым.
+- **Запросы наружу только через background** (`src/utils/bgFetch.ts`): со https-страницы
+  content script не достучится до http-адреса локальной модели, а CSP сайта режет fetch
+  к чужим доменам (проверено на reddit). URL логируем без query — у словарей ключ в адресе.
 - **WASM нужен свой CSP.** sql.js (экспорт в Anki) не запустится без
   `script-src 'self' 'wasm-unsafe-eval'` в `content_security_policy.extension_pages`.
 - **Словарь — в `storage.local`, настройки — в `storage.sync`.** У `sync` лимит 100 КБ на всё
@@ -61,6 +66,13 @@ npm run launch         # запустить браузер с загруженн
 - **Провайдер один — OpenAI-совместимый API.** Yandex AI Studio к нему совместим
   (`https://llm.api.cloud.yandex.net`, модель `gpt://<каталог>/yandexgpt/latest`,
   ключ уходит в `Authorization: Bearer`), отдельный клиент не нужен.
+- **Словари — не модель.** Перевод одиночных слов и толкования идут во внешние словари
+  (`src/utils/dictClient.ts`, ключ Яндекс.Словаря в `useDictSettings`); модель дороже
+  и медленнее. Раскрытие карточки бесплатно, LLM-пояснение — только по кнопке.
+- **Dev-сервер перезапускать при новых модулях в content script.** @crxjs прописывает граф
+  импортов в манифест при старте; иначе content script падает с
+  `Failed to fetch dynamically imported module`. Два `vite` на один `dist/` — гарантированно
+  битая сборка.
 
 ## Code Conventions
 
