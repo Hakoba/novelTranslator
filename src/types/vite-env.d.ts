@@ -9,3 +9,7 @@ declare const __DISPLAY_NAME__: string
 declare const __CHANGELOG__: string
 declare const __GIT_COMMIT__: string
 declare const __GITHUB_URL__: string
+
+// Дефолты для dev-сборки из .env, в прод-сборку не попадают
+declare const __YANDEX_API_KEY__: string
+declare const __YANDEX_FOLDER_ID__: string

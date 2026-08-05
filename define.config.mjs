@@ -15,7 +15,12 @@ const gitCommit = spawnSync("git", ["rev-parse", "--short", "HEAD"])
 // These variables are available in your Vue components and will be replaced by their values at build time.
 // These will be compiled into your app. Don't store secrets here!
 
+// Ключи Яндекса подставляем только в dev-сборку, чтобы не зашить их в артефакт для стора
+const isDev = process.env.NODE_ENV === "development"
+
 const raw = {
+  YANDEX_API_KEY: isDev ? process.env.YANDEX_API_KEY ?? "" : "",
+  YANDEX_FOLDER_ID: isDev ? process.env.YANDEX_FOLDER_ID ?? "" : "",
   VERSION: packageJson.version,
   NAME: packageJson.name,
   DISPLAY_NAME: packageJson.displayName,

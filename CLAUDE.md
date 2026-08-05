@@ -46,6 +46,11 @@ npm run launch         # запустить браузер с загруженн
 - **Запросы к LLM только через background** (`src/utils/bgFetch.ts`): со https-страницы
   content script не достучится до http-адреса локальной модели.
 - **Адрес модели и ключи — в настройках** (`useLlmSettings`), не в коде: репозиторий публичный.
+  Дефолты для dev-сборки приходят из `.env` через `define.config.mjs` и обнуляются
+  в прод-сборке; `.env` в `.gitignore`, шаблон — `.env.example`.
+- **Провайдер один — OpenAI-совместимый API.** Yandex AI Studio к нему совместим
+  (`https://llm.api.cloud.yandex.net`, модель `gpt://<каталог>/yandexgpt/latest`,
+  ключ уходит в `Authorization: Bearer`), отдельный клиент не нужен.
 
 ## Code Conventions
 
