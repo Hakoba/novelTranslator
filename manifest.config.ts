@@ -40,6 +40,11 @@ export default {
   devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
+  // экспорт в Anki собирает базу SQLite через sql.js, а это WebAssembly:
+  // без wasm-unsafe-eval политика расширения его не запустит
+  content_security_policy: {
+    extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
+  },
   host_permissions: ["<all_urls>"],
   permissions: ["storage", "tabs", "background"],
   web_accessible_resources: [

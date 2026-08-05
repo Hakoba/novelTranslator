@@ -11,16 +11,22 @@ declare global {
   const BASE_URL: typeof import('../utils/llmClient')['BASE_URL']
   const CONTRACT_PROMPT: typeof import('../utils/llmClient')['CONTRACT_PROMPT']
   const CONTRACT_PROMPT_WORDS: typeof import('../utils/llmClient').CONTRACT_PROMPT_WORDS
+  const CREATE_TABLES: typeof import('../utils/ankiSchema').CREATE_TABLES
+  const DECK_NAME: typeof import('../utils/ankiSchema').DECK_NAME
+  const DEFAULT_CONF: typeof import('../utils/ankiSchema').DEFAULT_CONF
+  const DEFAULT_DECK_CONF: typeof import('../utils/ankiSchema').DEFAULT_DECK_CONF
   const DEFAULT_LLM_SETTINGS: typeof import('../composables/useLlmSettings').DEFAULT_LLM_SETTINGS
   const DEFAULT_READER_SETTINGS: typeof import('../composables/useReaderSettings').DEFAULT_READER_SETTINGS
   const DEFAULT_TEXT: typeof import('../utils/llmClient')['DEFAULT_TEXT']
   const EMPTY_FILTERS: typeof import('../utils/dictionary').EMPTY_FILTERS
   const EffectScope: typeof import('vue').EffectScope
+  const FIELD_NAMES: typeof import('../utils/ankiSchema').FIELD_NAMES
   const HAS_DEV_YANDEX_CREDENTIALS: typeof import('../composables/useLlmSettings').HAS_DEV_YANDEX_CREDENTIALS
   const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
   const MAX_CHARS: typeof import('../utils/extract/blocks').MAX_CHARS
   const MIN_LINE_LENGTH: typeof import('../utils/extract/blocks').MIN_LINE_LENGTH
   const MODEL: typeof import('../utils/llmClient')['MODEL']
+  const MODEL_NAME: typeof import('../utils/ankiSchema').MODEL_NAME
   const OVERLAY_ROOT_ID: typeof import('../utils/overlayRoot').OVERLAY_ROOT_ID
   const REQUEST_TIMEOUT_MS: typeof import('../utils/llmClient').REQUEST_TIMEOUT_MS
   const SITE_RULES: typeof import('../utils/extract/rules').SITE_RULES
@@ -33,6 +39,10 @@ declare global {
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
   const avatarGroupInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useAvatarGroup.js')['avatarGroupInjectionKey']
   const browser: typeof import('webextension-polyfill')
+  const buildApkg: typeof import('../utils/anki').buildApkg
+  const buildDeck: typeof import('../utils/ankiSchema').buildDeck
+  const buildModel: typeof import('../utils/ankiSchema').buildModel
+  const buildTermsPattern: typeof import('../utils/terms').buildTermsPattern
   const buttonGroupInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useButtonGroup.js')['buttonGroupInjectionKey']
   const clearHighlights: typeof import('../utils/highlight').clearHighlights
   const collectLevels: typeof import('../utils/dictionary').collectLevels
@@ -43,6 +53,7 @@ declare global {
   const computedWithControl: typeof import('@vueuse/core').computedWithControl
   const controlledComputed: typeof import('@vueuse/core').controlledComputed
   const controlledRef: typeof import('@vueuse/core').controlledRef
+  const countNew: typeof import('../utils/srs').countNew
   const createApp: typeof import('vue').createApp
   const createEventHook: typeof import('@vueuse/core').createEventHook
   const createGlobalState: typeof import('@vueuse/core').createGlobalState
@@ -65,6 +76,7 @@ declare global {
   const definePage: typeof import('vue-router/auto').definePage
   const defineShortcuts: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineShortcuts.js')['defineShortcuts']
   const defineStore: typeof import('pinia').defineStore
+  const dueEntries: typeof import('../utils/srs').dueEntries
   const eagerComputed: typeof import('@vueuse/core').eagerComputed
   const effectScope: typeof import('vue').effectScope
   const extendLocale: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/defineLocale.js')['extendLocale']
@@ -93,6 +105,7 @@ declare global {
   const inject: typeof import('vue').inject
   const injectLocal: typeof import('@vueuse/core').injectLocal
   const inputIdInjectionKey: typeof import('../../node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js')['inputIdInjectionKey']
+  const intervalDays: typeof import('../utils/srs').intervalDays
   const isDefined: typeof import('@vueuse/core').isDefined
   const isProxy: typeof import('vue').isProxy
   const isReactive: typeof import('vue').isReactive
@@ -110,10 +123,13 @@ declare global {
   const mapStores: typeof import('pinia').mapStores
   const mapWritableState: typeof import('pinia').mapWritableState
   const markRaw: typeof import('vue').markRaw
+  const matchedGroupIndex: typeof import('../utils/terms').matchedGroupIndex
   const matchesSite: typeof import('../composables/matchesSite').matchesSite
+  const nextDueAt: typeof import('../utils/srs').nextDueAt
   const nextTick: typeof import('vue').nextTick
   const normalizeHost: typeof import('../utils/extract/rules').normalizeHost
   const normalizeTerm: typeof import('../utils/dictionary').normalizeTerm
+  const normalizeTerms: typeof import('../utils/terms').normalizeTerms
   const normalizeUrl: typeof import('../composables/matchesSite').normalizeUrl
   const normalizeWhitespace: typeof import('../utils/extract/blocks').normalizeWhitespace
   const onActivated: typeof import('vue').onActivated
@@ -164,6 +180,7 @@ declare global {
   const resolveComponent: typeof import('vue').resolveComponent
   const resolveRef: typeof import('@vueuse/core').resolveRef
   const resolveUnref: typeof import('@vueuse/core').resolveUnref
+  const reviewEntry: typeof import('../utils/srs').reviewEntry
   const scoreCandidate: typeof import('../utils/extract/score').scoreCandidate
   const sendBgFetch: typeof import('../utils/bgFetch').sendBgFetch
   const setActivePinia: typeof import('pinia').setActivePinia
@@ -195,6 +212,7 @@ declare global {
   const useAccessSites: typeof import('../composables/useAccessSites').useAccessSites
   const useActiveElement: typeof import('@vueuse/core').useActiveElement
   const useAnimate: typeof import('@vueuse/core').useAnimate
+  const useAnkiExport: typeof import('../composables/useAnkiExport').useAnkiExport
   const useAppConfig: typeof import('../../node_modules/@nuxt/ui/dist/runtime/vue/composables/useAppConfig.js')['useAppConfig']
   const useAreaSelectors: typeof import('../composables/useAreaSelectors').useAreaSelectors
   const useArrayDifference: typeof import('@vueuse/core').useArrayDifference
@@ -427,6 +445,9 @@ declare global {
   export type { ThemeMode } from '../composables/useTheme'
   import('../composables/useTheme')
   // @ts-ignore
+  export type { ApkgOptions } from '../utils/anki'
+  import('../utils/anki')
+  // @ts-ignore
   export type { BgFetchResponse, BgFetchInit } from '../utils/bgFetch'
   import('../utils/bgFetch')
   // @ts-ignore
@@ -438,6 +459,12 @@ declare global {
   // @ts-ignore
   export type { CandidateStats } from '../utils/extract/score'
   import('../utils/extract/score')
+  // @ts-ignore
+  export type { HighlightVariant, HighlightGroup } from '../utils/highlight'
+  import('../utils/highlight')
+  // @ts-ignore
+  export type { ReviewProgress } from '../utils/srs'
+  import('../utils/srs')
 }
 
 // for vue template auto import
@@ -446,12 +473,18 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly CONTRACT_PROMPT_WORDS: UnwrapRef<typeof import('../utils/llmClient')['CONTRACT_PROMPT_WORDS']>
+    readonly CREATE_TABLES: UnwrapRef<typeof import('../utils/ankiSchema')['CREATE_TABLES']>
+    readonly DECK_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['DECK_NAME']>
+    readonly DEFAULT_CONF: UnwrapRef<typeof import('../utils/ankiSchema')['DEFAULT_CONF']>
+    readonly DEFAULT_DECK_CONF: UnwrapRef<typeof import('../utils/ankiSchema')['DEFAULT_DECK_CONF']>
     readonly DEFAULT_LLM_SETTINGS: UnwrapRef<typeof import('../composables/useLlmSettings')['DEFAULT_LLM_SETTINGS']>
     readonly DEFAULT_READER_SETTINGS: UnwrapRef<typeof import('../composables/useReaderSettings')['DEFAULT_READER_SETTINGS']>
     readonly EMPTY_FILTERS: UnwrapRef<typeof import('../utils/dictionary')['EMPTY_FILTERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly FIELD_NAMES: UnwrapRef<typeof import('../utils/ankiSchema')['FIELD_NAMES']>
     readonly HAS_DEV_YANDEX_CREDENTIALS: UnwrapRef<typeof import('../composables/useLlmSettings')['HAS_DEV_YANDEX_CREDENTIALS']>
     readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
+    readonly MODEL_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['MODEL_NAME']>
     readonly OVERLAY_ROOT_ID: UnwrapRef<typeof import('../utils/overlayRoot')['OVERLAY_ROOT_ID']>
     readonly REQUEST_TIMEOUT_MS: UnwrapRef<typeof import('../utils/llmClient')['REQUEST_TIMEOUT_MS']>
     readonly SITE_RULES: UnwrapRef<typeof import('../utils/extract/rules')['SITE_RULES']>
@@ -463,6 +496,10 @@ declare module 'vue' {
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly browser: UnwrapRef<typeof import('webextension-polyfill')['=']>
+    readonly buildApkg: UnwrapRef<typeof import('../utils/anki')['buildApkg']>
+    readonly buildDeck: UnwrapRef<typeof import('../utils/ankiSchema')['buildDeck']>
+    readonly buildModel: UnwrapRef<typeof import('../utils/ankiSchema')['buildModel']>
+    readonly buildTermsPattern: UnwrapRef<typeof import('../utils/terms')['buildTermsPattern']>
     readonly clearHighlights: UnwrapRef<typeof import('../utils/highlight')['clearHighlights']>
     readonly collectLevels: UnwrapRef<typeof import('../utils/dictionary')['collectLevels']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -472,6 +509,7 @@ declare module 'vue' {
     readonly computedWithControl: UnwrapRef<typeof import('@vueuse/core')['computedWithControl']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
+    readonly countNew: UnwrapRef<typeof import('../utils/srs')['countNew']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
@@ -492,6 +530,7 @@ declare module 'vue' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly definePage: UnwrapRef<typeof import('vue-router/auto')['definePage']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
+    readonly dueEntries: UnwrapRef<typeof import('../utils/srs')['dueEntries']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
@@ -511,6 +550,7 @@ declare module 'vue' {
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
+    readonly intervalDays: UnwrapRef<typeof import('../utils/srs')['intervalDays']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -526,10 +566,13 @@ declare module 'vue' {
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly matchedGroupIndex: UnwrapRef<typeof import('../utils/terms')['matchedGroupIndex']>
     readonly matchesSite: UnwrapRef<typeof import('../composables/matchesSite')['matchesSite']>
+    readonly nextDueAt: UnwrapRef<typeof import('../utils/srs')['nextDueAt']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly normalizeHost: UnwrapRef<typeof import('../utils/extract/rules')['normalizeHost']>
     readonly normalizeTerm: UnwrapRef<typeof import('../utils/dictionary')['normalizeTerm']>
+    readonly normalizeTerms: UnwrapRef<typeof import('../utils/terms')['normalizeTerms']>
     readonly normalizeUrl: UnwrapRef<typeof import('../composables/matchesSite')['normalizeUrl']>
     readonly normalizeWhitespace: UnwrapRef<typeof import('../utils/extract/blocks')['normalizeWhitespace']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
@@ -579,6 +622,7 @@ declare module 'vue' {
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly reviewEntry: UnwrapRef<typeof import('../utils/srs')['reviewEntry']>
     readonly scoreCandidate: UnwrapRef<typeof import('../utils/extract/score')['scoreCandidate']>
     readonly sendBgFetch: UnwrapRef<typeof import('../utils/bgFetch')['sendBgFetch']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
@@ -609,6 +653,7 @@ declare module 'vue' {
     readonly useAccessSites: UnwrapRef<typeof import('../composables/useAccessSites')['useAccessSites']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
+    readonly useAnkiExport: UnwrapRef<typeof import('../composables/useAnkiExport')['useAnkiExport']>
     readonly useAreaSelectors: UnwrapRef<typeof import('../composables/useAreaSelectors')['useAreaSelectors']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>

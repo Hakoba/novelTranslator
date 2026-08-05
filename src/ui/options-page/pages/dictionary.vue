@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
+import { Check, Download, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
+import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
 import { CEFR_LEVELS, type CefrLevel, type DictionaryEntry } from '@/types/words'
 import {
@@ -11,6 +12,8 @@ import {
   type DictionarySort,
 } from '@/utils/dictionary'
 
+const PAGE_SIZE = 20
+
 const SORT_OPTIONS: { label: string; value: DictionarySort }[] = [
   { label: 'Сначала новые', value: 'newest' },
   { label: 'Сначала старые', value: 'oldest' },
@@ -19,6 +22,7 @@ const SORT_OPTIONS: { label: string; value: DictionarySort }[] = [
 
 // composables
 const { entries, addEntry, updateEntry, removeEntry } = useDictionary()
+const { isExporting, exportError, exportToAnki } = useAnkiExport()
 
 // state
 const filters = ref<DictionaryFilters>({ ...EMPTY_FILTERS })
@@ -79,23 +83,38 @@ function submitDraft(): void {
     <template #title>
       <div class="flex flex-wrap items-center justify-between gap-2">
         <span>Словарь</span>
-        <Button
-          size="small"
-          severity="secondary"
-          :label="isFormOpen ? 'Отмена' : 'Добавить слово'"
-          @click="isFormOpen = !isFormOpen"
-        >
-          <template #icon>
-            <Plus
-              v-if="!isFormOpen"
-              :size="16"
-            />
-            <X
-              v-else
-              :size="16"
-            />
-          </template>
-        </Button>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            v-if="entries.length"
+            size="small"
+            severity="secondary"
+            outlined
+            :disabled="isExporting || !visibleEntries.length"
+            :label="isExporting ? 'Собираю колоду…' : `В Anki — ${visibleEntries.length}`"
+            @click="exportToAnki(visibleEntries)"
+          >
+            <template #icon>
+              <Download :size="16" />
+            </template>
+          </Button>
+          <Button
+            size="small"
+            severity="secondary"
+            :label="isFormOpen ? 'Отмена' : 'Добавить слово'"
+            @click="isFormOpen = !isFormOpen"
+          >
+            <template #icon>
+              <Plus
+                v-if="!isFormOpen"
+                :size="16"
+              />
+              <X
+                v-else
+                :size="16"
+              />
+            </template>
+          </Button>
+        </div>
       </div>
     </template>
 
@@ -105,6 +124,14 @@ function submitDraft(): void {
 
     <template #content>
       <div class="flex flex-col gap-4 pt-2">
+        <Message
+          v-if="exportError"
+          severity="error"
+          :closable="false"
+        >
+          {{ exportError }}
+        </Message>
+
         <form
           v-if="isFormOpen"
           class="flex flex-col gap-3 rounded-md border border-line p-3"
@@ -235,8 +262,8 @@ function submitDraft(): void {
         <DataView
           v-else
           :value="visibleEntries"
-          :rows="20"
-          :paginator="visibleEntries.length > 20"
+          :rows="PAGE_SIZE"
+          :paginator="visibleEntries.length > PAGE_SIZE"
           data-key="id"
         >
           <template #list="{ items }">

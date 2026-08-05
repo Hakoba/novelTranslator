@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import OverlayHeader from './components/OverlayHeader.vue'
 import WordItem from './components/WordItem.vue'
@@ -10,6 +10,7 @@ import { useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
 import { clearHighlights, highlightTerms } from '@/utils/highlight'
 import { requestTranslation } from '@/utils/llmClient'
+import { normalizeTerm } from '@/utils/dictionary'
 import { findSentence } from '@/utils/sentence'
 import type { WordWithExplanation } from '@/types/words'
 
@@ -21,10 +22,9 @@ const {
   sourceText,
   isLoading,
   errorMessage,
-  wordsCount,
   fetchDifficultWords,
 } = useDifficultWords()
-const { addEntry } = useDictionary()
+const { entries, addEntry } = useDictionary()
 const { setSelector } = useAreaSelectors()
 const { anchor, clearSelection } = useTextSelection()
 
@@ -32,14 +32,29 @@ const { anchor, clearSelection } = useTextSelection()
 const isMinimized = ref<boolean>(false)
 const cancelPicking = ref<(() => void) | undefined>(undefined)
 const selectionState = ref<'idle' | 'saving' | 'failed'>('idle')
+// снимок словаря на момент разбора: если фильтровать по живому, строка исчезает
+// из списка прямо под курсором в момент клика по закладке
+const knownTerms = ref<Set<string>>(new Set())
+
+// computed
+const newWords = computed<WordWithExplanation[]>(() =>
+  words.value.filter((word) => !knownTerms.value.has(normalizeTerm(word.original))),
+)
+const savedTerms = computed<string[]>(() => entries.value.map((entry) => entry.original))
 
 // watchers
-watch([words, isLoading], (): void => {
+watch(words, (): void => {
+  knownTerms.value = new Set(entries.value.map((entry) => normalizeTerm(entry.original)))
+})
+
+watch([newWords, savedTerms, isLoading], (): void => {
   if (isLoading.value) return
 
   clearHighlights()
-  const terms = words.value.map((word) => word.original)
-  if (terms.length) highlightTerms(terms)
+  highlightTerms([
+    { terms: savedTerms.value, variant: 'saved' },
+    { terms: newWords.value.map((word) => word.original), variant: 'new' },
+  ])
 })
 
 // lifecycle
@@ -127,7 +142,7 @@ async function saveSelection(): Promise<void> {
     <header class="border-b border-line px-3 py-2">
       <OverlayHeader
         :is-minimized="isMinimized"
-        :words-count="wordsCount"
+        :words-count="newWords.length"
         :is-loading="isLoading"
         :is-picking="Boolean(cancelPicking)"
         @toggle-minimized="isMinimized = !isMinimized"
@@ -162,11 +177,11 @@ async function saveSelection(): Promise<void> {
       </div>
 
       <ul
-        v-else-if="words.length"
+        v-else-if="newWords.length"
         class="m-0 flex list-none flex-col gap-2 p-0"
       >
         <WordItem
-          v-for="word in words"
+          v-for="word in newWords"
           :key="word.original"
           :word="word"
           :source-text="sourceText"
@@ -178,7 +193,7 @@ async function saveSelection(): Promise<void> {
         v-else
         class="m-0 text-muted"
       >
-        Сложных слов не нашлось.
+        {{ words.length ? 'Все сложные слова этой главы уже в словаре.' : 'Сложных слов не нашлось.' }}
       </p>
     </div>
   </section>

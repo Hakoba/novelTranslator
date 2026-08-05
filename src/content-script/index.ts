@@ -4,6 +4,7 @@ import PrimeVue from "primevue/config"
 import Aura from "@primeuix/themes/aura"
 import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 import { useAccessSites } from "@/composables/useAccessSites"
+import { useDictionary } from "@/composables/useDictionary"
 import { mirrorPrimeVueStyles } from "@/content-script/mirrorStyles"
 import { OVERLAY_ROOT_ID } from "@/utils/overlayRoot"
 
@@ -65,9 +66,12 @@ function unmountOverlay(): void {
   stopMirror = null
 }
 
-const { isCurrentSiteAllowed, promise } = useAccessSites()
+const { isCurrentSiteAllowed, promise: sitesLoaded } = useAccessSites()
+// словарь ждём тоже: оверлей сразу решает, что из найденного уже сохранено,
+// и с пустым словарём пометил бы всё как новое
+const { promise: dictionaryLoaded } = useDictionary()
 
-promise.then(() => {
+Promise.all([sitesLoaded, dictionaryLoaded]).then(() => {
   if (!isCurrentSiteAllowed()) {
     console.info("Novel Translator: текущий сайт не в списке разрешённых")
     return

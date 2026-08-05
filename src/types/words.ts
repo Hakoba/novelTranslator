@@ -27,4 +27,12 @@ export type DictionaryEntry = {
   updatedAt: number
   /** Мягкое удаление: запись остаётся в хранилище как надгробие */
   deletedAt?: number
+
+  // интервальные повторения; пусто — слово ещё ни разу не тренировали
+  /** Когда показать в следующий раз */
+  dueAt?: number
+  /** Текущий шаг в лестнице интервалов */
+  intervalStep?: number
+  reviews?: number
+  lapses?: number
 }

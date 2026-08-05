@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookMarked, Settings } from 'lucide-vue-next'
+import { BookMarked, Dumbbell, Settings } from 'lucide-vue-next'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 
 const LINK_CLASS =
@@ -36,6 +36,14 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
         >
           <BookMarked :size="18" />
           Словарь
+        </RouterLink>
+        <RouterLink
+          to="/options-page/training"
+          :class="LINK_CLASS"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <Dumbbell :size="18" />
+          Тренировка
         </RouterLink>
       </nav>
 

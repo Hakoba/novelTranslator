@@ -48,6 +48,8 @@ npm run launch         # запустить браузер с загруженн
   вне shadow root, и остаются без стилей. Верстать панели вручную.
 - **Запросы к LLM только через background** (`src/utils/bgFetch.ts`): со https-страницы
   content script не достучится до http-адреса локальной модели.
+- **WASM нужен свой CSP.** sql.js (экспорт в Anki) не запустится без
+  `script-src 'self' 'wasm-unsafe-eval'` в `content_security_policy.extension_pages`.
 - **Словарь — в `storage.local`, настройки — в `storage.sync`.** У `sync` лимит 100 КБ на всё
   и 8 КБ на запись. Доступ к словарю только через `useDictionary` — компоненты в storage
   не ходят, чтобы серверный словарь заменялся одной реализацией.

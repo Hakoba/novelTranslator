@@ -1,4 +1,4 @@
-import { computed, ref, type ComputedRef, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import type { WordWithExplanation } from '@/types/words'
 import { REQUEST_TIMEOUT_MS, requestDifficultWords } from '@/utils/llmClient'
 import { extractReadableText } from '@/utils/pageText'
@@ -8,7 +8,6 @@ export function useDifficultWords(): {
   sourceText: Ref<string>
   isLoading: Ref<boolean>
   errorMessage: Ref<string>
-  wordsCount: ComputedRef<number>
   fetchDifficultWords: (text?: string) => Promise<void>
 } {
   // state
@@ -20,9 +19,6 @@ export function useDifficultWords(): {
   // выбор области перезапускает разбор, пока предыдущий ещё висит: без номера
   // запроса поздний ответ первого затирает результат второго
   let currentRequest = 0
-
-  // computed
-  const wordsCount = computed<number>(() => words.value.length)
 
   // методы
   async function fetchDifficultWords(text?: string): Promise<void> {
@@ -63,7 +59,6 @@ export function useDifficultWords(): {
     sourceText,
     isLoading,
     errorMessage,
-    wordsCount,
     fetchDifficultWords,
   }
 }
