@@ -5,6 +5,7 @@
 
 @theme {
   --color-surface: var(--p-content-background);
+  --color-surface-hover: var(--p-content-hover-background);
   --color-content: var(--p-text-color);
   --color-muted: var(--p-text-muted-color);
   --color-line: var(--p-content-border-color);

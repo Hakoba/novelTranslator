@@ -18,7 +18,8 @@ export const LOCAL_PRESET: LlmSettings = {
 /** Yandex AI Studio совместим с OpenAI API, отличается только адресом и форматом имени модели */
 export const YANDEX_BASE_URL = "https://llm.api.cloud.yandex.net"
 
-export function yandexModelUri(folderId: string, model = "yandexgpt/latest"): string {
+// lite дешевле полной модели в разы, а на «выдай список сложных слов» её хватает
+export function yandexModelUri(folderId: string, model = "yandexgpt-lite/latest"): string {
   return `gpt://${folderId}/${model}`
 }
 

@@ -7,7 +7,13 @@ import { applyTheme } from "@/composables/useTheme"
 
 /** Общий bootstrap для страниц расширения (popup, options, setup) */
 export function createPage(root: Component, defaultRoute: string): VueApp {
-  appRouter.addRoute({ path: "/", redirect: defaultRoute })
+  // ?route= позволяет открыть конкретный раздел ссылкой: history-роутер стартует
+  // с пути index.html, попадает в catchAll и приходит сюда ещё с исходным search
+  appRouter.addRoute({
+    path: "/",
+    redirect: () =>
+      new URLSearchParams(location.search).get("route") || defaultRoute,
+  })
 
   const app = createApp(root)
     .use(PrimeVue, {

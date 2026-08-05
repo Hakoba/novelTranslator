@@ -6,8 +6,11 @@ import {
   YANDEX_PRESET,
   useLlmSettings,
 } from '@/composables/useLlmSettings'
+import { useReaderSettings } from '@/composables/useReaderSettings'
+import { CEFR_LEVELS } from '@/types/words'
 
 const { settings } = useLlmSettings()
+const { settings: readerSettings } = useReaderSettings()
 
 // методы
 function applyLocalPreset(): void {
@@ -21,6 +24,35 @@ function applyYandexPreset(): void {
 </script>
 
 <template>
+  <Card>
+    <template #title>
+      Уровень языка
+    </template>
+    <template #subtitle>
+      Слова ниже вашего уровня в разбор не попадают
+    </template>
+    <template #content>
+      <div class="flex flex-col gap-2 pt-2">
+        <label
+          for="reader-level"
+          class="text-muted"
+        >
+          Мой уровень английского
+        </label>
+        <Select
+          id="reader-level"
+          v-model="readerSettings.level"
+          :options="[...CEFR_LEVELS]"
+          class="w-40"
+        />
+        <small class="text-muted">
+          При B2 модель отдаёт только C1 и выше. Уровень уходит в запрос, а не фильтрует
+          ответ на месте, — поэтому смена уровня видна после следующего разбора главы.
+        </small>
+      </div>
+    </template>
+  </Card>
+
   <Card>
     <template #title>
       Модель
@@ -57,7 +89,8 @@ function applyYandexPreset(): void {
             placeholder="gpt-oss"
           />
           <small class="text-muted">
-            У Яндекса имя модели выглядит как gpt://&lt;каталог&gt;/yandexgpt/latest
+            У Яндекса имя модели выглядит как gpt://&lt;каталог&gt;/yandexgpt-lite/latest.
+            Полная модель — yandexgpt/latest, она заметно дороже.
           </small>
         </div>
 
