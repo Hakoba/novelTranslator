@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { LoaderCircle } from 'lucide-vue-next'
 import { type LookupResult } from '@/types/lookup'
 import { useReaderSettings } from '@/composables/useReaderSettings'
-import { lookupTerm } from '@/utils/dictClient'
+import { YANDEX_DICT_URL, lookupTerm } from '@/utils/dictClient'
 import { dictionaryLinks, type DictLink } from '@/utils/dict/links'
 
 const props = defineProps<{ term: string }>()
@@ -39,8 +40,12 @@ onMounted(async (): Promise<void> => {
   <div class="flex flex-col gap-2">
     <p
       v-if="isLoading"
-      class="m-0 text-muted"
+      class="m-0 flex items-center gap-2 text-muted"
     >
+      <LoaderCircle
+        :size="14"
+        class="animate-spin"
+      />
       {{ t('lookup.loading') }}
     </p>
 
@@ -104,5 +109,16 @@ onMounted(async (): Promise<void> => {
         {{ link.title }}
       </a>
     </nav>
+
+    <!-- условия Яндекс.Словаря требуют этой подписи с активной ссылкой везде, где показаны его данные -->
+    <a
+      v-if="results.some((result) => result.source === 'yandex')"
+      :href="YANDEX_DICT_URL"
+      target="_blank"
+      rel="noreferrer noopener"
+      class="text-xs text-muted underline underline-offset-2"
+    >
+      {{ t('lookup.yandexAttribution') }}
+    </a>
   </div>
 </template>

@@ -37,8 +37,8 @@ CREATE INDEX ix_revlog_usn ON revlog (usn);
 CREATE INDEX ix_notes_csum ON notes (csum);
 `
 
-export const DECK_NAME = 'Novel Translator'
-export const MODEL_NAME = 'Novel Translator — слово'
+export const DECK_NAME = 'Erudit'
+export const MODEL_NAME = 'Erudit — слово'
 
 /** Поля заметки. Порядок важен: он же порядок колонок в flds */
 export const FIELD_NAMES = ['Слово', 'Перевод', 'Контекст', 'Пояснение'] as const
@@ -112,7 +112,7 @@ export function buildDeck(deckId: number, now: number, name = DECK_NAME): Record
     timeToday: [0, 0],
     collapsed: false,
     browserCollapsed: true,
-    desc: 'Слова, сохранённые расширением Novel Translator',
+    desc: 'Слова, сохранённые расширением Erudit',
     dyn: 0,
     conf: 1,
     extendNew: 0,

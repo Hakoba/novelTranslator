@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Bot, Cloud, Cpu, ExternalLink, KeyRound, Laptop, Link, Plug, Zap } from 'lucide-vue-next'
+import { Bot, Cloud, Cpu, ExternalLink, KeyRound, Laptop, Link, LoaderCircle, Plug, Zap } from 'lucide-vue-next'
 import {
   HAS_DEV_YANDEX_CREDENTIALS,
   LOCAL_PRESET,
@@ -215,11 +215,20 @@ async function runCheck(): Promise<void> {
               :label="checkState === 'busy' ? t('settings.model.checkBusy') : t('settings.model.check')"
               severity="secondary"
               outlined
-              :loading="checkState === 'busy'"
+              :disabled="checkState === 'busy'"
               @click="runCheck"
             >
               <template #icon>
-                <Zap :size="16" />
+                <!-- спиннер PrimeVue — иконочный шрифт, которого в проекте нет: крутим свою иконку -->
+                <LoaderCircle
+                  v-if="checkState === 'busy'"
+                  :size="16"
+                  class="animate-spin"
+                />
+                <Zap
+                  v-else
+                  :size="16"
+                />
               </template>
             </Button>
           </div>

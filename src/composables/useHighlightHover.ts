@@ -1,15 +1,15 @@
 import { onMounted, onUnmounted, ref, type Ref } from 'vue'
-import { TRANSLATE_ATTR } from '@/utils/highlight'
 
 export type HoverHint = {
-  translate: string
+  /** Слово так, как оно написано в тексте страницы: карточку по нему собирает оверлей */
+  term: string
   /** Координаты середины верхней грани слова, viewport */
   x: number
   y: number
 }
 
 /**
- * Перевод под курсором для подсвеченного слова. Свой тултип вместо `title`:
+ * Слово под курсором, если оно подсвечено. Свой тултип вместо `title`:
  * нативный появляется примерно через секунду, и настроить эту задержку нельзя.
  *
  * Слушатель один: `mouseover` всплывает и приходит и при уходе на соседний элемент,
@@ -26,22 +26,17 @@ export function useHighlightHover(): { hint: Ref<HoverHint | undefined> } {
 
   function onMouseOver(event: MouseEvent): void {
     const target = event.target instanceof Element
-      ? event.target.closest(`mark[${TRANSLATE_ATTR}]`)
+      ? event.target.closest('[data-nt-highlight="1"]')
       : null
 
-    if (!target) {
-      hide()
-      return
-    }
-
-    const translate = target.getAttribute(TRANSLATE_ATTR)
-    if (!translate) {
+    const term = target?.textContent?.trim()
+    if (!target || !term) {
       hide()
       return
     }
 
     const rect = target.getBoundingClientRect()
-    hint.value = { translate, x: rect.left + rect.width / 2, y: rect.top }
+    hint.value = { term, x: rect.left + rect.width / 2, y: rect.top }
   }
 
   // lifecycle
@@ -49,11 +44,14 @@ export function useHighlightHover(): { hint: Ref<HoverHint | undefined> } {
     document.addEventListener('mouseover', onMouseOver)
     // координаты в системе viewport: при скролле подсказка уезжает от слова
     document.addEventListener('scroll', hide, true)
+    // курсор ушёл за пределы страницы — `mouseover` больше не придёт, и подсказка бы зависла
+    document.addEventListener('mouseleave', hide)
   })
 
   onUnmounted((): void => {
     document.removeEventListener('mouseover', onMouseOver)
     document.removeEventListener('scroll', hide, true)
+    document.removeEventListener('mouseleave', hide)
   })
 
   return { hint }

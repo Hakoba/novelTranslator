@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookA, Check, Download, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
+import { BookA, Check, Download, LoaderCircle, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
 // путь до wasm даёт сборщик: в расширении относительные пути sql.js не находит
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 import { parseApkg } from '@/utils/anki'
@@ -25,7 +25,15 @@ const PAGE_SIZE = 20
 
 // composables
 const { t } = useI18n()
-const { entries, addEntry, updateEntry, removeEntry } = useDictionary()
+const {
+  entries,
+  deletedEntries,
+  addEntry,
+  updateEntry,
+  removeEntry,
+  restoreEntry,
+  purgeDeleted,
+} = useDictionary()
 const { ignored, restoreWord } = useIgnoredWords()
 const { isExporting, exportError, exportToAnki } = useAnkiExport()
 
@@ -182,7 +190,15 @@ function submitDraft(): void {
             @click="exportToAnki(visibleEntries)"
           >
             <template #icon>
-              <Download :size="16" />
+              <LoaderCircle
+                v-if="isExporting"
+                :size="16"
+                class="animate-spin"
+              />
+              <Download
+                v-else
+                :size="16"
+              />
             </template>
           </Button>
           <Button
@@ -195,7 +211,15 @@ function submitDraft(): void {
             @click="$file?.click()"
           >
             <template #icon>
-              <Upload :size="16" />
+              <LoaderCircle
+                v-if="importState.busy"
+                :size="16"
+                class="animate-spin"
+              />
+              <Upload
+                v-else
+                :size="16"
+              />
             </template>
           </Button>
           <input
@@ -295,7 +319,19 @@ function submitDraft(): void {
                   :disabled="!draft.original.trim() || isSuggesting"
                   :label="isSuggesting ? t('dictionary.fromDictionaryBusy') : t('dictionary.fromDictionary')"
                   @click="suggestTranslation(true)"
-                />
+                >
+                  <template #icon>
+                    <LoaderCircle
+                      v-if="isSuggesting"
+                      :size="16"
+                      class="animate-spin"
+                    />
+                    <BookA
+                      v-else
+                      :size="16"
+                    />
+                  </template>
+                </Button>
               </div>
             </div>
 
@@ -524,6 +560,53 @@ function submitDraft(): void {
             </ul>
           </template>
         </DataView>
+
+        <!-- удаление мягкое: запись остаётся надгробием, отсюда её можно вернуть с прогрессом -->
+        <div
+          v-if="deletedEntries.length"
+          class="flex flex-col gap-2 border-t border-line pt-4"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="m-0 text-muted">
+              {{ t('dictionary.deletedTitle', { count: deletedEntries.length }) }}
+            </p>
+            <Button
+              size="small"
+              severity="danger"
+              text
+              :label="t('dictionary.deletedPurge')"
+              :title="t('dictionary.deletedPurgeHint')"
+              @click="purgeDeleted"
+            >
+              <template #icon>
+                <Trash2 :size="14" />
+              </template>
+            </Button>
+          </div>
+          <ul class="m-0 flex list-none flex-col gap-1 p-0">
+            <li
+              v-for="entry in deletedEntries"
+              :key="entry.id"
+              class="flex items-center gap-2"
+            >
+              <Button
+                size="small"
+                severity="secondary"
+                text
+                rounded
+                :aria-label="t('dictionary.deletedRestore', { term: entry.original })"
+                :title="t('dictionary.deletedRestore', { term: entry.original })"
+                @click="restoreEntry(entry.id)"
+              >
+                <RotateCcw :size="14" />
+              </Button>
+              <span class="min-w-0 truncate">
+                <span class="font-medium">{{ entry.original }}</span>
+                <span class="text-muted"> — {{ entry.translate }}</span>
+              </span>
+            </li>
+          </ul>
+        </div>
 
         <div
           v-if="ignored.length"

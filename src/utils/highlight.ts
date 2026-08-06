@@ -58,9 +58,6 @@ function walkTextNodes(root: Node): Text[] {
 }
 
 /** Инлайном, а не классом: подсветка живёт в документе сайта, своего CSS мы туда не добавляем */
-/** Перевод для тултипа: читает `useHighlightHover` при наведении */
-export const TRANSLATE_ATTR = 'data-nt-translate'
-
 // cursor:help, а не pointer: клик по слову ничего не делает, есть только тултип
 const BASE_STYLE = 'color:inherit;border-radius:2px;padding:0 2px;cursor:help'
 
@@ -71,13 +68,11 @@ const STYLES: Record<HighlightVariant, string> = {
 
 export type HighlightVariant = 'new' | 'saved'
 
-function createMark(text: string, variant: HighlightVariant, title?: string): HTMLElement {
+function createMark(text: string, variant: HighlightVariant): HTMLElement {
   const mark = document.createElement('mark')
   mark.className = 'nt-highlight'
   mark.setAttribute('data-nt-highlight', '1')
   mark.style.cssText = STYLES[variant]
-  // не `title`: нативный тултип ждёт около секунды, а свой оверлей рисует сразу
-  if (title) mark.setAttribute(TRANSLATE_ATTR, title)
   mark.textContent = text
 
   return mark
@@ -88,7 +83,6 @@ function highlightNode(
   node: Text,
   pattern: RegExp,
   variants: HighlightVariant[],
-  titles: Map<string, string>,
 ): void {
   const text = node.nodeValue ?? ''
   pattern.lastIndex = 0
@@ -101,7 +95,7 @@ function highlightNode(
     if (match.index > lastIndex) fragment.append(text.slice(lastIndex, match.index))
 
     const variant = variants[matchedGroupIndex(match)] ?? 'new'
-    fragment.append(createMark(match[0], variant, titles.get(normalizeTerm(match[0]))))
+    fragment.append(createMark(match[0], variant))
     lastIndex = match.index + match[0].length
   }
 
@@ -122,14 +116,8 @@ export function clearHighlights(): void {
   })
 }
 
-export type HighlightTerm = {
-  text: string
-  /** Показывается в тултипе при наведении */
-  translate?: string
-}
-
 export type HighlightGroup = {
-  terms: HighlightTerm[]
+  terms: string[]
   variant: HighlightVariant
 }
 
@@ -140,10 +128,7 @@ export type HighlightGroup = {
  */
 export function highlightTerms(groups: HighlightGroup[]): void {
   const active = groups
-    .map((group) => ({
-      variant: group.variant,
-      terms: normalizeTerms(group.terms.map((term) => term.text)),
-    }))
+    .map((group) => ({ variant: group.variant, terms: normalizeTerms(group.terms) }))
     .filter((group) => group.terms.length)
 
   const source = buildTermsPattern(active.map((group) => group.terms))
@@ -151,16 +136,71 @@ export function highlightTerms(groups: HighlightGroup[]): void {
 
   const pattern = new RegExp(source, 'giu')
   const variants = active.map((group) => group.variant)
-  // по нормализованному тексту: в тексте слово встретится и с заглавной, и в другом отступе
-  const titles = new Map<string, string>(
-    groups
-      .flatMap((group) => group.terms)
-      .filter((term) => term.translate)
-      .map((term) => [normalizeTerm(term.text), term.translate ?? '']),
-  )
 
   // список узлов снимаем заранее: замена узла на фрагмент ломает живой обход
   for (const node of walkTextNodes(document.body)) {
-    highlightNode(node, pattern, variants, titles)
+    highlightNode(node, pattern, variants)
   }
+}
+
+/** Сколько времени горит вспышка после перехода к слову */
+const FLASH_MS = 500
+
+// сколько раз к слову уже переходили: повторный клик ведёт к следующему вхождению
+const visits = new Map<string, number>()
+
+/**
+ * Слова, которые горят прямо сейчас, с их настоящим стилем. Без этого повторный
+ * переход к тому же слову внутри полусекунды принял бы за исходный стиль саму
+ * вспышку — и слово осталось бы синим навсегда.
+ */
+const flashing = new WeakMap<HTMLElement, { original: string; timer: ReturnType<typeof setTimeout> }>()
+
+function flash(mark: HTMLElement, calm: boolean): void {
+  const pending = flashing.get(mark)
+  if (pending) clearTimeout(pending.timer)
+
+  const original = pending?.original ?? mark.style.cssText
+  const fade = calm ? '' : 'transition:background-color .2s ease,box-shadow .2s ease;'
+  mark.style.cssText = `${original};${fade}background:rgba(59,130,246,.55);box-shadow:0 0 0 4px rgba(59,130,246,.35)`
+
+  const timer = setTimeout(() => {
+    mark.style.cssText = original
+    flashing.delete(mark)
+  }, FLASH_MS)
+
+  flashing.set(mark, { original, timer })
+}
+
+function occurrences(term: string): HTMLElement[] {
+  const key = normalizeTerm(term)
+
+  return Array.from(document.querySelectorAll<HTMLElement>('[data-nt-highlight="1"]'))
+    .filter((mark) => normalizeTerm(mark.textContent ?? '') === key)
+}
+
+export function hasOccurrence(term: string): boolean {
+  return occurrences(term).length > 0
+}
+
+/**
+ * Прокручивает страницу к слову и коротко подсвечивает его. Каждый следующий
+ * вызов ведёт к следующему вхождению — слово в главе встречается не по разу.
+ *
+ * Вспышка — инлайновым стилем с `transition`: своего CSS в документе сайта нет,
+ * а `@keyframes` без таблицы стилей не объявить.
+ */
+export function revealTerm(term: string): void {
+  const found = occurrences(term)
+  if (!found.length) return
+
+  const visit = visits.get(normalizeTerm(term)) ?? 0
+  visits.set(normalizeTerm(term), visit + 1)
+
+  const mark = found[visit % found.length]
+  if (!mark) return
+
+  const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  mark.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' })
+  flash(mark, calm)
 }

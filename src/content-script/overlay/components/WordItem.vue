@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookmarkCheck, BookmarkPlus, EyeOff } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus, Crosshair, EyeOff, LoaderCircle } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import LookupPanel from '@/components/LookupPanel.vue'
 import type { WordWithExplanation } from '@/types/words'
 import { useDictionary } from '@/composables/useDictionary'
+import { hasOccurrence } from '@/utils/highlight'
 import { requestExplanation } from '@/utils/llmClient'
 
 const props = defineProps<{ word: WordWithExplanation; sourceText: string }>()
@@ -13,6 +14,7 @@ const props = defineProps<{ word: WordWithExplanation; sourceText: string }>()
 const emit = defineEmits<{
   (e: 'addToDictionary', word: WordWithExplanation): void
   (e: 'ignore'): void
+  (e: 'reveal'): void
 }>()
 
 // composables
@@ -23,12 +25,23 @@ const { hasEntry } = useDictionary()
 const isTipsOpen = ref<boolean>(false)
 const isExplanationLoading = ref<boolean>(false)
 const explanation = ref<string | undefined>(props.word.explanation)
+/**
+ * Есть ли к чему вести: модель иногда отвечает начальной формой, которой в тексте
+ * нет. Считаем один раз при монтировании — подсветку ставит родительский watcher,
+ * и он успевает отработать раньше рендера списка.
+ */
+const isOnPage = ref<boolean>(false)
 
 // computed
 const tipsId = computed<string>(
   () => `nt-tips-${props.word.original.replace(/[^a-zA-Z0-9_-]+/g, '-')}`,
 )
 const isSaved = computed<boolean>(() => hasEntry(props.word.original))
+
+// lifecycle
+onMounted((): void => {
+  isOnPage.value = hasOccurrence(props.word.original)
+})
 
 // методы
 /** Пояснение модели — отдельной кнопкой: раскрытие карточки должно оставаться бесплатным */
@@ -58,7 +71,21 @@ function addToDictionary(): void {
   <li class="flex items-start gap-2 rounded-lg border border-line bg-surface-hover px-3 py-2.5">
     <div class="flex min-w-0 flex-1 flex-col gap-0.5">
       <p class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span class="font-semibold">{{ word.original }}</span>
+        <!-- слово-кнопка ведёт к тексту; когда вести некуда, остаётся обычной подписью -->
+        <button
+          v-if="isOnPage"
+          type="button"
+          class="cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-[length:inherit]
+                 font-semibold text-content underline decoration-dotted underline-offset-4"
+          :data-hint="t('overlay.revealHint')"
+          @click="emit('reveal')"
+        >
+          {{ word.original }}
+        </button>
+        <span
+          v-else
+          class="font-semibold"
+        >{{ word.original }}</span>
         <span class="text-muted">{{ word.translate }}</span>
         <span
           v-if="word.level"
@@ -90,8 +117,13 @@ function addToDictionary(): void {
 
         <p
           v-if="explanation || isExplanationLoading"
-          class="m-0 text-muted"
+          class="m-0 flex items-center gap-2 text-muted"
         >
+          <LoaderCircle
+            v-if="isExplanationLoading"
+            :size="14"
+            class="shrink-0 animate-spin"
+          />
           {{ isExplanationLoading ? t('overlay.explanationLoading') : explanation }}
         </p>
 
@@ -108,6 +140,19 @@ function addToDictionary(): void {
     </div>
 
     <div class="flex shrink-0 gap-0.5">
+      <Button
+        v-if="isOnPage"
+        size="small"
+        severity="secondary"
+        text
+        rounded
+        :data-hint="t('overlay.revealHint')"
+        :aria-label="t('overlay.reveal')"
+        @click="emit('reveal')"
+      >
+        <Crosshair :size="16" />
+      </Button>
+
       <Button
         size="small"
         severity="secondary"

@@ -1,23 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookmarkPlus, LoaderCircle, RotateCw } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus, LoaderCircle, RotateCw } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import OverlayHeader from './components/OverlayHeader.vue'
+import AppLogo from '@/components/AppLogo.vue'
+import WordCard from './components/WordCard.vue'
 import WordItem from './components/WordItem.vue'
 import { useDifficultWords } from '@/composables/useDifficultWords'
 import { useDictionary } from '@/composables/useDictionary'
 import { useAreaSelectors } from '@/composables/useAreaSelectors'
 import { useHighlightHover } from '@/composables/useHighlightHover'
 import { useIgnoredWords } from '@/composables/useIgnoredWords'
-import { useReaderSettings } from '@/composables/useReaderSettings'
-import { useTextSelection } from '@/composables/useTextSelection'
+import { type SelectionMode, useReaderSettings } from '@/composables/useReaderSettings'
+import { type SelectionAnchor, useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
-import { clearHighlights, highlightTerms, type HighlightTerm } from '@/utils/highlight'
+import { clearHighlights, highlightTerms, revealTerm } from '@/utils/highlight'
 import { translateTerm } from '@/utils/translateTerm'
 import { normalizeTerm } from '@/utils/dictionary'
 import { normalizeHost } from '@/utils/extract/rules'
 import { findSentence } from '@/utils/sentence'
+import { dueInDays } from '@/utils/srs'
 import type { WordWithExplanation } from '@/types/words'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
@@ -31,7 +34,7 @@ const {
   errorMessage,
   fetchDifficultWords,
 } = useDifficultWords()
-const { entries, addEntry } = useDictionary()
+const { entries, addEntry, hasEntry } = useDictionary()
 const { selectors, setSelector, clearSelector } = useAreaSelectors()
 const { anchor, clearSelection } = useTextSelection()
 const { isIgnored, ignoreWord } = useIgnoredWords()
@@ -48,7 +51,9 @@ const isMinimized = ref<boolean>(false)
 // разбор ещё не запускали: с выключенным автозапуском вместо пустого списка нужна кнопка
 const isStarted = ref<boolean>(false)
 const cancelPicking = ref<(() => void) | undefined>(undefined)
-const selectionState = ref<'idle' | 'saving' | 'failed'>('idle')
+/** Перевод выделенного: `idle` — ещё не просили, дальше по ходу запроса */
+const selectionStage = ref<'idle' | 'loading' | 'ready' | 'failed'>('idle')
+const selectionWord = ref<WordWithExplanation | undefined>(undefined)
 // снимок словаря на момент разбора: если фильтровать по живому, строка исчезает
 // из списка прямо под курсором в момент клика по закладке
 const knownTerms = ref<Set<string>>(new Set())
@@ -63,13 +68,50 @@ const newWords = computed<WordWithExplanation[]>(() =>
 const hasArea = computed<boolean>(() =>
   selectors.value.some((item) => item.host === normalizeHost(location.host)),
 )
-const savedTerms = computed<HighlightTerm[]>(() =>
-  entries.value.map((entry) => ({ text: entry.original, translate: entry.translate })),
-)
+const savedTerms = computed<string[]>(() => entries.value.map((entry) => entry.original))
+
+const selectionMode = computed<SelectionMode>(() => readerSettings.value.selectionMode)
+
+const saveSelectionLabel = computed<string>(() => {
+  if (selectionStage.value === 'loading') return t('overlay.saveSelectionBusy')
+  if (selectionStage.value === 'failed') return t('overlay.saveSelectionFailed')
+
+  return t('overlay.saveSelection')
+})
+
+/**
+ * Карточка для слова под курсором. Данные берём из живых списков, а не из
+ * атрибутов подсветки: добавили слово в словарь — подсказка расскажет об этом
+ * сразу, без переразметки страницы.
+ */
+const hoverWord = computed<WordWithExplanation | undefined>(() => {
+  const term = hint.value?.term
+  if (!term) return undefined
+
+  const key = normalizeTerm(term)
+  const saved = entries.value.find((entry) => normalizeTerm(entry.original) === key)
+  const found = words.value.find((word) => normalizeTerm(word.original) === key)
+
+  if (!saved && !found) return undefined
+
+  return {
+    original: term,
+    translate: found?.translate ?? saved?.translate ?? '',
+    level: found?.level ?? saved?.level,
+  }
+})
 
 // watchers
 watch(words, (): void => {
   knownTerms.value = new Set(entries.value.map((entry) => normalizeTerm(entry.original)))
+})
+
+// новое выделение — новый перевод; в режиме «сразу перевод» запрос уходит без клика
+watch(anchor, (selected): void => {
+  selectionStage.value = 'idle'
+  selectionWord.value = undefined
+
+  if (selected && selectionMode.value === 'translate') void translateSelection()
 })
 
 // immediate: без разбора страницы ничего не меняется, а сохранённые слова подсветить надо сразу
@@ -79,10 +121,7 @@ watch([newWords, savedTerms, isLoading], (): void => {
   clearHighlights()
   highlightTerms([
     { terms: savedTerms.value, variant: 'saved' },
-    {
-      terms: newWords.value.map((word) => ({ text: word.original, translate: word.translate })),
-      variant: 'new',
-    },
+    { terms: newWords.value.map((word) => word.original), variant: 'new' },
   ])
 }, { immediate: true })
 
@@ -144,60 +183,118 @@ function addAll(): void {
   newWords.value.forEach(addToDictionary)
 }
 
-/** Выделенную фразу переводим отдельно: в разборе страницы её может и не быть */
-async function saveSelection(): Promise<void> {
-  const selected = anchor.value
-  if (!selected || selectionState.value === 'saving') return
+/** Слово уже в словаре — вместо «найдено на странице» говорим, когда его повторять */
+function savedNote(term: string): string | undefined {
+  const key = normalizeTerm(term)
+  const saved = entries.value.find((entry) => normalizeTerm(entry.original) === key)
+  if (!saved) return undefined
 
-  selectionState.value = 'saving'
-  const context = findSentence(sourceText.value, selected.text)
+  const days = dueInDays(saved.dueAt, Date.now())
+
+  return days ? t('overlay.savedDue', { count: days }, days) : t('overlay.saved')
+}
+
+/** Абзац рядом с выделением точнее разобранного текста, но тот выручает при переносах строк */
+function selectionContext(selected: SelectionAnchor): string | undefined {
+  return selected.context ?? findSentence(sourceText.value, selected.text)
+}
+
+/** Выделенную фразу переводим отдельно: в разборе страницы её может и не быть */
+async function translateSelection(): Promise<void> {
+  const selected = anchor.value
+  if (!selected || selectionStage.value === 'loading') return
+
+  selectionStage.value = 'loading'
 
   try {
-    const word = await translateTerm(selected.text, context ?? '')
+    const word = await translateTerm(selected.text, selectionContext(selected) ?? '')
+    // пока ходили за переводом, выделение могли сменить — тот ответ уже не к месту
+    if (anchor.value?.text !== selected.text) return
     if (!word) throw new Error(t('errors.translationMissing'))
 
-    addEntry({ original: selected.text, translate: word.translate, context, level: word.level })
-    selectionState.value = 'idle'
-    clearSelection()
+    selectionWord.value = word
+    selectionStage.value = 'ready'
   } catch {
-    selectionState.value = 'failed'
+    if (anchor.value?.text === selected.text) selectionStage.value = 'failed'
   }
+}
+
+function saveSelectionWord(): void {
+  const selected = anchor.value
+  const word = selectionWord.value
+  if (!selected || !word) return
+
+  addEntry({
+    original: selected.text,
+    translate: word.translate,
+    context: selectionContext(selected),
+    level: word.level,
+  })
+}
+
+/** Режим «сразу в словарь»: перевод не показываем, одним действием переводим и сохраняем */
+async function translateAndSave(): Promise<void> {
+  await translateSelection()
+  if (selectionStage.value !== 'ready') return
+
+  saveSelectionWord()
+  clearSelection()
 }
 </script>
 
 <template>
+  <!-- подсказка не перехватывает мышь: иначе курсор «проваливался» бы в неё с самого слова -->
   <div
-    v-if="hint"
-    class="fixed max-w-64 -translate-x-1/2 -translate-y-[calc(100%+6px)] rounded-md border border-line
-           bg-surface px-2 py-1 text-sm text-content shadow-[0_6px_20px_-6px_rgba(0,0,0,.4)]"
+    v-if="hint && hoverWord"
+    class="fixed -translate-x-1/2 -translate-y-[calc(100%+6px)]"
     :style="{ left: `${hint.x}px`, top: `${hint.y}px`, pointerEvents: 'none' }"
   >
-    {{ hint.translate }}
+    <WordCard
+      :term="hoverWord.original"
+      :translate="hoverWord.translate"
+      :level="hoverWord.level"
+      :note="savedNote(hoverWord.original) ?? t('overlay.foundHere')"
+    />
   </div>
 
   <div
-    v-if="anchor"
+    v-if="anchor && selectionMode !== 'off'"
     class="fixed -translate-x-1/2 -translate-y-[calc(100%+8px)]"
     :style="{ left: `${anchor.x}px`, top: `${anchor.y}px` }"
   >
+    <!-- предохранитель: перевод стоит запроса, поэтому сначала спрашиваем, нужен ли он -->
     <Button
+      v-if="selectionMode === 'hint' && selectionStage === 'idle'"
       size="small"
       rounded
       raised
-      :label="t(`overlay.${{ idle: 'saveSelection', saving: 'saveSelectionBusy', failed: 'saveSelectionFailed' }[selectionState]}`)"
-      :severity="selectionState === 'failed' ? 'danger' : 'primary'"
-      :disabled="selectionState === 'saving'"
-      @click="saveSelection"
+      :aria-label="t('overlay.translateSelection')"
+      @click="translateSelection"
+    >
+      <template #icon>
+        <AppLogo :size="16" />
+      </template>
+    </Button>
+
+    <Button
+      v-else-if="selectionMode === 'save'"
+      size="small"
+      rounded
+      raised
+      :label="saveSelectionLabel"
+      :severity="selectionStage === 'failed' ? 'danger' : 'primary'"
+      :disabled="selectionStage === 'loading'"
+      @click="translateAndSave"
     >
       <template #icon>
         <!-- спиннер PrimeVue — иконочный шрифт, которого в оверлее нет: крутим свою иконку -->
         <LoaderCircle
-          v-if="selectionState === 'saving'"
+          v-if="selectionStage === 'loading'"
           :size="16"
           class="animate-spin"
         />
         <RotateCw
-          v-else-if="selectionState === 'failed'"
+          v-else-if="selectionStage === 'failed'"
           :size="16"
         />
         <BookmarkPlus
@@ -206,13 +303,58 @@ async function saveSelection(): Promise<void> {
         />
       </template>
     </Button>
+
+    <WordCard
+      v-else
+      :term="anchor.text"
+      :translate="selectionStage === 'failed' ? t('overlay.translateFailed') : selectionWord?.translate"
+      :level="selectionWord?.level"
+      :note="savedNote(anchor.text)"
+      :is-loading="selectionStage === 'loading'"
+    >
+      <div class="flex justify-end">
+        <Button
+          v-if="selectionStage === 'failed'"
+          size="small"
+          severity="secondary"
+          outlined
+          :label="t('common.retry')"
+          @click="translateSelection"
+        >
+          <template #icon>
+            <RotateCw :size="16" />
+          </template>
+        </Button>
+
+        <Button
+          v-else
+          size="small"
+          severity="success"
+          outlined
+          :disabled="selectionStage !== 'ready' || hasEntry(anchor.text)"
+          :label="t(hasEntry(anchor.text) ? 'overlay.alreadySaved' : 'overlay.addToDictionary')"
+          @click="saveSelectionWord"
+        >
+          <template #icon>
+            <BookmarkCheck
+              v-if="hasEntry(anchor.text)"
+              :size="16"
+            />
+            <BookmarkPlus
+              v-else
+              :size="16"
+            />
+          </template>
+        </Button>
+      </div>
+    </WordCard>
   </div>
 
   <section
     class="fixed bottom-4 right-4 flex max-h-[70vh] w-[420px] max-w-[calc(100vw-2rem)] flex-col
            rounded-xl border border-line bg-surface text-content
            shadow-[0_10px_32px_-8px_rgba(0,0,0,.35)]"
-    aria-label="Novel Translator"
+    aria-label="Erudit"
   >
     <header class="border-b border-line px-3 py-2.5">
       <OverlayHeader
@@ -307,6 +449,7 @@ async function saveSelection(): Promise<void> {
             :source-text="sourceText"
             @add-to-dictionary="addToDictionary"
             @ignore="ignoreWord(word.original)"
+            @reveal="revealTerm(word.original)"
           />
         </ul>
       </div>

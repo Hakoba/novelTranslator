@@ -1,12 +1,27 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { GraduationCap, Languages, MessageSquareText, Monitor, ScanText } from 'lucide-vue-next'
-import { PROMPT_EXTRA_LIMIT, useReaderSettings } from '@/composables/useReaderSettings'
+import { computed } from 'vue'
+import { Bot, GraduationCap, Languages, MessageSquareText, Monitor, MousePointerClick, ScanText } from 'lucide-vue-next'
+import { PROMPT_EXTRA_LIMIT, SELECTION_MODES, WORD_ENGINES, useReaderSettings } from '@/composables/useReaderSettings'
 import { LANGUAGES, UI_LANGUAGES } from '@/utils/languages'
+import { PROFILE_LANG } from '@/utils/analyze'
 import { CEFR_LEVELS } from '@/types/words'
 
 const { t } = useI18n()
 const { settings } = useReaderSettings()
+
+const selectionOptions = computed<{ value: string; label: string }[]>(() =>
+  SELECTION_MODES.map((mode) => ({ value: mode, label: t(`settings.analyze.selectionModes.${mode}`) })),
+)
+
+const engineOptions = computed<{ value: string; label: string }[]>(() =>
+  WORD_ENGINES.map((engine) => ({ value: engine, label: t(`settings.analyze.engines.${engine}`) })),
+)
+
+/** Профиль CEFR собран только по английскому — на другом языке он не найдёт ничего */
+const isProfileUseless = computed<boolean>(
+  () => settings.value.engine === 'dictionary' && settings.value.sourceLang !== PROFILE_LANG,
+)
 </script>
 
 <template>
@@ -112,7 +127,37 @@ const { settings } = useReaderSettings()
     </template>
     <template #content>
       <div class="flex max-w-2xl flex-col gap-4 pt-2">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-col gap-2">
+          <label
+            for="word-engine"
+            class="flex items-center gap-2 text-muted"
+          >
+            <Bot :size="14" />
+            {{ t('settings.analyze.engine') }}
+          </label>
+          <Select
+            id="word-engine"
+            v-model="settings.engine"
+            :options="engineOptions"
+            option-label="label"
+            option-value="value"
+            class="w-full sm:w-80"
+          />
+          <small class="text-muted">
+            {{ t(`settings.analyze.engineHints.${settings.engine}`) }}
+          </small>
+
+          <Message
+            v-if="isProfileUseless"
+            severity="warn"
+            size="small"
+            variant="simple"
+          >
+            {{ t('settings.analyze.engineOnlyEnglish') }}
+          </Message>
+        </div>
+
+        <div class="flex items-center gap-2 border-t border-line pt-4">
           <ToggleSwitch
             v-model="settings.autoAnalyze"
             input-id="auto-analyze"
@@ -124,6 +169,27 @@ const { settings } = useReaderSettings()
         <small class="-mt-2 text-muted">
           {{ t('settings.analyze.autoAnalyzeHint') }}
         </small>
+
+        <div class="flex flex-col gap-2 border-t border-line pt-4">
+          <label
+            for="selection-mode"
+            class="flex items-center gap-2 text-muted"
+          >
+            <MousePointerClick :size="14" />
+            {{ t('settings.analyze.selectionMode') }}
+          </label>
+          <Select
+            id="selection-mode"
+            v-model="settings.selectionMode"
+            :options="selectionOptions"
+            option-label="label"
+            option-value="value"
+            class="w-full sm:w-80"
+          />
+          <small class="text-muted">
+            {{ t(`settings.analyze.selectionHints.${settings.selectionMode}`) }}
+          </small>
+        </div>
 
         <div class="flex flex-col gap-2 border-t border-line pt-4">
           <label

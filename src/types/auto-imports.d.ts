@@ -8,6 +8,7 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const CEFR_WORDS: typeof import('../utils/cefr/wordLevels.data').CEFR_WORDS
   const CONTRACT_PROMPT_WORDS: typeof import('../utils/llmClient').CONTRACT_PROMPT_WORDS
   const CREATE_TABLES: typeof import('../utils/ankiSchema').CREATE_TABLES
   const DECK_NAME: typeof import('../utils/ankiSchema').DECK_NAME
@@ -16,39 +17,52 @@ declare global {
   const DEFAULT_DICT_SETTINGS: typeof import('../composables/useDictSettings').DEFAULT_DICT_SETTINGS
   const DEFAULT_LLM_SETTINGS: typeof import('../composables/useLlmSettings').DEFAULT_LLM_SETTINGS
   const DEFAULT_READER_SETTINGS: typeof import('../composables/useReaderSettings').DEFAULT_READER_SETTINGS
+  const DEMO_URL: typeof import('../composables/useAccessSites').DEMO_URL
+  const DICTIONARY_URL: typeof import('../utils/dictionaryTab').DICTIONARY_URL
   const EMPTY_FILTERS: typeof import('../utils/dictionary').EMPTY_FILTERS
   const EffectScope: typeof import('vue').EffectScope
   const FIELD_NAMES: typeof import('../utils/ankiSchema').FIELD_NAMES
+  const HARD_WORDS_LIMIT: typeof import('../utils/cefr/hardWords').HARD_WORDS_LIMIT
+  const HAS_BUNDLED_DICT_KEY: typeof import('../composables/useDictSettings').HAS_BUNDLED_DICT_KEY
   const HAS_DEV_YANDEX_CREDENTIALS: typeof import('../composables/useLlmSettings').HAS_DEV_YANDEX_CREDENTIALS
   const LANGUAGES: typeof import('../utils/languages').LANGUAGES
   const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
+  const MAX_CHARS: typeof import('../utils/extract/blocks').MAX_CHARS
   const MODEL_NAME: typeof import('../utils/ankiSchema').MODEL_NAME
   const OPENAI_COMPATIBLE_PRESETS: typeof import('../composables/useLlmSettings').OPENAI_COMPATIBLE_PRESETS
   const OVERLAY_ROOT_ID: typeof import('../utils/overlayRoot').OVERLAY_ROOT_ID
+  const PROFILE_LANG: typeof import('../utils/analyze').PROFILE_LANG
   const PROMPT_EXTRA_LIMIT: typeof import('../composables/useReaderSettings').PROMPT_EXTRA_LIMIT
   const PROVIDERS: typeof import('../utils/llm/providers').PROVIDERS
   const PROVIDER_LIST: typeof import('../utils/llm/providers').PROVIDER_LIST
   const REQUEST_TIMEOUT_MS: typeof import('../utils/llmClient').REQUEST_TIMEOUT_MS
+  const SELECTION_MODES: typeof import('../composables/useReaderSettings').SELECTION_MODES
   const SITE_RULES: typeof import('../utils/extract/rules').SITE_RULES
   const TRANSLATE_ATTR: typeof import('../utils/highlight').TRANSLATE_ATTR
   const TRANSLATORS: typeof import('../utils/mt/translators').TRANSLATORS
   const TRANSLATOR_LIST: typeof import('../utils/mt/translators').TRANSLATOR_LIST
   const UI_LANGUAGES: typeof import('../utils/languages').UI_LANGUAGES
   const UI_LANGUAGE_CODES: typeof import('../utils/languages').UI_LANGUAGE_CODES
+  const WORD_ENGINES: typeof import('../composables/useReaderSettings').WORD_ENGINES
   const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
   const YANDEX_DICT_KEY_URL: typeof import('../composables/useDictSettings').YANDEX_DICT_KEY_URL
+  const YANDEX_DICT_URL: typeof import('../utils/dictClient').YANDEX_DICT_URL
   const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
+  const analyzeText: typeof import('../utils/analyze').analyzeText
   const appRouter: typeof import('../utils/router/index').appRouter
+  const appendedTail: typeof import('../utils/extract/blocks').appendedTail
   const applyTheme: typeof import('../composables/useTheme').applyTheme
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
+  const baseForms: typeof import('../utils/cefr/forms').baseForms
   const browser: typeof import('webextension-polyfill')
   const browserLanguage: typeof import('../utils/languages').browserLanguage
   const buildApkg: typeof import('../utils/anki').buildApkg
   const buildDeck: typeof import('../utils/ankiSchema').buildDeck
   const buildModel: typeof import('../utils/ankiSchema').buildModel
   const buildTermsPattern: typeof import('../utils/terms').buildTermsPattern
+  const cefrLevel: typeof import('../utils/cefr/levels').cefrLevel
   const checkModel: typeof import('../utils/llmClient').checkModel
   const clearHighlights: typeof import('../utils/highlight').clearHighlights
   const collectLevels: typeof import('../utils/dictionary').collectLevels
@@ -84,13 +98,18 @@ declare global {
   const defineComponent: typeof import('vue').defineComponent
   const definePage: typeof import('vue-router/auto').definePage
   const defineStore: typeof import('pinia').defineStore
+  const dictKey: typeof import('../composables/useDictSettings').dictKey
+  const dictTranslate: typeof import('../utils/translateTerm').dictTranslate
   const dictionaryLinks: typeof import('../utils/dict/links').dictionaryLinks
   const dueEntries: typeof import('../utils/srs').dueEntries
+  const dueInDays: typeof import('../utils/srs').dueInDays
   const eagerComputed: typeof import('@vueuse/core').eagerComputed
+  const easiestLevel: typeof import('../utils/cefr/levels').easiestLevel
   const effectScope: typeof import('vue').effectScope
   const extendRef: typeof import('@vueuse/core').extendRef
   const extractContent: typeof import('../utils/llmParse').extractContent
   const extractReadableText: typeof import('../utils/pageText').extractReadableText
+  const findHardWords: typeof import('../utils/cefr/hardWords').findHardWords
   const findLanguage: typeof import('../utils/languages').findLanguage
   const findRule: typeof import('../utils/extract/rules').findRule
   const findSentence: typeof import('../utils/sentence').findSentence
@@ -106,12 +125,15 @@ declare global {
   const getReaderSettings: typeof import('../composables/useReaderSettings').getReaderSettings
   const getTranslator: typeof import('../utils/mt/translators').getTranslator
   const h: typeof import('vue').h
+  const hasOccurrence: typeof import('../utils/highlight').hasOccurrence
   const highlightTerms: typeof import('../utils/highlight').highlightTerms
   const i18n: typeof import('../utils/i18n').i18n
   const ignorableWatch: typeof import('@vueuse/core').ignorableWatch
   const inject: typeof import('vue').inject
   const injectLocal: typeof import('@vueuse/core').injectLocal
   const intervalDays: typeof import('../utils/srs').intervalDays
+  const isBelow: typeof import('../utils/cefr/levels').isBelow
+  const isBundledKey: typeof import('../composables/useDictSettings').isBundledKey
   const isDefined: typeof import('@vueuse/core').isDefined
   const isProxy: typeof import('vue').isProxy
   const isReactive: typeof import('vue').isReactive
@@ -123,6 +145,7 @@ declare global {
   const joinBlocks: typeof import('../utils/extract/blocks').joinBlocks
   const languageName: typeof import('../utils/languages').languageName
   const levelFilterOptions: typeof import('../utils/dictionary').levelFilterOptions
+  const limitChars: typeof import('../utils/extract/blocks').limitChars
   const lookupFreeDictionary: typeof import('../utils/dictClient').lookupFreeDictionary
   const lookupTerm: typeof import('../utils/dictClient').lookupTerm
   const lookupYandex: typeof import('../utils/dictClient').lookupYandex
@@ -165,12 +188,14 @@ declare global {
   const onUnmounted: typeof import('vue').onUnmounted
   const onUpdated: typeof import('vue').onUpdated
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const openDictionaryTab: typeof import('../utils/dictionaryTab').openDictionaryTab
   const parseApkg: typeof import('../utils/anki').parseApkg
   const parseFreeDictionary: typeof import('../utils/dict/parse').parseFreeDictionary
   const parseWords: typeof import('../utils/llmParse').parseWords
   const parseYandexLookup: typeof import('../utils/dict/parse').parseYandexLookup
   const pausableWatch: typeof import('@vueuse/core').pausableWatch
   const pickBestIndex: typeof import('../utils/extract/score').pickBestIndex
+  const pickHardest: typeof import('../utils/cefr/hardWords').pickHardest
   const pinia: typeof import('../utils/pinia').pinia
   const plural: typeof import('../utils/plural').plural
   const pluralIndex: typeof import('../utils/plural').pluralIndex
@@ -198,7 +223,10 @@ declare global {
   const resolveComponent: typeof import('vue').resolveComponent
   const resolveRef: typeof import('@vueuse/core').resolveRef
   const resolveUnref: typeof import('@vueuse/core').resolveUnref
+  const revealTerm: typeof import('../utils/highlight').revealTerm
   const reviewEntry: typeof import('../utils/srs').reviewEntry
+  const reviewWord: typeof import('../utils/cefr/levels').reviewWord
+  const reviewWords: typeof import('../utils/cefr/levels').reviewWords
   const scoreCandidate: typeof import('../utils/extract/score').scoreCandidate
   const sendBgFetch: typeof import('../utils/bgFetch').sendBgFetch
   const setActivePinia: typeof import('pinia').setActivePinia
@@ -212,6 +240,7 @@ declare global {
   const syncRefs: typeof import('@vueuse/core').syncRefs
   const t: typeof import('../utils/i18n').t
   const templateRef: typeof import('@vueuse/core').templateRef
+  const textWords: typeof import('../utils/cefr/hardWords').textWords
   const throttledRef: typeof import('@vueuse/core').throttledRef
   const throttledWatch: typeof import('@vueuse/core').throttledWatch
   const toRaw: typeof import('vue').toRaw
@@ -451,7 +480,7 @@ declare global {
   export type { LlmSettings } from '../composables/useLlmSettings'
   import('../composables/useLlmSettings')
   // @ts-ignore
-  export type { ReaderSettings } from '../composables/useReaderSettings'
+  export type { SelectionMode, WordEngine, ReaderSettings } from '../composables/useReaderSettings'
   import('../composables/useReaderSettings')
   // @ts-ignore
   export type { SelectionAnchor } from '../composables/useTextSelection'
@@ -465,6 +494,9 @@ declare global {
   // @ts-ignore
   export type { BgFetchResponse, BgFetchInit } from '../utils/bgFetch'
   import('../utils/bgFetch')
+  // @ts-ignore
+  export type { LeveledWord } from '../utils/cefr/hardWords'
+  import('../utils/cefr/hardWords')
   // @ts-ignore
   export type { DictLink, LinkLangs } from '../utils/dict/links'
   import('../utils/dict/links')
@@ -481,7 +513,7 @@ declare global {
   export type { CandidateStats } from '../utils/extract/score'
   import('../utils/extract/score')
   // @ts-ignore
-  export type { HighlightVariant, HighlightTerm, HighlightGroup } from '../utils/highlight'
+  export type { HighlightVariant, HighlightGroup } from '../utils/highlight'
   import('../utils/highlight')
   // @ts-ignore
   export type { Language, UiLanguage } from '../utils/languages'
@@ -502,6 +534,7 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly CEFR_WORDS: UnwrapRef<typeof import('../utils/cefr/wordLevels.data')['CEFR_WORDS']>
     readonly CREATE_TABLES: UnwrapRef<typeof import('../utils/ankiSchema')['CREATE_TABLES']>
     readonly DECK_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['DECK_NAME']>
     readonly DEFAULT_CONF: UnwrapRef<typeof import('../utils/ankiSchema')['DEFAULT_CONF']>
@@ -509,39 +542,51 @@ declare module 'vue' {
     readonly DEFAULT_DICT_SETTINGS: UnwrapRef<typeof import('../composables/useDictSettings')['DEFAULT_DICT_SETTINGS']>
     readonly DEFAULT_LLM_SETTINGS: UnwrapRef<typeof import('../composables/useLlmSettings')['DEFAULT_LLM_SETTINGS']>
     readonly DEFAULT_READER_SETTINGS: UnwrapRef<typeof import('../composables/useReaderSettings')['DEFAULT_READER_SETTINGS']>
+    readonly DEMO_URL: UnwrapRef<typeof import('../composables/useAccessSites')['DEMO_URL']>
+    readonly DICTIONARY_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['DICTIONARY_URL']>
     readonly EMPTY_FILTERS: UnwrapRef<typeof import('../utils/dictionary')['EMPTY_FILTERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FIELD_NAMES: UnwrapRef<typeof import('../utils/ankiSchema')['FIELD_NAMES']>
+    readonly HARD_WORDS_LIMIT: UnwrapRef<typeof import('../utils/cefr/hardWords')['HARD_WORDS_LIMIT']>
+    readonly HAS_BUNDLED_DICT_KEY: UnwrapRef<typeof import('../composables/useDictSettings')['HAS_BUNDLED_DICT_KEY']>
     readonly HAS_DEV_YANDEX_CREDENTIALS: UnwrapRef<typeof import('../composables/useLlmSettings')['HAS_DEV_YANDEX_CREDENTIALS']>
     readonly LANGUAGES: UnwrapRef<typeof import('../utils/languages')['LANGUAGES']>
     readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
+    readonly MAX_CHARS: UnwrapRef<typeof import('../utils/extract/blocks')['MAX_CHARS']>
     readonly MODEL_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['MODEL_NAME']>
     readonly OPENAI_COMPATIBLE_PRESETS: UnwrapRef<typeof import('../composables/useLlmSettings')['OPENAI_COMPATIBLE_PRESETS']>
     readonly OVERLAY_ROOT_ID: UnwrapRef<typeof import('../utils/overlayRoot')['OVERLAY_ROOT_ID']>
+    readonly PROFILE_LANG: UnwrapRef<typeof import('../utils/analyze')['PROFILE_LANG']>
     readonly PROMPT_EXTRA_LIMIT: UnwrapRef<typeof import('../composables/useReaderSettings')['PROMPT_EXTRA_LIMIT']>
     readonly PROVIDERS: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDERS']>
     readonly PROVIDER_LIST: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDER_LIST']>
     readonly REQUEST_TIMEOUT_MS: UnwrapRef<typeof import('../utils/llmClient')['REQUEST_TIMEOUT_MS']>
+    readonly SELECTION_MODES: UnwrapRef<typeof import('../composables/useReaderSettings')['SELECTION_MODES']>
     readonly SITE_RULES: UnwrapRef<typeof import('../utils/extract/rules')['SITE_RULES']>
-    readonly TRANSLATE_ATTR: UnwrapRef<typeof import('../utils/highlight')['TRANSLATE_ATTR']>
     readonly TRANSLATORS: UnwrapRef<typeof import('../utils/mt/translators')['TRANSLATORS']>
     readonly TRANSLATOR_LIST: UnwrapRef<typeof import('../utils/mt/translators')['TRANSLATOR_LIST']>
     readonly UI_LANGUAGES: UnwrapRef<typeof import('../utils/languages')['UI_LANGUAGES']>
     readonly UI_LANGUAGE_CODES: UnwrapRef<typeof import('../utils/languages')['UI_LANGUAGE_CODES']>
+    readonly WORD_ENGINES: UnwrapRef<typeof import('../composables/useReaderSettings')['WORD_ENGINES']>
     readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
     readonly YANDEX_DICT_KEY_URL: UnwrapRef<typeof import('../composables/useDictSettings')['YANDEX_DICT_KEY_URL']>
+    readonly YANDEX_DICT_URL: UnwrapRef<typeof import('../utils/dictClient')['YANDEX_DICT_URL']>
     readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
+    readonly analyzeText: UnwrapRef<typeof import('../utils/analyze')['analyzeText']>
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
+    readonly appendedTail: UnwrapRef<typeof import('../utils/extract/blocks')['appendedTail']>
     readonly applyTheme: UnwrapRef<typeof import('../composables/useTheme')['applyTheme']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly baseForms: UnwrapRef<typeof import('../utils/cefr/forms')['baseForms']>
     readonly browser: UnwrapRef<typeof import('webextension-polyfill')['=']>
     readonly browserLanguage: UnwrapRef<typeof import('../utils/languages')['browserLanguage']>
     readonly buildApkg: UnwrapRef<typeof import('../utils/anki')['buildApkg']>
     readonly buildDeck: UnwrapRef<typeof import('../utils/ankiSchema')['buildDeck']>
     readonly buildModel: UnwrapRef<typeof import('../utils/ankiSchema')['buildModel']>
     readonly buildTermsPattern: UnwrapRef<typeof import('../utils/terms')['buildTermsPattern']>
+    readonly cefrLevel: UnwrapRef<typeof import('../utils/cefr/levels')['cefrLevel']>
     readonly checkModel: UnwrapRef<typeof import('../utils/llmClient')['checkModel']>
     readonly clearHighlights: UnwrapRef<typeof import('../utils/highlight')['clearHighlights']>
     readonly collectLevels: UnwrapRef<typeof import('../utils/dictionary')['collectLevels']>
@@ -577,13 +622,18 @@ declare module 'vue' {
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly definePage: UnwrapRef<typeof import('vue-router/auto')['definePage']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
+    readonly dictKey: UnwrapRef<typeof import('../composables/useDictSettings')['dictKey']>
+    readonly dictTranslate: UnwrapRef<typeof import('../utils/translateTerm')['dictTranslate']>
     readonly dictionaryLinks: UnwrapRef<typeof import('../utils/dict/links')['dictionaryLinks']>
     readonly dueEntries: UnwrapRef<typeof import('../utils/srs')['dueEntries']>
+    readonly dueInDays: UnwrapRef<typeof import('../utils/srs')['dueInDays']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
+    readonly easiestLevel: UnwrapRef<typeof import('../utils/cefr/levels')['easiestLevel']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly extractContent: UnwrapRef<typeof import('../utils/llmParse')['extractContent']>
     readonly extractReadableText: UnwrapRef<typeof import('../utils/pageText')['extractReadableText']>
+    readonly findHardWords: UnwrapRef<typeof import('../utils/cefr/hardWords')['findHardWords']>
     readonly findLanguage: UnwrapRef<typeof import('../utils/languages')['findLanguage']>
     readonly findRule: UnwrapRef<typeof import('../utils/extract/rules')['findRule']>
     readonly findSentence: UnwrapRef<typeof import('../utils/sentence')['findSentence']>
@@ -599,12 +649,15 @@ declare module 'vue' {
     readonly getReaderSettings: UnwrapRef<typeof import('../composables/useReaderSettings')['getReaderSettings']>
     readonly getTranslator: UnwrapRef<typeof import('../utils/mt/translators')['getTranslator']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly hasOccurrence: UnwrapRef<typeof import('../utils/highlight')['hasOccurrence']>
     readonly highlightTerms: UnwrapRef<typeof import('../utils/highlight')['highlightTerms']>
     readonly i18n: UnwrapRef<typeof import('../utils/i18n')['i18n']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
     readonly intervalDays: UnwrapRef<typeof import('../utils/srs')['intervalDays']>
+    readonly isBelow: UnwrapRef<typeof import('../utils/cefr/levels')['isBelow']>
+    readonly isBundledKey: UnwrapRef<typeof import('../composables/useDictSettings')['isBundledKey']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -616,6 +669,7 @@ declare module 'vue' {
     readonly joinBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['joinBlocks']>
     readonly languageName: UnwrapRef<typeof import('../utils/languages')['languageName']>
     readonly levelFilterOptions: UnwrapRef<typeof import('../utils/dictionary')['levelFilterOptions']>
+    readonly limitChars: UnwrapRef<typeof import('../utils/extract/blocks')['limitChars']>
     readonly lookupFreeDictionary: UnwrapRef<typeof import('../utils/dictClient')['lookupFreeDictionary']>
     readonly lookupTerm: UnwrapRef<typeof import('../utils/dictClient')['lookupTerm']>
     readonly lookupYandex: UnwrapRef<typeof import('../utils/dictClient')['lookupYandex']>
@@ -658,12 +712,14 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly openDictionaryTab: UnwrapRef<typeof import('../utils/dictionaryTab')['openDictionaryTab']>
     readonly parseApkg: UnwrapRef<typeof import('../utils/anki')['parseApkg']>
     readonly parseFreeDictionary: UnwrapRef<typeof import('../utils/dict/parse')['parseFreeDictionary']>
     readonly parseWords: UnwrapRef<typeof import('../utils/llmParse')['parseWords']>
     readonly parseYandexLookup: UnwrapRef<typeof import('../utils/dict/parse')['parseYandexLookup']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly pickBestIndex: UnwrapRef<typeof import('../utils/extract/score')['pickBestIndex']>
+    readonly pickHardest: UnwrapRef<typeof import('../utils/cefr/hardWords')['pickHardest']>
     readonly pinia: UnwrapRef<typeof import('../utils/pinia')['pinia']>
     readonly pluralIndex: UnwrapRef<typeof import('../utils/plural')['pluralIndex']>
     readonly presetForProvider: UnwrapRef<typeof import('../composables/useLlmSettings')['presetForProvider']>
@@ -689,7 +745,10 @@ declare module 'vue' {
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly revealTerm: UnwrapRef<typeof import('../utils/highlight')['revealTerm']>
     readonly reviewEntry: UnwrapRef<typeof import('../utils/srs')['reviewEntry']>
+    readonly reviewWord: UnwrapRef<typeof import('../utils/cefr/levels')['reviewWord']>
+    readonly reviewWords: UnwrapRef<typeof import('../utils/cefr/levels')['reviewWords']>
     readonly scoreCandidate: UnwrapRef<typeof import('../utils/extract/score')['scoreCandidate']>
     readonly sendBgFetch: UnwrapRef<typeof import('../utils/bgFetch')['sendBgFetch']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
@@ -703,6 +762,7 @@ declare module 'vue' {
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly t: UnwrapRef<typeof import('../utils/i18n')['t']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
+    readonly textWords: UnwrapRef<typeof import('../utils/cefr/hardWords')['textWords']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>

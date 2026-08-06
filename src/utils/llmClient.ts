@@ -6,6 +6,7 @@ import { t } from '@/utils/i18n'
 import { getLlmSettings } from '@/composables/useLlmSettings'
 import { getReaderSettings, PROMPT_EXTRA_LIMIT } from '@/composables/useReaderSettings'
 import { languageName } from '@/utils/languages'
+import { reviewWords } from '@/utils/cefr/levels'
 
 /** Контракт ответа — наш, добавка читателя его не касается: иначе разбор ответа развалится */
 export function contractPrompt(target: string): string {
@@ -82,7 +83,9 @@ export async function requestDifficultWords(text: string): Promise<WordWithExpla
     { role: 'user', content: text },
   ])
 
-  return parseWords(content)
+  // список — страховка: модель регулярно тащит в ответ слова заметно ниже порога,
+  // а офлайн-профиль про английский знает не хуже неё (только без контекста)
+  return sourceLang === 'en' ? reviewWords(parseWords(content), level) : parseWords(content)
 }
 
 /** Перевод одной выделенной фразы. Контракт тот же, что у списка слов, — массив из одного элемента */

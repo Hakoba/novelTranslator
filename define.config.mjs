@@ -21,6 +21,11 @@ const isDev = process.env.NODE_ENV === "development"
 const raw = {
   YANDEX_API_KEY: isDev ? process.env.YANDEX_API_KEY ?? "" : "",
   YANDEX_FOLDER_ID: isDev ? process.env.YANDEX_FOLDER_ID ?? "" : "",
+  // Ключ Яндекс.Словаря, в отличие от ключей модели, идёт и в прод-сборку: он
+  // бесплатный, с суточной квотой, и нужен, чтобы перевод работал сразу после
+  // установки. Из собранного расширения его несложно достать — это ключ-витрина,
+  // а не секрет: свой ключ читатель ставит в настройках и перебивает общий.
+  YANDEX_DICT_KEY: process.env.YANDEX_DICT_KEY ?? "",
   VERSION: packageJson.version,
   NAME: packageJson.name,
   DISPLAY_NAME: packageJson.displayName,

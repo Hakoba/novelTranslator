@@ -13,3 +13,6 @@ declare const __GITHUB_URL__: string
 // Дефолты для dev-сборки из .env, в прод-сборку не попадают
 declare const __YANDEX_API_KEY__: string
 declare const __YANDEX_FOLDER_ID__: string
+
+// Общий ключ Яндекс.Словаря: бесплатный, попадает и в прод-сборку
+declare const __YANDEX_DICT_KEY__: string

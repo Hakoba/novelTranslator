@@ -1,8 +1,17 @@
 import { ref, type Ref } from 'vue'
 import type { WordWithExplanation } from '@/types/words'
-import { REQUEST_TIMEOUT_MS, requestDifficultWords } from '@/utils/llmClient'
+import { analyzeText } from '@/utils/analyze'
+import { appendedTail, limitChars } from '@/utils/extract/blocks'
+import { REQUEST_TIMEOUT_MS } from '@/utils/llmClient'
 import { extractReadableText } from '@/utils/pageText'
 import { t } from '@/utils/i18n'
+
+/**
+ * Текст прошлого разбора — на уровне модуля, а не композабла: при переходе внутри
+ * SPA оверлей пересоздаётся, а страница остаётся той же, и догруженную главу надо
+ * отличить от уже разобранной. Живёт ровно столько, сколько content script.
+ */
+let analyzedText = ''
 
 export function useDifficultWords(): {
   words: Ref<WordWithExplanation[]>
@@ -24,24 +33,37 @@ export function useDifficultWords(): {
   // методы
   async function fetchDifficultWords(text?: string): Promise<void> {
     const request = ++currentRequest
-    const parsedText = typeof text === 'string' && text.trim() ? text : await extractReadableText()
+    // текст пришёл извне — разбираем его целиком: это выбранная область, а не страница
+    const given = typeof text === 'string' && text.trim() ? text : undefined
+    const pageText = given ?? await extractReadableText()
     if (request !== currentRequest) return
+
+    // на читалке с догрузкой главы разбирается только дописанное, иначе разбор
+    // упрётся в старую главу: лимит символов отрезает текст с конца
+    const parsedText = limitChars(given ?? appendedTail(analyzedText, pageText))
 
     words.value = []
     errorMessage.value = ''
     sourceText.value = ''
 
-    if (!parsedText) {
+    if (!pageText) {
       errorMessage.value = t('errors.noText')
       return
     }
 
+    // текст есть, но весь уже разобран: страница сменилась раньше, чем догрузилась глава
+    if (!parsedText) {
+      errorMessage.value = t('errors.noNewText')
+      return
+    }
+
+    if (!given) analyzedText = pageText
     sourceText.value = parsedText
 
     isLoading.value = true
 
     try {
-      const result = await requestDifficultWords(parsedText)
+      const result = await analyzeText(parsedText)
       if (request === currentRequest) words.value = result
     } catch (error) {
       if (request !== currentRequest) return

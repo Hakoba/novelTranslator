@@ -11,11 +11,18 @@ export interface AccessSite {
 const STORAGE_KEY = 'ACCESS_SITES'
 const DEFAULT_SITES: AccessSite[] = [
   {
-    url: 'https://novelbin.com/',
+    url: 'https://www.reddit.com/',
     enabled: true,
     addedAt: 0,
   },
 ]
+
+/**
+ * Куда позвать попробовать сразу после установки: длинные истории на английском,
+ * отобранные по году, — там расширению есть что разбирать, в отличие от ленты.
+ * Живёт рядом со списком по умолчанию, чтобы демо и разрешённый сайт не разъехались.
+ */
+export const DEMO_URL = 'https://www.reddit.com/r/stories/top/?t=year'
 
 export function useAccessSites(): {
   sites: Ref<AccessSite[]>

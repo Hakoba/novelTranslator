@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill"
 import type { BgFetchResponse } from "@/utils/bgFetch"
+import { DICTIONARY_URL } from "@/utils/dictionaryTab"
 
 // Sample code if using extensionpay.com
 // import { extPay } from 'src/utils/payment/extPay'
@@ -78,11 +79,17 @@ async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResp
   }
 }
 
+/** Вкладку заводим здесь: в content script `tabs` нет, а из оверлея в словарь ходят */
+async function openDictionary(): Promise<void> {
+  await browser.tabs.create({ url: browser.runtime.getURL(DICTIONARY_URL) })
+}
+
 // Proxy fetch requests: content script не может ходить на http-эндпоинт LLM со https-страницы
 // Возвращаем Promise только для своих сообщений, чужие отдаём другим слушателям (undefined)
 browser.runtime.onMessage.addListener((message: unknown) => {
-  if (!isObject(message) || message.type !== 'llm/fetch') return
-  return proxyFetch(message)
+  if (!isObject(message)) return
+  if (message.type === 'llm/fetch') return proxyFetch(message)
+  if (message.type === 'ui/open-dictionary') return openDictionary()
 })
 
 export {}

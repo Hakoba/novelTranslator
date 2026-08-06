@@ -50,6 +50,16 @@ export function countNew(entries: DictionaryEntry[]): number {
   return entries.filter((entry) => !entry.deletedAt && !entry.reviews).length
 }
 
+/**
+ * Через сколько дней слово всплывёт в тренировке: 0 — уже пора или ещё ни разу
+ * не тренировали. Округление вверх, чтобы «через 20 часов» читалось как «завтра».
+ */
+export function dueInDays(dueAt: number | undefined, now: number): number {
+  if (!dueAt || dueAt <= now) return 0
+
+  return Math.ceil((dueAt - now) / DAY_MS)
+}
+
 /** Ближайшая дата повторения среди тех слов, что ещё не подошли */
 export function nextDueAt(entries: DictionaryEntry[], now: number): number | undefined {
   const upcoming = entries
