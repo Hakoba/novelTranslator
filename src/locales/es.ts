@@ -244,6 +244,8 @@ export default {
     closeHint: 'Cerrar hasta recargar',
     analyze: 'Analizar la página',
     analyzing: 'Analizando la página',
+    reread: 'Releer la página',
+    rereadHint: 'Analizar de nuevo, por ejemplo si se ha cargado otro capítulo',
     autoAnalyzeOff: 'El análisis automático está desactivado en los ajustes. Las palabras guardadas de la página están resaltadas: pasa el ratón para ver la traducción.',
     addAll: 'Añadir todas — {count}',
     addToDictionary: 'Añadir al diccionario',

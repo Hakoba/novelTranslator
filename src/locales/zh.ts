@@ -244,6 +244,8 @@ export default {
     closeHint: '关闭至下次刷新',
     analyze: '分析页面',
     analyzing: '正在分析页面',
+    reread: '重新读取页面',
+    rereadHint: '从头分析一遍，比如网站刚加载了新的一章',
     autoAnalyzeOff: '设置中已关闭自动分析。页面上已保存的词依然会高亮——悬停即可看到翻译。',
     addAll: '全部添加 — {count}',
     addToDictionary: '添加到生词本',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookMarked, ChevronDown, ChevronUp, Eraser, SquareDashedMousePointer, X } from 'lucide-vue-next'
+import { BookMarked, ChevronDown, ChevronUp, Eraser, RefreshCw, SquareDashedMousePointer, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
@@ -12,6 +12,8 @@ defineProps<{
   isLoading: boolean
   isPicking: boolean
   hasArea: boolean
+  /** Разбор уже запускали: до первого раза перечитывать нечего, там своя кнопка */
+  isStarted: boolean
 }>()
 
 const { t } = useI18n()
@@ -20,6 +22,7 @@ const emit = defineEmits<{
   (e: 'toggleMinimized'): void
   (e: 'pickArea'): void
   (e: 'resetArea'): void
+  (e: 'reread'): void
   (e: 'close'): void
 }>()
 </script>
@@ -42,6 +45,19 @@ const emit = defineEmits<{
       severity="info"
       :aria-label="t('overlay.wordsFound')"
     />
+
+    <Button
+      v-if="isStarted && !isLoading"
+      text
+      rounded
+      severity="secondary"
+      size="small"
+      :aria-label="t('overlay.reread')"
+      :data-hint="t('overlay.rereadHint')"
+      @click="emit('reread')"
+    >
+      <RefreshCw :size="16" />
+    </Button>
 
     <Button
       text

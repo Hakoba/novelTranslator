@@ -137,16 +137,17 @@ onUnmounted((): void => {
 })
 
 // методы
-function analyze(): Promise<void> {
+/** `full` — читать страницу целиком: смена области и ручной перезапуск отменяют прошлый разбор */
+function analyze(full = false): Promise<void> {
   isStarted.value = true
 
-  return fetchDifficultWords()
+  return fetchDifficultWords(full)
 }
 
 /** Разбор перезапускаем сразу: иначе на экране остаётся результат по прошлой области */
 function resetArea(): void {
   clearSelector(location.host)
-  if (isStarted.value) void analyze()
+  if (isStarted.value) void analyze(true)
 }
 
 function togglePicking(): void {
@@ -164,7 +165,7 @@ function togglePicking(): void {
     if (!selector) return
 
     setSelector(location.host, selector)
-    void analyze()
+    void analyze(true)
   })
 }
 
@@ -363,9 +364,11 @@ async function translateAndSave(): Promise<void> {
         :is-loading="isLoading"
         :is-picking="Boolean(cancelPicking)"
         :has-area="hasArea"
+        :is-started="isStarted"
         @toggle-minimized="isMinimized = !isMinimized"
         @pick-area="togglePicking"
         @reset-area="resetArea"
+        @reread="analyze(true)"
         @close="emit('close')"
       />
     </header>
@@ -385,7 +388,7 @@ async function translateAndSave(): Promise<void> {
         <Button
           size="small"
           :label="t('overlay.analyze')"
-          @click="analyze"
+          @click="analyze()"
         />
       </div>
 
@@ -418,7 +421,7 @@ async function translateAndSave(): Promise<void> {
         <Button
           size="small"
           :label="t('common.retry')"
-          @click="analyze"
+          @click="analyze()"
         />
       </div>
 

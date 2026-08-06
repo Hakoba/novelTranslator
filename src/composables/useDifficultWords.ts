@@ -18,7 +18,7 @@ export function useDifficultWords(): {
   sourceText: Ref<string>
   isLoading: Ref<boolean>
   errorMessage: Ref<string>
-  fetchDifficultWords: (text?: string) => Promise<void>
+  fetchDifficultWords: (full?: boolean) => Promise<void>
 } {
   // state
   const words = ref<WordWithExplanation[]>([])
@@ -31,16 +31,15 @@ export function useDifficultWords(): {
   let currentRequest = 0
 
   // методы
-  async function fetchDifficultWords(text?: string): Promise<void> {
+  /** `full` — читать страницу с нуля, а не только дописанное: разбор просят повторить руками */
+  async function fetchDifficultWords(full = false): Promise<void> {
     const request = ++currentRequest
-    // текст пришёл извне — разбираем его целиком: это выбранная область, а не страница
-    const given = typeof text === 'string' && text.trim() ? text : undefined
-    const pageText = given ?? await extractReadableText()
+    const pageText = await extractReadableText()
     if (request !== currentRequest) return
 
     // на читалке с догрузкой главы разбирается только дописанное, иначе разбор
     // упрётся в старую главу: лимит символов отрезает текст с конца
-    const parsedText = limitChars(given ?? appendedTail(analyzedText, pageText))
+    const parsedText = limitChars(full ? pageText : appendedTail(analyzedText, pageText))
 
     words.value = []
     errorMessage.value = ''
@@ -57,7 +56,7 @@ export function useDifficultWords(): {
       return
     }
 
-    if (!given) analyzedText = pageText
+    analyzedText = pageText
     sourceText.value = parsedText
 
     isLoading.value = true

@@ -244,6 +244,8 @@ export default {
     closeHint: 'Close until reload',
     analyze: 'Analyse page',
     analyzing: 'Analysing the page',
+    reread: 'Re-read the page',
+    rereadHint: 'Analyse from scratch — for example after a new chapter loaded',
     autoAnalyzeOff: 'Automatic analysis is off in the settings. Saved words on the page are highlighted — hover to see the translation.',
     addAll: 'Add all — {count}',
     addToDictionary: 'Add to dictionary',

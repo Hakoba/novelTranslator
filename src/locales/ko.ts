@@ -244,6 +244,8 @@ export default {
     closeHint: '새로 고칠 때까지 닫기',
     analyze: '페이지 분석',
     analyzing: '페이지를 분석하는 중',
+    reread: '페이지 다시 읽기',
+    rereadHint: '처음부터 다시 분석합니다. 새 화가 로딩된 경우에 유용합니다',
     autoAnalyzeOff: '설정에서 자동 분석을 껐습니다. 저장한 단어는 그대로 강조되며, 마우스를 올리면 번역이 보입니다.',
     addAll: '모두 추가 — {count}',
     addToDictionary: '단어장에 추가',
