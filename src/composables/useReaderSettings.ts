@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { useBrowserSyncStorage } from './useBrowserStorage'
-import { browserLanguage } from '@/utils/languages'
+import { browserLanguage, defaultUiLanguage } from '@/utils/languages'
 import type { CefrLevel } from '@/types/words'
 
 /** Длиннее уточнение начинает перевешивать сам промпт, а токены платные */
@@ -32,7 +32,7 @@ export const DEFAULT_READER_SETTINGS: ReaderSettings = {
   targetLang: NATIVE === 'en' ? 'ru' : NATIVE,
   promptExtra: '',
   // интерфейс переведён не на все языки: незнакомый язык браузера уводим в английский
-  uiLang: NATIVE === 'ru' ? 'ru' : 'en',
+  uiLang: defaultUiLanguage(),
 }
 
 const { data, promise } = useBrowserSyncStorage<ReaderSettings>(

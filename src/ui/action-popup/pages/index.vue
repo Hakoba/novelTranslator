@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookMarked, Settings } from 'lucide-vue-next'
+import { BookMarked, Check, Plus, Settings } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
+import { isValidUrl, matchesSite } from '@/composables/matchesSite'
 import { useDictionary } from '@/composables/useDictionary'
 
 const { t } = useI18n()
-const { enabledSites } = useAccessSites()
+const { sites, enabledSites, addSite } = useAccessSites()
 const { entries } = useDictionary()
+
+// state
+/** Адрес открытой вкладки: из него берём домен для кнопки «разрешить» */
+const currentUrl = ref<string>('')
 
 // computed
 const summary = computed<string>(() => {
@@ -16,6 +21,12 @@ const summary = computed<string>(() => {
 
   return count ? t('popup.active', { count }, count) : t('popup.inactive')
 })
+
+const currentHost = computed<string>(() => (currentUrl.value ? new URL(currentUrl.value).host : ''))
+/** Записи бывают шире домена (*.example.com, путь-префикс) — сверяем по тем же правилам, что и content script */
+const currentAllowed = computed<boolean>(() =>
+  Boolean(currentUrl.value) && sites.value.some((site) => matchesSite(currentUrl.value, site.url)),
+)
 
 // методы
 function openOptions(): void {
@@ -29,6 +40,18 @@ function openDictionary(): void {
     ),
   })
 }
+
+/** Домен целиком: путь текущей главы в списке разрешённых сайтов только мешал бы */
+function allowCurrent(): void {
+  if (currentUrl.value) addSite(new URL(currentUrl.value).origin)
+}
+
+// хуки
+onMounted(async () => {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+  // у страниц chrome:// и about: адрес не отдают либо он не http — кнопку тогда не показываем
+  if (tab?.url && isValidUrl(tab.url)) currentUrl.value = tab.url
+})
 </script>
 
 <template>
@@ -45,6 +68,25 @@ function openDictionary(): void {
         <Settings :size="18" />
       </Button>
     </div>
+
+    <Button
+      v-if="currentHost && !currentAllowed"
+      size="small"
+      :label="t('popup.addCurrent', { host: currentHost })"
+      :title="t('popup.addCurrentHint')"
+      @click="allowCurrent"
+    >
+      <template #icon>
+        <Plus :size="16" />
+      </template>
+    </Button>
+    <p
+      v-else-if="currentHost"
+      class="m-0 flex items-center gap-2 text-muted"
+    >
+      <Check :size="16" />
+      {{ t('popup.currentAllowed') }}
+    </p>
 
     <Button
       severity="secondary"

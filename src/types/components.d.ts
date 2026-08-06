@@ -18,6 +18,7 @@ declare module 'vue' {
     InputText: typeof import('primevue/inputtext')['default']
     LookupPanel: typeof import('./../components/LookupPanel.vue')['default']
     Message: typeof import('primevue/message')['default']
+    Password: typeof import('primevue/password')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Select: typeof import('primevue/select')['default']

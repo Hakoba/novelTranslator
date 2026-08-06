@@ -25,6 +25,27 @@ export const LANGUAGES: Language[] = [
   { code: 'ko', native: '한국어', english: 'Korean' },
 ]
 
+/**
+ * Языки, на которые переведён сам интерфейс. Список короче `LANGUAGES`: переводить
+ * текст расширение умеет и туда, где интерфейса на этом языке нет.
+ */
+export const UI_LANGUAGE_CODES = ['en', 'ru', 'es', 'pt', 'zh', 'ko'] as const
+
+export type UiLanguage = (typeof UI_LANGUAGE_CODES)[number]
+
+export function isUiLanguage(code: string): code is UiLanguage {
+  return UI_LANGUAGE_CODES.some((item) => item === code)
+}
+
+export const UI_LANGUAGES: Language[] = LANGUAGES.filter((item) => isUiLanguage(item.code))
+
+/** Язык браузера, если интерфейс на нём есть; иначе английский — он понятен шире прочих */
+export function defaultUiLanguage(): UiLanguage {
+  const code = browserLanguage()
+
+  return code && isUiLanguage(code) ? code : 'en'
+}
+
 export function findLanguage(code: string): Language | undefined {
   return LANGUAGES.find((item) => item.code === code)
 }
