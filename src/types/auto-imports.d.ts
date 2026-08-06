@@ -33,7 +33,8 @@ declare global {
   const TRANSLATE_ATTR: typeof import('../utils/highlight').TRANSLATE_ATTR
   const TRANSLATORS: typeof import('../utils/mt/translators').TRANSLATORS
   const TRANSLATOR_LIST: typeof import('../utils/mt/translators').TRANSLATOR_LIST
-  const UI_LANGUAGES: typeof import('../utils/i18n').UI_LANGUAGES
+  const UI_LANGUAGES: typeof import('../utils/languages').UI_LANGUAGES
+  const UI_LANGUAGE_CODES: typeof import('../utils/languages').UI_LANGUAGE_CODES
   const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
   const YANDEX_DICT_KEY_URL: typeof import('../composables/useDictSettings').YANDEX_DICT_KEY_URL
   const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
@@ -48,6 +49,7 @@ declare global {
   const buildDeck: typeof import('../utils/ankiSchema').buildDeck
   const buildModel: typeof import('../utils/ankiSchema').buildModel
   const buildTermsPattern: typeof import('../utils/terms').buildTermsPattern
+  const checkModel: typeof import('../utils/llmClient').checkModel
   const clearHighlights: typeof import('../utils/highlight').clearHighlights
   const collectLevels: typeof import('../utils/dictionary').collectLevels
   const computed: typeof import('vue').computed
@@ -77,6 +79,7 @@ declare global {
   const dedupeBlocks: typeof import('../utils/extract/blocks').dedupeBlocks
   const deeplBaseUrl: typeof import('../utils/mt/translators').deeplBaseUrl
   const deeplTarget: typeof import('../utils/mt/translators').deeplTarget
+  const defaultUiLanguage: typeof import('../utils/languages').defaultUiLanguage
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
   const definePage: typeof import('vue-router/auto').definePage
@@ -115,7 +118,7 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
-  const isUiLanguage: typeof import('../utils/i18n').isUiLanguage
+  const isUiLanguage: typeof import('../utils/languages').isUiLanguage
   const isValidUrl: typeof import('../composables/matchesSite').isValidUrl
   const joinBlocks: typeof import('../utils/extract/blocks').joinBlocks
   const languageName: typeof import('../utils/languages').languageName
@@ -133,6 +136,7 @@ declare global {
   const markRaw: typeof import('vue').markRaw
   const matchedGroupIndex: typeof import('../utils/terms').matchedGroupIndex
   const matchesSite: typeof import('../composables/matchesSite').matchesSite
+  const needsApiKey: typeof import('../utils/settingsStatus').needsApiKey
   const nextDueAt: typeof import('../utils/srs').nextDueAt
   const nextTick: typeof import('vue').nextTick
   const normalizeHost: typeof import('../utils/extract/rules').normalizeHost
@@ -480,10 +484,7 @@ declare global {
   export type { HighlightVariant, HighlightTerm, HighlightGroup } from '../utils/highlight'
   import('../utils/highlight')
   // @ts-ignore
-  export type { UiLanguage } from '../utils/i18n'
-  import('../utils/i18n')
-  // @ts-ignore
-  export type { Language } from '../utils/languages'
+  export type { Language, UiLanguage } from '../utils/languages'
   import('../utils/languages')
   // @ts-ignore
   export type { ProviderId, ChatMessage, ChatCredentials, ChatRequest, Provider } from '../utils/llm/providers'
@@ -525,7 +526,8 @@ declare module 'vue' {
     readonly TRANSLATE_ATTR: UnwrapRef<typeof import('../utils/highlight')['TRANSLATE_ATTR']>
     readonly TRANSLATORS: UnwrapRef<typeof import('../utils/mt/translators')['TRANSLATORS']>
     readonly TRANSLATOR_LIST: UnwrapRef<typeof import('../utils/mt/translators')['TRANSLATOR_LIST']>
-    readonly UI_LANGUAGES: UnwrapRef<typeof import('../utils/i18n')['UI_LANGUAGES']>
+    readonly UI_LANGUAGES: UnwrapRef<typeof import('../utils/languages')['UI_LANGUAGES']>
+    readonly UI_LANGUAGE_CODES: UnwrapRef<typeof import('../utils/languages')['UI_LANGUAGE_CODES']>
     readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
     readonly YANDEX_DICT_KEY_URL: UnwrapRef<typeof import('../composables/useDictSettings')['YANDEX_DICT_KEY_URL']>
     readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
@@ -540,6 +542,7 @@ declare module 'vue' {
     readonly buildDeck: UnwrapRef<typeof import('../utils/ankiSchema')['buildDeck']>
     readonly buildModel: UnwrapRef<typeof import('../utils/ankiSchema')['buildModel']>
     readonly buildTermsPattern: UnwrapRef<typeof import('../utils/terms')['buildTermsPattern']>
+    readonly checkModel: UnwrapRef<typeof import('../utils/llmClient')['checkModel']>
     readonly clearHighlights: UnwrapRef<typeof import('../utils/highlight')['clearHighlights']>
     readonly collectLevels: UnwrapRef<typeof import('../utils/dictionary')['collectLevels']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -569,6 +572,7 @@ declare module 'vue' {
     readonly dedupeBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['dedupeBlocks']>
     readonly deeplBaseUrl: UnwrapRef<typeof import('../utils/mt/translators')['deeplBaseUrl']>
     readonly deeplTarget: UnwrapRef<typeof import('../utils/mt/translators')['deeplTarget']>
+    readonly defaultUiLanguage: UnwrapRef<typeof import('../utils/languages')['defaultUiLanguage']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly definePage: UnwrapRef<typeof import('vue-router/auto')['definePage']>
@@ -607,7 +611,7 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
-    readonly isUiLanguage: UnwrapRef<typeof import('../utils/i18n')['isUiLanguage']>
+    readonly isUiLanguage: UnwrapRef<typeof import('../utils/languages')['isUiLanguage']>
     readonly isValidUrl: UnwrapRef<typeof import('../composables/matchesSite')['isValidUrl']>
     readonly joinBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['joinBlocks']>
     readonly languageName: UnwrapRef<typeof import('../utils/languages')['languageName']>
@@ -625,6 +629,7 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly matchedGroupIndex: UnwrapRef<typeof import('../utils/terms')['matchedGroupIndex']>
     readonly matchesSite: UnwrapRef<typeof import('../composables/matchesSite')['matchesSite']>
+    readonly needsApiKey: UnwrapRef<typeof import('../utils/settingsStatus')['needsApiKey']>
     readonly nextDueAt: UnwrapRef<typeof import('../utils/srs')['nextDueAt']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly normalizeHost: UnwrapRef<typeof import('../utils/extract/rules')['normalizeHost']>

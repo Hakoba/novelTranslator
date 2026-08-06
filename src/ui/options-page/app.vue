@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { BookMarked, Dumbbell, Settings } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { BookMarked, BookOpenText, Bot, Dumbbell, Globe, Library, Settings } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import { useLlmSettings } from '@/composables/useLlmSettings'
+import { needsApiKey } from '@/utils/settingsStatus'
 
 const { t } = useI18n()
+const { settings } = useLlmSettings()
 
 const LINK_CLASS =
   'flex items-center gap-2 rounded-md px-3 py-2 text-content no-underline hover:bg-surface-hover'
 const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
+const SUB_LINK_CLASS = `${LINK_CLASS} pl-9 text-sm`
+
+// computed
+const modelNeedsKey = computed<boolean>(() =>
+  needsApiKey(settings.value.baseUrl, settings.value.apiKey),
+)
 </script>
 
 <template>
@@ -21,20 +31,55 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
 
     <div class="flex flex-col gap-6 sm:flex-row">
       <nav
-        class="flex shrink-0 gap-1 sm:w-48 sm:flex-col"
+        class="flex w-full shrink-0 flex-col gap-1 sm:w-56"
         :aria-label="t('nav.sections')"
       >
-        <RouterLink
-          to="/options-page"
-          :class="LINK_CLASS"
-          :exact-active-class="ACTIVE_LINK_CLASS"
-        >
+        <p class="m-0 flex items-center gap-2 px-3 py-2 font-semibold text-muted">
           <Settings :size="18" />
           {{ t('nav.settings') }}
+        </p>
+        <RouterLink
+          to="/options-page"
+          :class="SUB_LINK_CLASS"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <BookOpenText :size="16" />
+          {{ t('nav.reading') }}
         </RouterLink>
         <RouterLink
+          to="/options-page/model"
+          :class="SUB_LINK_CLASS"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <Bot :size="16" />
+          {{ t('nav.model') }}
+          <!-- без ключа облачная модель молчит, а узнать об этом иначе можно только при разборе -->
+          <span
+            v-if="modelNeedsKey"
+            class="ml-auto size-2 rounded-full bg-orange-400"
+            :title="t('nav.modelNeedsKey')"
+          />
+        </RouterLink>
+        <RouterLink
+          to="/options-page/dictionaries"
+          :class="SUB_LINK_CLASS"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <Library :size="16" />
+          {{ t('nav.dictionaries') }}
+        </RouterLink>
+        <RouterLink
+          to="/options-page/sites"
+          :class="SUB_LINK_CLASS"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <Globe :size="16" />
+          {{ t('nav.sites') }}
+        </RouterLink>
+
+        <RouterLink
           to="/options-page/dictionary"
-          :class="LINK_CLASS"
+          :class="`${LINK_CLASS} mt-2`"
           :exact-active-class="ACTIVE_LINK_CLASS"
         >
           <BookMarked :size="18" />

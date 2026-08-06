@@ -2,29 +2,23 @@ import { watch } from 'vue'
 import { createI18n } from 'vue-i18n'
 import en from '@/locales/en'
 import ru from '@/locales/ru'
+import es from '@/locales/es'
+import pt from '@/locales/pt'
+import zh from '@/locales/zh'
+import ko from '@/locales/ko'
 import { useReaderSettings } from '@/composables/useReaderSettings'
+import { defaultUiLanguage, isUiLanguage } from '@/utils/languages'
 import { pluralIndex } from '@/utils/plural'
-
-/** Интерфейс переведён не на все языки, между которыми расширение переводит текст */
-export type UiLanguage = 'ru' | 'en'
-
-
-export const UI_LANGUAGES: { code: UiLanguage; native: string }[] = [
-  { code: 'ru', native: 'Русский' },
-  { code: 'en', native: 'English' },
-]
-
-export function isUiLanguage(code: string): code is UiLanguage {
-  return UI_LANGUAGES.some((item) => item.code === code)
-}
 
 export const i18n = createI18n({
   // Composition API: legacy-режим тянет за собой глобальный this и лишний код в бандл
   legacy: false,
-  locale: 'ru',
+  locale: defaultUiLanguage(),
+  // английский понятен шире прочих: незнакомый язык и пропущенный ключ уводим туда
   fallbackLocale: 'en',
-  messages: { ru, en },
-  // у vue-i18n две формы на язык, русскому нужно три
+  messages: { en, ru, es, pt, zh, ko },
+  // у vue-i18n две формы на язык: русскому нужно три, корейскому и китайскому — одна
+  // (в их локалях просто нет ветки `|`, и правило не применяется)
   pluralRules: { ru: pluralIndex },
 })
 

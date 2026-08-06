@@ -66,6 +66,11 @@ async function chat(messages: ChatMessage[]): Promise<string> {
   return adapter.extractText(res.data)
 }
 
+/** Ping из настроек: одним коротким запросом проверяет адрес, ключ и имя модели */
+export async function checkModel(): Promise<void> {
+  await chat([{ role: 'user', content: 'ping' }])
+}
+
 export async function requestDifficultWords(text: string): Promise<WordWithExplanation[]> {
   const { level, sourceLang, targetLang, promptExtra } = await getReaderSettings()
   const source = languageName(sourceLang)
