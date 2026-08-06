@@ -16,8 +16,3 @@ export type LookupResult = {
   transcription?: string
   senses: LookupSense[]
 }
-
-export const SOURCE_TITLES: Record<LookupSource, string> = {
-  yandex: 'Яндекс.Словарь',
-  free: 'Dictionary API',
-}

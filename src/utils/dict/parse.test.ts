@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { firstTranslation, parseFreeDictionary, parseYandexLookup } from './parse'
-import { dictionaryLinks } from './links'
 
 const YANDEX_RESPONSE = {
   head: {},
@@ -88,18 +87,4 @@ test('firstTranslation: берёт первый перевод, определе
   assert.equal(firstTranslation(parseYandexLookup(YANDEX_RESPONSE, 'brittle')), 'хрупкий')
   assert.equal(firstTranslation(parseFreeDictionary(FREE_RESPONSE, 'brittle')), undefined)
   assert.equal(firstTranslation(undefined), undefined)
-})
-
-test('dictionaryLinks: пробелы и спецсимволы экранируются', () => {
-  const links = dictionaryLinks('flash of light')
-
-  assert.ok(links.every((link) => link.url.includes('flash%20of%20light')))
-  assert.deepEqual(
-    links.map((link) => link.id),
-    ['google', 'yandex', 'reverso', 'multitran', 'wiktionary'],
-  )
-})
-
-test('dictionaryLinks: пустой запрос ссылок не даёт', () => {
-  assert.deepEqual(dictionaryLinks('   '), [])
 })

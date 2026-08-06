@@ -1,18 +1,30 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { SOURCE_TITLES, type LookupResult } from '@/types/lookup'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { type LookupResult } from '@/types/lookup'
+import { useReaderSettings } from '@/composables/useReaderSettings'
 import { lookupTerm } from '@/utils/dictClient'
 import { dictionaryLinks, type DictLink } from '@/utils/dict/links'
 
 const props = defineProps<{ term: string }>()
+
+// composables
+const { t } = useI18n()
+const { settings } = useReaderSettings()
 
 // state
 const isLoading = ref<boolean>(true)
 const results = ref<LookupResult[]>([])
 const errorMessage = ref<string>('')
 
-// ссылки готовы сразу: они не требуют запроса и остаются, даже если словари молчат
-const links: DictLink[] = dictionaryLinks(props.term)
+// ссылки не требуют запроса и остаются, даже если словари молчат; computed —
+// потому что языковая пара приезжает из storage уже после первой отрисовки
+const links = computed<DictLink[]>(() =>
+  dictionaryLinks(props.term, {
+    source: settings.value.sourceLang,
+    target: settings.value.targetLang,
+  }),
+)
 
 // lifecycle
 onMounted(async (): Promise<void> => {
@@ -29,7 +41,7 @@ onMounted(async (): Promise<void> => {
       v-if="isLoading"
       class="m-0 text-muted"
     >
-      Смотрю в словарях…
+      {{ t('lookup.loading') }}
     </p>
 
     <template v-else>
@@ -39,7 +51,7 @@ onMounted(async (): Promise<void> => {
         class="flex flex-col gap-1"
       >
         <p class="m-0 flex flex-wrap items-baseline gap-2 text-xs text-muted">
-          <span>{{ SOURCE_TITLES[result.source] }}</span>
+          <span>{{ t(`lookup.source${result.source === 'yandex' ? 'Yandex' : 'Free'}`) }}</span>
           <span v-if="result.transcription">[{{ result.transcription }}]</span>
         </p>
 
@@ -76,7 +88,7 @@ onMounted(async (): Promise<void> => {
         v-else-if="!results.length"
         class="m-0 text-muted"
       >
-        Словари ничего не нашли — попробуйте по ссылкам ниже.
+        {{ t('lookup.nothing') }}
       </p>
     </template>
 

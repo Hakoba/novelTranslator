@@ -7,6 +7,7 @@ import { useAccessSites } from "@/composables/useAccessSites"
 import { useDictionary } from "@/composables/useDictionary"
 import { useTheme } from "@/composables/useTheme"
 import { mirrorPrimeVueStyles } from "@/content-script/mirrorStyles"
+import { i18n } from "@/utils/i18n"
 import { OVERLAY_ROOT_ID } from "@/utils/overlayRoot"
 
 let app: ReturnType<typeof createApp> | null = null
@@ -54,6 +55,7 @@ function mountOverlay(): void {
   })
 
   app = createApp(Root)
+  app.use(i18n)
   app.use(PrimeVue, {
     theme: {
       preset: Aura,

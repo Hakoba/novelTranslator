@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Check, X } from 'lucide-vue-next'
 import { useDictionary } from '@/composables/useDictionary'
-import { plural } from '@/utils/plural'
 import { countNew, dueEntries, nextDueAt, reviewEntry } from '@/utils/srs'
 import type { DictionaryEntry } from '@/types/words'
 
@@ -10,6 +10,7 @@ import type { DictionaryEntry } from '@/types/words'
 const SESSION_SIZE = 20
 
 // composables
+const { t, locale } = useI18n()
 const { entries, updateEntry } = useDictionary()
 
 // state
@@ -25,18 +26,21 @@ const dueCount = computed<number>(() => dueEntries(entries.value, Date.now()).le
 const newCount = computed<number>(() => countNew(entries.value))
 const current = computed<DictionaryEntry | undefined>(() => queue.value[currentIndex.value])
 const isFinished = computed<boolean>(() => isSessionActive.value && !current.value)
-const progressLabel = computed<string>(
-  () => `${Math.min(currentIndex.value + 1, queue.value.length)} из ${queue.value.length}`,
+const progressLabel = computed<string>(() =>
+  t('training.progress', {
+    current: Math.min(currentIndex.value + 1, queue.value.length),
+    total: queue.value.length,
+  }),
 )
 const sessionSize = computed<number>(() => Math.min(dueCount.value, SESSION_SIZE))
 const sessionLabel = computed<string>(
-  () => `${sessionSize.value} ${plural(sessionSize.value, ['слово', 'слова', 'слов'])}`,
+  () => t('common.words', { count: sessionSize.value }, sessionSize.value),
 )
 const nextDueLabel = computed<string>(() => {
   const timestamp = nextDueAt(entries.value, Date.now())
 
   return timestamp
-    ? new Date(timestamp).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+    ? new Date(timestamp).toLocaleDateString(locale.value, { day: 'numeric', month: 'long' })
     : ''
 })
 
@@ -107,10 +111,10 @@ onUnmounted((): void => {
 <template>
   <Card>
     <template #title>
-      Тренировка
+      {{ t('training.title') }}
     </template>
     <template #subtitle>
-      Слово возвращается через 1, 3, 7, 16, 35 и 90 дней. Ошибка сбрасывает отсчёт
+      {{ t('training.subtitle') }}
     </template>
 
     <template #content>
@@ -122,7 +126,7 @@ onUnmounted((): void => {
           <dl class="m-0 flex flex-wrap gap-x-8 gap-y-2">
             <div class="flex flex-col">
               <dt class="text-muted">
-                К повторению
+                {{ t('training.due') }}
               </dt>
               <dd class="m-0 text-2xl font-semibold">
                 {{ dueCount }}
@@ -130,7 +134,7 @@ onUnmounted((): void => {
             </div>
             <div class="flex flex-col">
               <dt class="text-muted">
-                Ни разу не повторяли
+                {{ t('training.fresh') }}
               </dt>
               <dd class="m-0 text-2xl font-semibold">
                 {{ newCount }}
@@ -138,7 +142,7 @@ onUnmounted((): void => {
             </div>
             <div class="flex flex-col">
               <dt class="text-muted">
-                Всего в словаре
+                {{ t('training.total') }}
               </dt>
               <dd class="m-0 text-2xl font-semibold">
                 {{ entries.length }}
@@ -148,7 +152,7 @@ onUnmounted((): void => {
 
           <Button
             v-if="dueCount"
-            :label="`Начать — ${sessionLabel}`"
+            :label="t('training.start', { words: sessionLabel })"
             @click="startSession"
           />
 
@@ -156,14 +160,14 @@ onUnmounted((): void => {
             v-else-if="entries.length"
             class="m-0 text-muted"
           >
-            На сегодня всё.{{ nextDueLabel ? ` Следующее повторение — ${nextDueLabel}.` : '' }}
+            {{ t('training.allDone') }}{{ nextDueLabel ? ` ${t('training.nextDue', { date: nextDueLabel })}` : '' }}
           </p>
 
           <p
             v-else
             class="m-0 text-muted"
           >
-            Словарь пуст — тренировать нечего. Слова добавляются из оверлея на странице.
+            {{ t('training.dictionaryEmpty') }}
           </p>
         </div>
 
@@ -203,7 +207,7 @@ onUnmounted((): void => {
           <div class="flex justify-center gap-2">
             <Button
               v-if="!isAnswerVisible"
-              label="Показать перевод"
+              :label="t('training.showAnswer')"
               @click="isAnswerVisible = true"
             />
 
@@ -211,7 +215,7 @@ onUnmounted((): void => {
               <Button
                 severity="danger"
                 outlined
-                label="Не знал"
+                :label="t('training.unknown')"
                 @click="answer(false)"
               >
                 <template #icon>
@@ -220,7 +224,7 @@ onUnmounted((): void => {
               </Button>
               <Button
                 severity="success"
-                label="Знал"
+                :label="t('training.known')"
                 @click="answer(true)"
               >
                 <template #icon>
@@ -231,7 +235,7 @@ onUnmounted((): void => {
           </div>
 
           <p class="m-0 text-center text-sm text-muted">
-            {{ isAnswerVisible ? '1 — не знал, 2 — знал' : 'Пробел — показать перевод' }}
+            {{ t(isAnswerVisible ? 'training.keysAnswer' : 'training.keysShow') }}
           </p>
         </div>
 
@@ -240,17 +244,17 @@ onUnmounted((): void => {
           class="flex flex-col items-start gap-3"
         >
           <p class="m-0">
-            Готово: {{ knownCount }} вспомнили, {{ unknownCount }} вернутся завтра.
+            {{ t('training.finished', { known: knownCount, unknown: unknownCount }) }}
           </p>
           <Button
             v-if="dueCount"
-            :label="`Ещё ${sessionLabel}`"
+            :label="t('training.more', { words: sessionLabel })"
             severity="secondary"
             @click="startSession"
           />
           <Button
             v-else
-            label="Вернуться"
+            :label="t('training.back')"
             severity="secondary"
             @click="isSessionActive = false"
           />

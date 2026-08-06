@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 const displayName = __DISPLAY_NAME__
 const version = __VERSION__
 
@@ -11,15 +14,15 @@ function openOptions(): void {
 <template>
   <Card>
     <template #title>
-      {{ displayName }} обновлён
+      {{ t('setup.updated', { name: displayName }) }}
     </template>
     <template #subtitle>
-      Версия {{ version }}
+      {{ t('setup.version', { version }) }}
     </template>
     <template #content>
       <div class="pt-2">
         <Button
-          label="Открыть настройки"
+          :label="t('common.openSettings')"
           @click="openOptions"
         />
       </div>

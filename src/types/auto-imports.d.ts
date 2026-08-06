@@ -20,12 +20,20 @@ declare global {
   const EffectScope: typeof import('vue').EffectScope
   const FIELD_NAMES: typeof import('../utils/ankiSchema').FIELD_NAMES
   const HAS_DEV_YANDEX_CREDENTIALS: typeof import('../composables/useLlmSettings').HAS_DEV_YANDEX_CREDENTIALS
+  const LANGUAGES: typeof import('../utils/languages').LANGUAGES
   const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
   const MODEL_NAME: typeof import('../utils/ankiSchema').MODEL_NAME
+  const OPENAI_COMPATIBLE_PRESETS: typeof import('../composables/useLlmSettings').OPENAI_COMPATIBLE_PRESETS
   const OVERLAY_ROOT_ID: typeof import('../utils/overlayRoot').OVERLAY_ROOT_ID
+  const PROMPT_EXTRA_LIMIT: typeof import('../composables/useReaderSettings').PROMPT_EXTRA_LIMIT
+  const PROVIDERS: typeof import('../utils/llm/providers').PROVIDERS
+  const PROVIDER_LIST: typeof import('../utils/llm/providers').PROVIDER_LIST
   const REQUEST_TIMEOUT_MS: typeof import('../utils/llmClient').REQUEST_TIMEOUT_MS
   const SITE_RULES: typeof import('../utils/extract/rules').SITE_RULES
   const TRANSLATE_ATTR: typeof import('../utils/highlight').TRANSLATE_ATTR
+  const TRANSLATORS: typeof import('../utils/mt/translators').TRANSLATORS
+  const TRANSLATOR_LIST: typeof import('../utils/mt/translators').TRANSLATOR_LIST
+  const UI_LANGUAGES: typeof import('../utils/i18n').UI_LANGUAGES
   const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
   const YANDEX_DICT_KEY_URL: typeof import('../composables/useDictSettings').YANDEX_DICT_KEY_URL
   const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
@@ -35,6 +43,7 @@ declare global {
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
   const browser: typeof import('webextension-polyfill')
+  const browserLanguage: typeof import('../utils/languages').browserLanguage
   const buildApkg: typeof import('../utils/anki').buildApkg
   const buildDeck: typeof import('../utils/ankiSchema').buildDeck
   const buildModel: typeof import('../utils/ankiSchema').buildModel
@@ -46,6 +55,7 @@ declare global {
   const computedEager: typeof import('@vueuse/core').computedEager
   const computedInject: typeof import('@vueuse/core').computedInject
   const computedWithControl: typeof import('@vueuse/core').computedWithControl
+  const contractPrompt: typeof import('../utils/llmClient').contractPrompt
   const controlledComputed: typeof import('@vueuse/core').controlledComputed
   const controlledRef: typeof import('@vueuse/core').controlledRef
   const countNew: typeof import('../utils/srs').countNew
@@ -65,6 +75,8 @@ declare global {
   const debouncedRef: typeof import('@vueuse/core').debouncedRef
   const debouncedWatch: typeof import('@vueuse/core').debouncedWatch
   const dedupeBlocks: typeof import('../utils/extract/blocks').dedupeBlocks
+  const deeplBaseUrl: typeof import('../utils/mt/translators').deeplBaseUrl
+  const deeplTarget: typeof import('../utils/mt/translators').deeplTarget
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
   const definePage: typeof import('vue-router/auto').definePage
@@ -76,6 +88,7 @@ declare global {
   const extendRef: typeof import('@vueuse/core').extendRef
   const extractContent: typeof import('../utils/llmParse').extractContent
   const extractReadableText: typeof import('../utils/pageText').extractReadableText
+  const findLanguage: typeof import('../utils/languages').findLanguage
   const findRule: typeof import('../utils/extract/rules').findRule
   const findSentence: typeof import('../utils/sentence').findSentence
   const firstTranslation: typeof import('../utils/dict/parse').firstTranslation
@@ -86,9 +99,12 @@ declare global {
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
   const getDictSettings: typeof import('../composables/useDictSettings').getDictSettings
   const getLlmSettings: typeof import('../composables/useLlmSettings').getLlmSettings
+  const getProvider: typeof import('../utils/llm/providers').getProvider
   const getReaderSettings: typeof import('../composables/useReaderSettings').getReaderSettings
+  const getTranslator: typeof import('../utils/mt/translators').getTranslator
   const h: typeof import('vue').h
   const highlightTerms: typeof import('../utils/highlight').highlightTerms
+  const i18n: typeof import('../utils/i18n').i18n
   const ignorableWatch: typeof import('@vueuse/core').ignorableWatch
   const inject: typeof import('vue').inject
   const injectLocal: typeof import('@vueuse/core').injectLocal
@@ -99,12 +115,15 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
+  const isUiLanguage: typeof import('../utils/i18n').isUiLanguage
   const isValidUrl: typeof import('../composables/matchesSite').isValidUrl
   const joinBlocks: typeof import('../utils/extract/blocks').joinBlocks
+  const languageName: typeof import('../utils/languages').languageName
   const levelFilterOptions: typeof import('../utils/dictionary').levelFilterOptions
   const lookupFreeDictionary: typeof import('../utils/dictClient').lookupFreeDictionary
   const lookupTerm: typeof import('../utils/dictClient').lookupTerm
   const lookupYandex: typeof import('../utils/dictClient').lookupYandex
+  const machineTranslate: typeof import('../utils/mtClient').machineTranslate
   const makeDestructurable: typeof import('@vueuse/core').makeDestructurable
   const mapActions: typeof import('pinia').mapActions
   const mapGetters: typeof import('pinia').mapGetters
@@ -150,6 +169,8 @@ declare global {
   const pickBestIndex: typeof import('../utils/extract/score').pickBestIndex
   const pinia: typeof import('../utils/pinia').pinia
   const plural: typeof import('../utils/plural').plural
+  const pluralIndex: typeof import('../utils/plural').pluralIndex
+  const presetForProvider: typeof import('../composables/useLlmSettings').presetForProvider
   const promise: typeof import('../composables/useReaderSettings').promise
   const provide: typeof import('vue').provide
   const provideLocal: typeof import('@vueuse/core').provideLocal
@@ -185,6 +206,7 @@ declare global {
   const stripHtml: typeof import('../utils/anki').stripHtml
   const syncRef: typeof import('@vueuse/core').syncRef
   const syncRefs: typeof import('@vueuse/core').syncRefs
+  const t: typeof import('../utils/i18n').t
   const templateRef: typeof import('@vueuse/core').templateRef
   const throttledRef: typeof import('@vueuse/core').throttledRef
   const throttledWatch: typeof import('@vueuse/core').throttledWatch
@@ -440,7 +462,7 @@ declare global {
   export type { BgFetchResponse, BgFetchInit } from '../utils/bgFetch'
   import('../utils/bgFetch')
   // @ts-ignore
-  export type { DictLink } from '../utils/dict/links'
+  export type { DictLink, LinkLangs } from '../utils/dict/links'
   import('../utils/dict/links')
   // @ts-ignore
   export type { LookupOutcome } from '../utils/dictClient'
@@ -458,6 +480,18 @@ declare global {
   export type { HighlightVariant, HighlightTerm, HighlightGroup } from '../utils/highlight'
   import('../utils/highlight')
   // @ts-ignore
+  export type { UiLanguage } from '../utils/i18n'
+  import('../utils/i18n')
+  // @ts-ignore
+  export type { Language } from '../utils/languages'
+  import('../utils/languages')
+  // @ts-ignore
+  export type { ProviderId, ChatMessage, ChatCredentials, ChatRequest, Provider } from '../utils/llm/providers'
+  import('../utils/llm/providers')
+  // @ts-ignore
+  export type { TranslatorId, TranslatorCredentials, TranslateRequest, Translator } from '../utils/mt/translators'
+  import('../utils/mt/translators')
+  // @ts-ignore
   export type { ReviewProgress } from '../utils/srs'
   import('../utils/srs')
 }
@@ -467,7 +501,6 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
-    readonly CONTRACT_PROMPT_WORDS: UnwrapRef<typeof import('../utils/llmClient')['CONTRACT_PROMPT_WORDS']>
     readonly CREATE_TABLES: UnwrapRef<typeof import('../utils/ankiSchema')['CREATE_TABLES']>
     readonly DECK_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['DECK_NAME']>
     readonly DEFAULT_CONF: UnwrapRef<typeof import('../utils/ankiSchema')['DEFAULT_CONF']>
@@ -479,12 +512,20 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FIELD_NAMES: UnwrapRef<typeof import('../utils/ankiSchema')['FIELD_NAMES']>
     readonly HAS_DEV_YANDEX_CREDENTIALS: UnwrapRef<typeof import('../composables/useLlmSettings')['HAS_DEV_YANDEX_CREDENTIALS']>
+    readonly LANGUAGES: UnwrapRef<typeof import('../utils/languages')['LANGUAGES']>
     readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
     readonly MODEL_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['MODEL_NAME']>
+    readonly OPENAI_COMPATIBLE_PRESETS: UnwrapRef<typeof import('../composables/useLlmSettings')['OPENAI_COMPATIBLE_PRESETS']>
     readonly OVERLAY_ROOT_ID: UnwrapRef<typeof import('../utils/overlayRoot')['OVERLAY_ROOT_ID']>
+    readonly PROMPT_EXTRA_LIMIT: UnwrapRef<typeof import('../composables/useReaderSettings')['PROMPT_EXTRA_LIMIT']>
+    readonly PROVIDERS: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDERS']>
+    readonly PROVIDER_LIST: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDER_LIST']>
     readonly REQUEST_TIMEOUT_MS: UnwrapRef<typeof import('../utils/llmClient')['REQUEST_TIMEOUT_MS']>
     readonly SITE_RULES: UnwrapRef<typeof import('../utils/extract/rules')['SITE_RULES']>
     readonly TRANSLATE_ATTR: UnwrapRef<typeof import('../utils/highlight')['TRANSLATE_ATTR']>
+    readonly TRANSLATORS: UnwrapRef<typeof import('../utils/mt/translators')['TRANSLATORS']>
+    readonly TRANSLATOR_LIST: UnwrapRef<typeof import('../utils/mt/translators')['TRANSLATOR_LIST']>
+    readonly UI_LANGUAGES: UnwrapRef<typeof import('../utils/i18n')['UI_LANGUAGES']>
     readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
     readonly YANDEX_DICT_KEY_URL: UnwrapRef<typeof import('../composables/useDictSettings')['YANDEX_DICT_KEY_URL']>
     readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
@@ -494,6 +535,7 @@ declare module 'vue' {
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly browser: UnwrapRef<typeof import('webextension-polyfill')['=']>
+    readonly browserLanguage: UnwrapRef<typeof import('../utils/languages')['browserLanguage']>
     readonly buildApkg: UnwrapRef<typeof import('../utils/anki')['buildApkg']>
     readonly buildDeck: UnwrapRef<typeof import('../utils/ankiSchema')['buildDeck']>
     readonly buildModel: UnwrapRef<typeof import('../utils/ankiSchema')['buildModel']>
@@ -505,6 +547,7 @@ declare module 'vue' {
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('@vueuse/core')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('@vueuse/core')['computedWithControl']>
+    readonly contractPrompt: UnwrapRef<typeof import('../utils/llmClient')['contractPrompt']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
     readonly countNew: UnwrapRef<typeof import('../utils/srs')['countNew']>
@@ -524,6 +567,8 @@ declare module 'vue' {
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
     readonly dedupeBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['dedupeBlocks']>
+    readonly deeplBaseUrl: UnwrapRef<typeof import('../utils/mt/translators')['deeplBaseUrl']>
+    readonly deeplTarget: UnwrapRef<typeof import('../utils/mt/translators')['deeplTarget']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly definePage: UnwrapRef<typeof import('vue-router/auto')['definePage']>
@@ -535,6 +580,7 @@ declare module 'vue' {
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly extractContent: UnwrapRef<typeof import('../utils/llmParse')['extractContent']>
     readonly extractReadableText: UnwrapRef<typeof import('../utils/pageText')['extractReadableText']>
+    readonly findLanguage: UnwrapRef<typeof import('../utils/languages')['findLanguage']>
     readonly findRule: UnwrapRef<typeof import('../utils/extract/rules')['findRule']>
     readonly findSentence: UnwrapRef<typeof import('../utils/sentence')['findSentence']>
     readonly firstTranslation: UnwrapRef<typeof import('../utils/dict/parse')['firstTranslation']>
@@ -545,9 +591,12 @@ declare module 'vue' {
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly getDictSettings: UnwrapRef<typeof import('../composables/useDictSettings')['getDictSettings']>
     readonly getLlmSettings: UnwrapRef<typeof import('../composables/useLlmSettings')['getLlmSettings']>
+    readonly getProvider: UnwrapRef<typeof import('../utils/llm/providers')['getProvider']>
     readonly getReaderSettings: UnwrapRef<typeof import('../composables/useReaderSettings')['getReaderSettings']>
+    readonly getTranslator: UnwrapRef<typeof import('../utils/mt/translators')['getTranslator']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly highlightTerms: UnwrapRef<typeof import('../utils/highlight')['highlightTerms']>
+    readonly i18n: UnwrapRef<typeof import('../utils/i18n')['i18n']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
@@ -558,12 +607,15 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly isUiLanguage: UnwrapRef<typeof import('../utils/i18n')['isUiLanguage']>
     readonly isValidUrl: UnwrapRef<typeof import('../composables/matchesSite')['isValidUrl']>
     readonly joinBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['joinBlocks']>
+    readonly languageName: UnwrapRef<typeof import('../utils/languages')['languageName']>
     readonly levelFilterOptions: UnwrapRef<typeof import('../utils/dictionary')['levelFilterOptions']>
     readonly lookupFreeDictionary: UnwrapRef<typeof import('../utils/dictClient')['lookupFreeDictionary']>
     readonly lookupTerm: UnwrapRef<typeof import('../utils/dictClient')['lookupTerm']>
     readonly lookupYandex: UnwrapRef<typeof import('../utils/dictClient')['lookupYandex']>
+    readonly machineTranslate: UnwrapRef<typeof import('../utils/mtClient')['machineTranslate']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -608,8 +660,8 @@ declare module 'vue' {
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly pickBestIndex: UnwrapRef<typeof import('../utils/extract/score')['pickBestIndex']>
     readonly pinia: UnwrapRef<typeof import('../utils/pinia')['pinia']>
-    readonly plural: UnwrapRef<typeof import('../utils/plural')['plural']>
-    readonly promise: UnwrapRef<typeof import('../composables/useReaderSettings')['promise']>
+    readonly pluralIndex: UnwrapRef<typeof import('../utils/plural')['pluralIndex']>
+    readonly presetForProvider: UnwrapRef<typeof import('../composables/useLlmSettings')['presetForProvider']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
     readonly queryEntries: UnwrapRef<typeof import('../utils/dictionary')['queryEntries']>
@@ -644,6 +696,7 @@ declare module 'vue' {
     readonly stripHtml: UnwrapRef<typeof import('../utils/anki')['stripHtml']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
+    readonly t: UnwrapRef<typeof import('../utils/i18n')['t']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>

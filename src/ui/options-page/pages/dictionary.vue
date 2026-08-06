@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BookA, Check, Download, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
 // путь до wasm даёт сборщик: в расширении относительные пути sql.js не находит
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
@@ -10,7 +11,6 @@ import { lookupTerm } from '@/utils/dictClient'
 import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
 import { useIgnoredWords } from '@/composables/useIgnoredWords'
-import { plural } from '@/utils/plural'
 import { CEFR_LEVELS, type CefrLevel, type DictionaryEntry } from '@/types/words'
 import {
   EMPTY_FILTERS,
@@ -23,13 +23,8 @@ import {
 
 const PAGE_SIZE = 20
 
-const SORT_OPTIONS: { label: string; value: DictionarySort }[] = [
-  { label: 'Сначала новые', value: 'newest' },
-  { label: 'Сначала старые', value: 'oldest' },
-  { label: 'По алфавиту', value: 'alphabetical' },
-]
-
 // composables
+const { t } = useI18n()
 const { entries, addEntry, updateEntry, removeEntry } = useDictionary()
 const { ignored, restoreWord } = useIgnoredWords()
 const { isExporting, exportError, exportToAnki } = useAnkiExport()
@@ -60,6 +55,11 @@ const visibleEntries = computed<DictionaryEntry[]>(() =>
   queryEntries(entries.value, filters.value, sort.value),
 )
 const levelOptions = computed<LevelOption[]>(() => levelFilterOptions(entries.value))
+const sortOptions = computed<{ label: string; value: DictionarySort }[]>(() => [
+  { label: t('dictionary.sortNewest'), value: 'newest' },
+  { label: t('dictionary.sortOldest'), value: 'oldest' },
+  { label: t('dictionary.sortAlphabetical'), value: 'alphabetical' },
+])
 const isFilterActive = computed<boolean>(() =>
   Boolean(filters.value.search || filters.value.level || filters.value.onlyWithExplanation),
 )
@@ -104,6 +104,17 @@ async function suggestTranslation(force = false): Promise<void> {
   }
 }
 
+/** Ошибки разбора колоды приходят кодом: `anki.ts` не знает про интерфейс и его язык */
+function importErrorMessage(error: unknown): string {
+  const code = error instanceof Error ? error.message : ''
+  const known: Record<string, string> = {
+    'anki-no-collection': 'errors.ankiNoCollection',
+    'anki-zstd': 'errors.ankiZstd',
+  }
+
+  return known[code] ? t(known[code]) : code || t('dictionary.importFailed')
+}
+
 /** Дубли отсекает сам словарь: `addEntry` ищет запись по нормализованному слову */
 async function importFromAnki(event: Event): Promise<void> {
   const input = event.target
@@ -128,14 +139,14 @@ async function importFromAnki(event: Event): Promise<void> {
       busy: false,
       failed: false,
       message: added
-        ? `Добавлено слов: ${added}, уже было: ${notes.length - added}`
-        : `Все ${notes.length} ${plural(notes.length, ['слово', 'слова', 'слов'])} уже в словаре`,
+        ? t('dictionary.importAdded', { added, known: notes.length - added })
+        : t('dictionary.importAllKnown', { count: notes.length }, notes.length),
     }
   } catch (error) {
     importState.value = {
       busy: false,
       failed: true,
-      message: error instanceof Error ? error.message : 'Не удалось прочитать колоду',
+      message: importErrorMessage(error),
     }
   }
 }
@@ -158,16 +169,16 @@ function submitDraft(): void {
   <Card>
     <template #title>
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <span>Словарь</span>
+        <span>{{ t('dictionary.title') }}</span>
         <div class="flex flex-wrap gap-2">
           <Button
             v-if="entries.length"
             size="small"
             severity="secondary"
             outlined
-            title="Колода .apkg из того, что сейчас в списке — с учётом фильтров. Повторный экспорт обновит заметки, а не создаст дубли"
+            :title="t('dictionary.toAnkiHint')"
             :disabled="isExporting || !visibleEntries.length"
-            :label="isExporting ? 'Собираю колоду…' : `В Anki — ${visibleEntries.length}`"
+            :label="isExporting ? t('dictionary.toAnkiBusy') : t('dictionary.toAnki', { count: visibleEntries.length })"
             @click="exportToAnki(visibleEntries)"
           >
             <template #icon>
@@ -178,9 +189,9 @@ function submitDraft(): void {
             size="small"
             severity="secondary"
             outlined
-            title="Загрузить колоду .apkg: первые два поля заметки станут словом и переводом"
+            :title="t('dictionary.fromAnkiHint')"
             :disabled="importState.busy"
-            :label="importState.busy ? 'Читаю колоду…' : 'Из Anki'"
+            :label="importState.busy ? t('dictionary.fromAnkiBusy') : t('dictionary.fromAnki')"
             @click="$file?.click()"
           >
             <template #icon>
@@ -197,7 +208,7 @@ function submitDraft(): void {
           <Button
             size="small"
             severity="secondary"
-            :label="isFormOpen ? 'Отмена' : 'Добавить слово'"
+            :label="t(isFormOpen ? 'common.cancel' : 'dictionary.addWord')"
             @click="isFormOpen = !isFormOpen"
           >
             <template #icon>
@@ -216,7 +227,7 @@ function submitDraft(): void {
     </template>
 
     <template #subtitle>
-      {{ entries.length ? `Сохранено слов и фраз: ${entries.length}` : 'Пока пусто' }}
+      {{ entries.length ? t('dictionary.saved', { count: entries.length }) : t('dictionary.empty') }}
     </template>
 
     <template #content>
@@ -248,13 +259,13 @@ function submitDraft(): void {
                 for="draft-original"
                 class="text-muted"
               >
-                Слово или фраза
+                {{ t('dictionary.draftOriginal') }}
               </label>
               <InputText
                 id="draft-original"
                 v-model="draft.original"
                 autocomplete="off"
-                placeholder="flash of light"
+                :placeholder="t('dictionary.draftOriginalPlaceholder')"
                 @blur="suggestTranslation()"
               />
             </div>
@@ -266,23 +277,23 @@ function submitDraft(): void {
                 for="draft-translate"
                 class="text-muted"
               >
-                Перевод
+                {{ t('dictionary.draftTranslate') }}
               </label>
               <div class="flex gap-2">
                 <InputText
                   id="draft-translate"
                   v-model="draft.translate"
                   autocomplete="off"
-                  placeholder="вспышка света"
+                  :placeholder="t('dictionary.draftTranslatePlaceholder')"
                   class="min-w-0 flex-1"
                 />
                 <Button
                   severity="secondary"
                   outlined
                   class="shrink-0"
-                  title="Подставить перевод из Яндекс.Словаря — модель не зовём"
+                  :title="t('dictionary.fromDictionaryHint')"
                   :disabled="!draft.original.trim() || isSuggesting"
-                  :label="isSuggesting ? 'Ищу…' : 'Из словаря'"
+                  :label="isSuggesting ? t('dictionary.fromDictionaryBusy') : t('dictionary.fromDictionary')"
                   @click="suggestTranslation(true)"
                 />
               </div>
@@ -293,13 +304,13 @@ function submitDraft(): void {
                 for="draft-level"
                 class="text-muted"
               >
-                Уровень
+                {{ t('dictionary.draftLevel') }}
               </label>
               <Select
                 id="draft-level"
                 v-model="draft.level"
                 :options="[...CEFR_LEVELS]"
-                placeholder="не указан"
+                :placeholder="t('dictionary.draftLevelPlaceholder')"
                 show-clear
                 class="w-40"
               />
@@ -309,11 +320,11 @@ function submitDraft(): void {
           <div class="flex items-center gap-3">
             <Button
               type="submit"
-              label="Сохранить"
+              :label="t('common.save')"
               :disabled="!isDraftValid"
             />
             <small class="text-muted">
-              Слово с уже сохранённым переводом не задвоится — обновится существующая запись
+              {{ t('dictionary.saveHint') }}
             </small>
           </div>
         </form>
@@ -325,8 +336,8 @@ function submitDraft(): void {
           <InputText
             v-model="filters.search"
             class="min-w-48 flex-1"
-            placeholder="Поиск по слову, переводу, пояснению"
-            aria-label="Поиск по словарю"
+            :placeholder="t('dictionary.search')"
+            :aria-label="t('dictionary.searchLabel')"
           />
 
           <Select
@@ -335,19 +346,19 @@ function submitDraft(): void {
             :options="levelOptions"
             option-label="label"
             option-value="value"
-            placeholder="Любой уровень"
+            :placeholder="t('dictionary.anyLevel')"
             show-clear
             class="w-44"
-            aria-label="Фильтр по уровню"
+            :aria-label="t('dictionary.levelFilter')"
           />
 
           <Select
             v-model="sort"
-            :options="SORT_OPTIONS"
+            :options="sortOptions"
             option-label="label"
             option-value="value"
             class="w-48"
-            aria-label="Сортировка"
+            :aria-label="t('dictionary.sortLabel')"
           />
 
           <div class="flex items-center gap-2">
@@ -355,7 +366,7 @@ function submitDraft(): void {
               v-model="filters.onlyWithExplanation"
               input-id="only-explained"
             />
-            <label for="only-explained">С пояснением</label>
+            <label for="only-explained">{{ t('dictionary.withExplanation') }}</label>
           </div>
 
           <Button
@@ -363,7 +374,7 @@ function submitDraft(): void {
             size="small"
             severity="secondary"
             text
-            label="Сбросить"
+            :label="t('common.reset')"
             @click="resetFilters"
           />
         </div>
@@ -372,15 +383,14 @@ function submitDraft(): void {
           v-if="!entries.length"
           class="m-0 text-muted"
         >
-          Слова попадают сюда из оверлея на странице: кнопка-закладка рядом со словом
-          или выделение текста. Можно и добавить руками.
+          {{ t('dictionary.emptyHint') }}
         </p>
 
         <p
           v-else-if="!visibleEntries.length"
           class="m-0 text-muted"
         >
-          Под фильтры ничего не подошло.
+          {{ t('dictionary.nothingFound') }}
         </p>
 
         <DataView
@@ -426,7 +436,7 @@ function submitDraft(): void {
                       v-model="editedTranslate"
                       size="small"
                       class="flex-1"
-                      aria-label="Перевод"
+                      :aria-label="t('dictionary.draftTranslate')"
                       @keyup.enter="saveEditing"
                       @keyup.esc="editingId = ''"
                     />
@@ -435,7 +445,7 @@ function submitDraft(): void {
                       severity="secondary"
                       text
                       rounded
-                      aria-label="Сохранить перевод"
+                      :aria-label="t('dictionary.saveTranslate')"
                       @click="saveEditing"
                     >
                       <Check :size="16" />
@@ -445,7 +455,7 @@ function submitDraft(): void {
                       severity="secondary"
                       text
                       rounded
-                      aria-label="Отменить"
+                      :aria-label="t('common.cancel')"
                       @click="editingId = ''"
                     >
                       <X :size="16" />
@@ -480,7 +490,7 @@ function submitDraft(): void {
                     severity="secondary"
                     text
                     rounded
-                    :aria-label="lookupId === entry.id ? 'Скрыть словари' : 'Посмотреть в словарях'"
+                    :aria-label="t(lookupId === entry.id ? 'dictionary.lookupClose' : 'dictionary.lookupOpen')"
                     @click="lookupId = lookupId === entry.id ? '' : entry.id"
                   >
                     <BookA :size="16" />
@@ -491,7 +501,7 @@ function submitDraft(): void {
                     severity="secondary"
                     text
                     rounded
-                    aria-label="Изменить перевод"
+                    :aria-label="t('dictionary.editTranslate')"
                     @click="startEditing(entry)"
                   >
                     <Pencil :size="16" />
@@ -504,7 +514,7 @@ function submitDraft(): void {
                     text
                     rounded
                     class="hover:!text-red-500"
-                    aria-label="Удалить из словаря"
+                    :aria-label="t('dictionary.remove')"
                     @click="removeEntry(entry.id)"
                   >
                     <Trash2 :size="16" />
@@ -520,8 +530,7 @@ function submitDraft(): void {
           class="flex flex-col gap-2 border-t border-line pt-4"
         >
           <p class="m-0 text-muted">
-            Скрытые слова — модель их находит, но в оверлее они не показываются.
-            Нажмите, чтобы вернуть.
+            {{ t('dictionary.ignoredTitle') }}
           </p>
           <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
             <li
@@ -533,7 +542,7 @@ function submitDraft(): void {
                 severity="secondary"
                 outlined
                 :label="term"
-                :aria-label="`Вернуть слово ${term}`"
+                :aria-label="t('dictionary.ignoredRestore', { term })"
                 @click="restoreWord(term)"
               >
                 <template #icon>

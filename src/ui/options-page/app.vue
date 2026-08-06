@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { BookMarked, Dumbbell, Settings } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+
+const { t } = useI18n()
 
 const LINK_CLASS =
   'flex items-center gap-2 rounded-md px-3 py-2 text-content no-underline hover:bg-surface-hover'
@@ -19,7 +22,7 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
     <div class="flex flex-col gap-6 sm:flex-row">
       <nav
         class="flex shrink-0 gap-1 sm:w-48 sm:flex-col"
-        aria-label="Разделы"
+        :aria-label="t('nav.sections')"
       >
         <RouterLink
           to="/options-page"
@@ -27,7 +30,7 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
           :exact-active-class="ACTIVE_LINK_CLASS"
         >
           <Settings :size="18" />
-          Настройки
+          {{ t('nav.settings') }}
         </RouterLink>
         <RouterLink
           to="/options-page/dictionary"
@@ -35,7 +38,7 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
           :exact-active-class="ACTIVE_LINK_CLASS"
         >
           <BookMarked :size="18" />
-          Словарь
+          {{ t('nav.dictionary') }}
         </RouterLink>
         <RouterLink
           to="/options-page/training"
@@ -43,7 +46,7 @@ const ACTIVE_LINK_CLASS = 'bg-surface-hover font-semibold'
           :exact-active-class="ACTIVE_LINK_CLASS"
         >
           <Dumbbell :size="18" />
-          Тренировка
+          {{ t('nav.training') }}
         </RouterLink>
       </nav>
 

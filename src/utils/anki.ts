@@ -152,9 +152,8 @@ export async function parseApkg(
   const collection = files['collection.anki2'] ?? files['collection.anki21']
 
   if (!collection) {
-    throw new Error(files['collection.anki21b']
-      ? 'Колода в новом формате Anki. Экспортируйте её с галкой «Support older Anki versions»'
-      : 'В архиве нет коллекции Anki')
+    // код, а не текст: файл не знает про интерфейс и его язык, а тесты идут в node
+    throw new Error(files['collection.anki21b'] ? 'anki-zstd' : 'anki-no-collection')
   }
 
   const SQL = await initSqlJs(options.locateFile ? { locateFile: options.locateFile } : {})
