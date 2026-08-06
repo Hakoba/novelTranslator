@@ -167,10 +167,11 @@ test('parseApkg: колода читается обратно — слово, п
   ])
 })
 
-test('parseApkg: архив без коллекции Anki отвергается с внятной ошибкой', async () => {
+test('parseApkg: архив без коллекции Anki отвергается кодом ошибки', async () => {
   const zip = zipSync({ media: strToU8('{}') })
 
-  await assert.rejects(() => parseApkg(zip), /нет коллекции/)
+  // код, а не текст: текст живёт в локалях, а разбор колоды о них не знает
+  await assert.rejects(() => parseApkg(zip), /anki-no-collection/)
 })
 
 test('stripHtml: теги и сущности из чужих колод', () => {

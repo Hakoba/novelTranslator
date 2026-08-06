@@ -2,6 +2,7 @@ import { ref, type Ref } from 'vue'
 import type { WordWithExplanation } from '@/types/words'
 import { REQUEST_TIMEOUT_MS, requestDifficultWords } from '@/utils/llmClient'
 import { extractReadableText } from '@/utils/pageText'
+import { t } from '@/utils/i18n'
 
 export function useDifficultWords(): {
   words: Ref<WordWithExplanation[]>
@@ -31,7 +32,7 @@ export function useDifficultWords(): {
     sourceText.value = ''
 
     if (!parsedText) {
-      errorMessage.value = 'На странице не нашлось текста для разбора'
+      errorMessage.value = t('errors.noText')
       return
     }
 
@@ -47,8 +48,8 @@ export function useDifficultWords(): {
 
       // без текста ошибки непонятно, модель не отвечает или ответ не распарсился
       errorMessage.value = error instanceof DOMException && error.name === 'AbortError'
-        ? `Модель не ответила за ${REQUEST_TIMEOUT_MS / 1000} секунд`
-        : error instanceof Error ? error.message : 'Не удалось получить ответ модели'
+        ? t('errors.timeout', { seconds: REQUEST_TIMEOUT_MS / 1000 })
+        : error instanceof Error ? error.message : t('errors.llmUnknown')
     } finally {
       if (request === currentRequest) isLoading.value = false
     }

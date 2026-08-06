@@ -1,16 +1,13 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { plural } from './plural'
+import { pluralIndex } from './plural'
 
-const WORDS: [string, string, string] = ['слово', 'слова', 'слов']
-
-test('plural: три формы по правилам русского', () => {
-  assert.equal(plural(1, WORDS), 'слово')
-  assert.equal(plural(2, WORDS), 'слова')
-  assert.equal(plural(5, WORDS), 'слов')
-  // ловушки: 11–14 идут по «слов», а 21 и 22 возвращаются к первым формам
-  assert.equal(plural(11, WORDS), 'слов')
-  assert.equal(plural(21, WORDS), 'слово')
-  assert.equal(plural(22, WORDS), 'слова')
-  assert.equal(plural(0, WORDS), 'слов')
+test('pluralIndex: три русские формы, включая ловушки 11–14 и 21–22', () => {
+  assert.equal(pluralIndex(1), 0)
+  assert.equal(pluralIndex(2), 1)
+  assert.equal(pluralIndex(5), 2)
+  assert.equal(pluralIndex(11), 2)
+  assert.equal(pluralIndex(21), 0)
+  assert.equal(pluralIndex(22), 1)
+  assert.equal(pluralIndex(0), 2)
 })

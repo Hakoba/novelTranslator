@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BookMarked, Settings } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
 import { useDictionary } from '@/composables/useDictionary'
-import { plural } from '@/utils/plural'
 
+const { t } = useI18n()
 const { enabledSites } = useAccessSites()
 const { entries } = useDictionary()
 
@@ -13,9 +14,7 @@ const { entries } = useDictionary()
 const summary = computed<string>(() => {
   const count = enabledSites.value.length
 
-  return count
-    ? `Активен на ${count} ${plural(count, ['сайте', 'сайтах', 'сайтах'])}`
-    : 'Нет активных сайтов'
+  return count ? t('popup.active', { count }, count) : t('popup.inactive')
 })
 
 // методы
@@ -40,7 +39,7 @@ function openDictionary(): void {
         severity="secondary"
         text
         rounded
-        aria-label="Настройки"
+        :aria-label="t('nav.settings')"
         @click="openOptions"
       >
         <Settings :size="18" />
@@ -51,7 +50,7 @@ function openDictionary(): void {
       severity="secondary"
       outlined
       size="small"
-      :label="entries.length ? `Словарь · ${entries.length}` : 'Словарь пуст'"
+      :label="entries.length ? t('popup.dictionary', { count: entries.length }) : t('popup.dictionaryEmpty')"
       @click="openDictionary"
     >
       <template #icon>

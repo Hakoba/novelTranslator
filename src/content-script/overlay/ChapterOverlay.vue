@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BookmarkPlus, LoaderCircle, RotateCw } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import OverlayHeader from './components/OverlayHeader.vue'
@@ -21,10 +22,8 @@ import type { WordWithExplanation } from '@/types/words'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
-// по букве в span — иначе волну не сдвинуть по фазе; пробел неразрывный, обычный схлопнется
-const LOADING_CHARS: string[] = [...'Разбираю страницу'].map((char) => char === ' ' ? ' ' : char)
-
 // composables
+const { t } = useI18n()
 const {
   words,
   sourceText,
@@ -38,6 +37,11 @@ const { anchor, clearSelection } = useTextSelection()
 const { isIgnored, ignoreWord } = useIgnoredWords()
 const { hint } = useHighlightHover()
 const { settings: readerSettings, promise: readerSettingsLoaded } = useReaderSettings()
+
+// по букве в span — иначе волну не сдвинуть по фазе; пробел неразрывный, обычный схлопнется
+const loadingChars = computed<string[]>(() =>
+  [...t('overlay.analyzing')].map((char) => char === ' ' ? '\u00a0' : char),
+)
 
 // state
 const isMinimized = ref<boolean>(false)
@@ -150,7 +154,7 @@ async function saveSelection(): Promise<void> {
 
   try {
     const word = await translateTerm(selected.text, context ?? '')
-    if (!word) throw new Error('перевод не найден')
+    if (!word) throw new Error(t('errors.translationMissing'))
 
     addEntry({ original: selected.text, translate: word.translate, context, level: word.level })
     selectionState.value = 'idle'
@@ -180,7 +184,7 @@ async function saveSelection(): Promise<void> {
       size="small"
       rounded
       raised
-      :label="{ idle: 'В словарь', saving: 'Перевожу…', failed: 'Ещё раз' }[selectionState]"
+      :label="t(`overlay.${{ idle: 'saveSelection', saving: 'saveSelectionBusy', failed: 'saveSelectionFailed' }[selectionState]}`)"
       :severity="selectionState === 'failed' ? 'danger' : 'primary'"
       :disabled="selectionState === 'saving'"
       @click="saveSelection"
@@ -234,12 +238,11 @@ async function saveSelection(): Promise<void> {
         class="flex flex-col items-start gap-2"
       >
         <p class="m-0 text-muted">
-          Автозапуск разбора выключен в настройках. Сохранённые слова на странице
-          подсвечены — перевод виден при наведении.
+          {{ t('overlay.autoAnalyzeOff') }}
         </p>
         <Button
           size="small"
-          label="Разобрать страницу"
+          :label="t('overlay.analyze')"
           @click="analyze"
         />
       </div>
@@ -247,7 +250,7 @@ async function saveSelection(): Promise<void> {
       <div
         v-else-if="isLoading"
         class="flex flex-col items-center gap-3 py-10"
-        aria-label="Разбираю страницу"
+        :aria-label="t('overlay.analyzing')"
         aria-busy="true"
       >
         <p
@@ -255,7 +258,7 @@ async function saveSelection(): Promise<void> {
           aria-hidden="true"
         >
           <span
-            v-for="(char, index) in LOADING_CHARS"
+            v-for="(char, index) in loadingChars"
             :key="index"
             :style="{ animationDelay: `${index * 55}ms` }"
           >{{ char }}</span>
@@ -272,7 +275,7 @@ async function saveSelection(): Promise<void> {
         </p>
         <Button
           size="small"
-          label="Повторить"
+          :label="t('common.retry')"
           @click="analyze"
         />
       </div>
@@ -287,7 +290,7 @@ async function saveSelection(): Promise<void> {
             size="small"
             severity="secondary"
             outlined
-            :label="`Добавить все — ${newWords.length}`"
+            :label="t('overlay.addAll', { count: newWords.length })"
             @click="addAll"
           >
             <template #icon>
@@ -312,7 +315,7 @@ async function saveSelection(): Promise<void> {
         v-else
         class="m-0 text-muted"
       >
-        {{ words.length ? 'Все сложные слова на этой странице уже в словаре.' : 'Сложных слов не нашлось.' }}
+        {{ t(words.length ? 'overlay.allKnown' : 'overlay.nothingFound') }}
       </p>
     </div>
   </section>

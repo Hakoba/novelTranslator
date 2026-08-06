@@ -1,41 +1,48 @@
 import type { WordWithExplanation } from '@/types/words'
 import { sendBgFetch } from '@/utils/bgFetch'
-import { extractContent, parseWords } from '@/utils/llmParse'
+import { parseWords } from '@/utils/llmParse'
+import { getProvider, type ChatMessage } from '@/utils/llm/providers'
+import { t } from '@/utils/i18n'
 import { getLlmSettings } from '@/composables/useLlmSettings'
-import { getReaderSettings } from '@/composables/useReaderSettings'
+import { getReaderSettings, PROMPT_EXTRA_LIMIT } from '@/composables/useReaderSettings'
+import { languageName } from '@/utils/languages'
 
-export const CONTRACT_PROMPT_WORDS = 'Return ONLY valid JSON array of objects with fields: original: string, translate: string, level: string. "original" — оригинальное английское слово/фраза; "translate" — краткий перевод на русский; "level" — уровень CEFR ровно одним из значений A1, A2, B1, B2, C1, C2. No markdown, no code fences, no comments, no extra text.'
+/** Контракт ответа — наш, добавка читателя его не касается: иначе разбор ответа развалится */
+export function contractPrompt(target: string): string {
+  return `Return ONLY valid JSON array of objects with fields: original: string, translate: string, level: string. "original" — the word or phrase exactly as it appears in the text; "translate" — a short translation into ${target}; "level" — CEFR level, exactly one of A1, A2, B1, B2, C1, C2. No markdown, no code fences, no comments, no extra text.`
+}
 
 const SYSTEM_PROMPT = 'You are a helpful assistant for translators.'
+
+/** Уточнение читателя идёт в system-сообщение после наших правил и обрезается по лимиту поля */
+function systemPrompt(extra: string): string {
+  const trimmed = extra.trim().slice(0, PROMPT_EXTRA_LIMIT)
+
+  return trimmed ? `${SYSTEM_PROMPT}\nThe reader adds: ${trimmed}` : SYSTEM_PROMPT
+}
 const TEMPERATURE = 0.2
 
 /** Локальные модели на CPU думают минуту и дольше: 15 секунд обрывали живой запрос */
 export const REQUEST_TIMEOUT_MS = 90000
 
-type ChatMessage = { role: 'system' | 'user'; content: string }
-
 /** Сообщение должно называть причину и место, куда лезть, — иначе «HTTP 401» ни о чём не говорит */
 function describeError(status: number, host: string, error?: string): string {
-  if (status === 401 || status === 403) {
-    return `${host} отклонил ключ API (${status}). Проверьте ключ и имя модели в настройках расширения.`
-  }
-  if (status === 404) {
-    return `${host} не знает такой эндпоинт или модель (404). Проверьте адрес и имя модели.`
-  }
+  if (status === 401 || status === 403) return t('errors.keyRejected', { host, status })
+  if (status === 404) return t('errors.notFound', { host })
   if (status === 0) {
-    return `Не удалось подключиться к ${host}${error ? `: ${error}` : ''}. Сервер модели запущен?`
+    return error ? t('errors.unreachableWith', { host, error }) : t('errors.unreachable', { host })
   }
 
-  return `${host} ответил ошибкой ${status}${error ? `: ${error}` : ''}`
+  return error
+    ? t('errors.httpStatusWith', { host, status, error })
+    : t('errors.httpStatus', { host, status })
 }
 
 /** Таймаут живёт здесь: у вызывающих нет других причин прерывать запрос */
 async function chat(messages: ChatMessage[]): Promise<string> {
-  const { baseUrl, model, apiKey } = await getLlmSettings()
-  const url = `${baseUrl.replace(/\/$/, '')}/v1/chat/completions`
-
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (apiKey) headers.Authorization = `Bearer ${apiKey}`
+  const { provider, baseUrl, model, apiKey } = await getLlmSettings()
+  const adapter = getProvider(provider)
+  const { url, headers, body } = adapter.buildRequest(messages, { baseUrl, model, apiKey }, TEMPERATURE)
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
@@ -43,7 +50,7 @@ async function chat(messages: ChatMessage[]): Promise<string> {
   const res = await sendBgFetch(url, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ model, temperature: TEMPERATURE, messages }),
+    body,
   }, controller.signal).finally(() => clearTimeout(timer))
 
   if (!res.ok) {
@@ -56,16 +63,17 @@ async function chat(messages: ChatMessage[]): Promise<string> {
     throw new Error(describeError(res.status, host, res.error))
   }
 
-  return extractContent(res.data)
+  return adapter.extractText(res.data)
 }
 
 export async function requestDifficultWords(text: string): Promise<WordWithExplanation[]> {
-  const { level } = await getReaderSettings()
+  const { level, sourceLang, targetLang, promptExtra } = await getReaderSettings()
+  const source = languageName(sourceLang)
 
   const content = await chat([
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: systemPrompt(promptExtra) },
     // порог уровня задаётся здесь, а не фильтром на клиенте: так модель не тратит токены на заведомо лишнее
-    { role: 'user', content: `The reader's English level is ${level}. Extract hard-to-translate English words and phrases from the text, but ONLY those above ${level} — skip everything a ${level} reader already knows. ${CONTRACT_PROMPT_WORDS}` },
+    { role: 'user', content: `The reader's ${source} level is ${level}. Extract hard-to-translate ${source} words and phrases from the text, but ONLY those above ${level} — skip everything a ${level} reader already knows. ${contractPrompt(languageName(targetLang))}` },
     { role: 'user', content: text },
   ])
 
@@ -77,9 +85,11 @@ export async function requestTranslation(
   target: string,
   context: string,
 ): Promise<WordWithExplanation | undefined> {
+  const { sourceLang, targetLang, promptExtra } = await getReaderSettings()
+
   const content = await chat([
-    { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: `Translate the given English word or phrase into Russian, using the context to pick the right meaning. Return exactly one object in the array. ${CONTRACT_PROMPT_WORDS}` },
+    { role: 'system', content: systemPrompt(promptExtra) },
+    { role: 'user', content: `Translate the given ${languageName(sourceLang)} word or phrase into ${languageName(targetLang)}, using the context to pick the right meaning. Return exactly one object in the array. ${contractPrompt(languageName(targetLang))}` },
     { role: 'user', content: `Word/Phrase: ${target}` },
     { role: 'user', content: `Context:\n${context}` },
   ])
@@ -88,9 +98,12 @@ export async function requestTranslation(
 }
 
 export async function requestExplanation(target: string, context: string): Promise<string> {
+  const { sourceLang, targetLang, promptExtra } = await getReaderSettings()
+  const answerLang = languageName(targetLang)
+
   const content = await chat([
-    { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: 'Given the provided context text, explain briefly in Russian (1–2 sentences) the meaning/usage/nuance of the given English word or phrase. Return ONLY plain Russian text without quotes, markdown, code fences, or extra commentary.' },
+    { role: 'system', content: systemPrompt(promptExtra) },
+    { role: 'user', content: `Given the provided context text, explain briefly in ${answerLang} (1–2 sentences) the meaning/usage/nuance of the given ${languageName(sourceLang)} word or phrase. Return ONLY plain ${answerLang} text without quotes, markdown, code fences, or extra commentary.` },
     { role: 'user', content: `Word/Phrase: ${target}` },
     { role: 'user', content: `Context:\n${context}` },
   ])

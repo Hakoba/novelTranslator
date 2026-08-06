@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import AccessSites from '@/components/accessSites.vue'
+
+const { t } = useI18n()
 
 const displayName = __DISPLAY_NAME__
 
@@ -12,10 +15,10 @@ function openOptions(): void {
 <template>
   <Card>
     <template #title>
-      {{ displayName }} установлен
+      {{ t('setup.installed', { name: displayName }) }}
     </template>
     <template #subtitle>
-      Осталось проверить, на каких сайтах он работает, и указать адрес своей модели
+      {{ t('setup.installedSubtitle') }}
     </template>
     <template #content>
       <div class="flex flex-col gap-4 pt-2">
@@ -23,7 +26,7 @@ function openOptions(): void {
 
         <div>
           <Button
-            label="Открыть настройки"
+            :label="t('common.openSettings')"
             @click="openOptions"
           />
         </div>

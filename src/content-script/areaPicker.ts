@@ -1,4 +1,5 @@
 import { OVERLAY_ROOT_ID } from '@/utils/overlayRoot'
+import { t } from '@/utils/i18n'
 
 /**
  * Ручной выбор области с текстом: алгоритм и правила промахиваются на сайтах
@@ -138,7 +139,7 @@ export function startAreaPicker(onDone: (selector?: string) => void): () => void
   const previousCursor = document.documentElement.style.cursor
 
   const hintPanel = createPanel()
-  hintPanel.textContent = 'Кликните по блоку с текстом · Esc — отмена'
+  hintPanel.textContent = t('overlay.pickerHint')
   hintPanel.style.top = '12px'
   hintPanel.style.left = '50%'
   hintPanel.style.transform = 'translateX(-50%)'
@@ -169,7 +170,7 @@ export function startAreaPicker(onDone: (selector?: string) => void): () => void
     hovered = element
 
     const chars = (element.textContent ?? '').trim().length
-    labelPanel.textContent = `${describe(element)} · ${chars} симв.`
+    labelPanel.textContent = `${describe(element)} · ${t('overlay.pickerChars', { count: chars })}`
     const rect = element.getBoundingClientRect()
     placeShades(shades, rect)
     // над блоком, а если он у верхнего края экрана — сразу под его границей

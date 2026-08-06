@@ -3,6 +3,7 @@ import PrimeVue from "primevue/config"
 import Aura from "@primeuix/themes/aura"
 import { pinia } from "@/utils/pinia"
 import { appRouter } from "@/utils/router"
+import { i18n } from "@/utils/i18n"
 import { applyTheme } from "@/composables/useTheme"
 
 /** Общий bootstrap для страниц расширения (popup, options, setup) */
@@ -24,6 +25,7 @@ export function createPage(root: Component, defaultRoute: string): VueApp {
     })
     .use(pinia)
     .use(appRouter)
+    .use(i18n)
 
   applyTheme()
   app.mount("#app")

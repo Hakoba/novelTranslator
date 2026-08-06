@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { BookmarkCheck, BookmarkPlus, EyeOff } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import LookupPanel from '@/components/LookupPanel.vue'
@@ -15,6 +16,7 @@ const emit = defineEmits<{
 }>()
 
 // composables
+const { t } = useI18n()
 const { hasEntry } = useDictionary()
 
 // state
@@ -37,9 +39,9 @@ async function loadExplanation(): Promise<void> {
 
   try {
     const text = await requestExplanation(props.word.original, props.sourceText)
-    explanation.value = text || 'Не удалось получить пояснение.'
+    explanation.value = text || t('overlay.explanationFailed')
   } catch {
-    explanation.value = 'Не удалось получить пояснение.'
+    explanation.value = t('overlay.explanationFailed')
   } finally {
     isExplanationLoading.value = false
   }
@@ -71,7 +73,7 @@ function addToDictionary(): void {
           size="small"
           severity="secondary"
           text
-          :label="isTipsOpen ? 'Скрыть' : 'Подробнее'"
+          :label="t(isTipsOpen ? 'common.hide' : 'common.more')"
           :aria-expanded="isTipsOpen"
           :aria-controls="tipsId"
           @click="isTipsOpen = !isTipsOpen"
@@ -90,7 +92,7 @@ function addToDictionary(): void {
           v-if="explanation || isExplanationLoading"
           class="m-0 text-muted"
         >
-          {{ isExplanationLoading ? 'Спрашиваю модель…' : explanation }}
+          {{ isExplanationLoading ? t('overlay.explanationLoading') : explanation }}
         </p>
 
         <div v-else>
@@ -98,7 +100,7 @@ function addToDictionary(): void {
             size="small"
             severity="secondary"
             outlined
-            label="Пояснение модели"
+            :label="t('overlay.explanation')"
             @click="loadExplanation"
           />
         </div>
@@ -111,8 +113,8 @@ function addToDictionary(): void {
         severity="secondary"
         text
         rounded
-        data-hint="Больше не показывать это слово"
-        aria-label="Скрыть слово"
+        :data-hint="t('overlay.ignoreHint')"
+        :aria-label="t('overlay.ignore')"
         @click="emit('ignore')"
       >
         <EyeOff :size="16" />
@@ -124,7 +126,7 @@ function addToDictionary(): void {
         text
         rounded
         :disabled="isSaved"
-        :aria-label="isSaved ? 'Уже в словаре' : 'Добавить в словарь'"
+        :aria-label="t(isSaved ? 'overlay.alreadySaved' : 'overlay.addToDictionary')"
         @click="addToDictionary"
       >
         <BookmarkCheck

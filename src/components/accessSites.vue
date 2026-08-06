@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import { useAccessSites } from '@/composables/useAccessSites'
 
+const { t } = useI18n()
 const { sites, addSite, removeSite, toggleSite } = useAccessSites()
 
 // state
@@ -15,12 +17,12 @@ function handleAddSite(): void {
   const url = newSiteUrl.value.trim()
 
   if (!url) {
-    errorMessage.value = 'Введите адрес сайта'
+    errorMessage.value = t('sites.errorEmpty')
     return
   }
 
   if (!addSite(url)) {
-    errorMessage.value = 'Некорректный адрес или сайт уже в списке'
+    errorMessage.value = t('sites.errorInvalid')
     return
   }
 
@@ -35,11 +37,11 @@ function handleAddSite(): void {
         v-model="newSiteUrl"
         placeholder="https://novelbin.com/"
         class="flex-1"
-        aria-label="Адрес сайта"
+        :aria-label="t('sites.address')"
         @keyup.enter="handleAddSite"
       />
       <Button
-        aria-label="Добавить сайт"
+        :aria-label="t('sites.add')"
         @click="handleAddSite"
       >
         <Plus :size="16" />
@@ -56,7 +58,7 @@ function handleAddSite(): void {
     </Message>
 
     <small class="text-muted">
-      Адрес целиком, с протоколом. Поддомены — https://*.novelbin.com, путь — префиксом.
+      {{ t('sites.hint') }}
     </small>
 
     <ul
@@ -70,7 +72,7 @@ function handleAddSite(): void {
       >
         <ToggleSwitch
           :model-value="site.enabled"
-          :aria-label="`Включить ${site.url}`"
+          :aria-label="t('sites.enable', { url: site.url })"
           @update:model-value="toggleSite(site.url)"
         />
         <span
@@ -84,7 +86,7 @@ function handleAddSite(): void {
           text
           rounded
           class="hover:!text-red-500"
-          :aria-label="`Удалить ${site.url}`"
+          :aria-label="t('sites.remove', { url: site.url })"
           @click="removeSite(site.url)"
         >
           <Trash2 :size="16" />
@@ -96,7 +98,7 @@ function handleAddSite(): void {
       v-else
       class="text-muted m-0"
     >
-      Список пуст — расширение не будет работать нигде.
+      {{ t('sites.empty') }}
     </p>
   </section>
 </template>
