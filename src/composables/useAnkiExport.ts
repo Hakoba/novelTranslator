@@ -18,7 +18,7 @@ function downloadFile(data: Uint8Array, fileName: string): void {
 function fileName(now: number): string {
   const date = new Date(now).toISOString().slice(0, 10)
 
-  return `novel-translator-${date}.apkg`
+  return `erudit-${date}.apkg`
 }
 
 export function useAnkiExport(): {

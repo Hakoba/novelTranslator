@@ -6,6 +6,7 @@ import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
 import { isValidUrl, matchesSite } from '@/composables/matchesSite'
 import { useDictionary } from '@/composables/useDictionary'
+import { openDictionaryTab } from '@/utils/dictionaryTab'
 
 const { t } = useI18n()
 const { sites, enabledSites, addSite } = useAccessSites()
@@ -33,13 +34,6 @@ function openOptions(): void {
   browser.runtime.openOptionsPage()
 }
 
-function openDictionary(): void {
-  browser.tabs.create({
-    url: browser.runtime.getURL(
-      'src/ui/options-page/index.html?route=/options-page/dictionary',
-    ),
-  })
-}
 
 /** Домен целиком: путь текущей главы в списке разрешённых сайтов только мешал бы */
 function allowCurrent(): void {
@@ -69,8 +63,20 @@ onMounted(async () => {
       </Button>
     </div>
 
+    <!-- главное действие попапа: за словарём приходят чаще, чем правят список сайтов -->
+    <Button
+      :label="entries.length ? t('popup.dictionary', { count: entries.length }) : t('popup.dictionaryEmpty')"
+      @click="openDictionaryTab"
+    >
+      <template #icon>
+        <BookMarked :size="18" />
+      </template>
+    </Button>
+
     <Button
       v-if="currentHost && !currentAllowed"
+      severity="secondary"
+      outlined
       size="small"
       :label="t('popup.addCurrent', { host: currentHost })"
       :title="t('popup.addCurrentHint')"
@@ -87,18 +93,6 @@ onMounted(async () => {
       <Check :size="16" />
       {{ t('popup.currentAllowed') }}
     </p>
-
-    <Button
-      severity="secondary"
-      outlined
-      size="small"
-      :label="entries.length ? t('popup.dictionary', { count: entries.length }) : t('popup.dictionaryEmpty')"
-      @click="openDictionary"
-    >
-      <template #icon>
-        <BookMarked :size="16" />
-      </template>
-    </Button>
 
     <AccessSites />
   </div>

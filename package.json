@@ -1,5 +1,5 @@
 {
-  "description": "Читалка англоязычных текстов: сложные слова с переводом, подсветка на странице, словарь и тренировка",
+  "description": "Сложные слова любой страницы с переводом: подсветка, словарь и тренировка",
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.3",
     "@eslint/compat": "^1.3.1",
@@ -48,9 +48,9 @@
     "webext-bridge": "^6.0.1",
     "webextension-polyfill": "^0.12.0"
   },
-  "displayName": "Novel Translator",
+  "displayName": "Erudit",
   "license": "GPL-3.0-or-later",
-  "name": "novelTranslator",
+  "name": "erudit",
   "overrides": {
     "@crxjs/vite-plugin": "$@crxjs/vite-plugin"
   },

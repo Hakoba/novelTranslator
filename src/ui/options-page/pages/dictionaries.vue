@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookA, ExternalLink, KeyRound, Languages, Link } from 'lucide-vue-next'
-import { YANDEX_DICT_KEY_URL, useDictSettings } from '@/composables/useDictSettings'
+import { HAS_BUNDLED_DICT_KEY, YANDEX_DICT_KEY_URL, useDictSettings } from '@/composables/useDictSettings'
 import { TRANSLATOR_LIST } from '@/utils/mt/translators'
 
 const { t } = useI18n()
@@ -55,6 +55,15 @@ const translatorOptions = computed<{ id: string; title: string }[]>(() => [
             >{{ t('settings.dictionaries.yandexHintLink') }}<ExternalLink :size="12" /></a>.
             {{ t('settings.dictionaries.yandexHintAfter') }}
           </small>
+
+          <Message
+            v-if="HAS_BUNDLED_DICT_KEY && !settings.yandexKey"
+            severity="info"
+            size="small"
+            variant="simple"
+          >
+            {{ t('settings.dictionaries.sharedKey') }}
+          </Message>
         </div>
 
         <div class="flex items-center gap-2 border-t border-line pt-4">

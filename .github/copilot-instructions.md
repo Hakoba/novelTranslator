@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-- Novel Translator — расширение (Manifest V3, Chrome + Firefox): разбирает главу
+- Erudit — расширение (Manifest V3, Chrome + Firefox): разбирает главу
   англоязычной новеллы через локальную LLM и показывает сложные слова с переводом.
 - Контексты: background, content script (оверлей), popup, options, setup, devtools, offscreen.
 - Состояние — Pinia и composables поверх `chrome.storage`; браузерные API — `webextension-polyfill`.

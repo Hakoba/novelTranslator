@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Erudit: сложные слова страницы с переводом</title>
+    <meta
+      name="description"
+      content="Браузерное расширение для чтения в оригинале. Собирает текст любой страницы, отдаёт вашей модели и показывает слова выше вашего уровня с переводом, подсветкой и словарём."
+    />
+    <link rel="icon" href="logo.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Erudit" />
+    <meta
+      property="og:description"
+      content="Сложные слова любой страницы уже разобраны."
+    />
+    <meta property="og:image" content="logo.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ---------- Токены. Одна палитра на страницу: чернила, бумага, янтарь.
+           Янтарь и шалфей взяты из иконки расширения и означают то же, что в тексте
+           страницы: жёлтое новое слово, зелёное уже в словаре.
+           Радиусы: карточки 14px, кнопки 10px, чипы pill. ---------- */
+      :root {
+        --bg: #f8f7f3;
+        --bg-2: #f1eee6;
+        --card: #fffefb;
+        --ink: #22282a;
+        --ink-2: #5c6566;
+        --line: #ddd9cf;
+        --amber: #eebd4a;
+        --amber-strong: #b98708;
+        --on-amber: #22282a;
+        --hl-new: #fae9bd;
+        --hl-saved: #cfe3d7;
+        --shadow: 0 1px 2px rgba(34, 40, 42, 0.05), 0 12px 32px rgba(34, 40, 42, 0.07);
+        --r-card: 14px;
+        --r-btn: 10px;
+        --font-sans: "Golos Text", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16191a;
+          --bg-2: #1b1f20;
+          --card: #202526;
+          --ink: #e8eae6;
+          --ink-2: #9ba4a2;
+          --line: #2f3536;
+          --amber: #e6b23f;
+          --amber-strong: #f0c869;
+          --on-amber: #191d1e;
+          --hl-new: #4a3b14;
+          --hl-saved: #23392e;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.34);
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 1.0625rem;
+        line-height: 1.62;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        letter-spacing: -0.022em;
+        text-wrap: balance;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 3.9vw, 3rem);
+        line-height: 1.1;
+        font-weight: 600;
+      }
+
+      h2 {
+        font-size: clamp(1.65rem, 3vw, 2.35rem);
+        line-height: 1.14;
+        font-weight: 600;
+      }
+
+      h3 {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--amber-strong);
+        outline-offset: 3px;
+        border-radius: 4px;
+      }
+
+      .wrap {
+        max-width: 1160px;
+        margin-inline: auto;
+        padding-inline: clamp(1.15rem, 4vw, 2.5rem);
+      }
+
+      section {
+        padding-block: clamp(3.75rem, 8vw, 6.5rem);
+        scroll-margin-top: 80px;
+      }
+
+      .lead {
+        color: var(--ink-2);
+        max-width: 58ch;
+      }
+
+      /* ---------- Навигация: одна строка, 64px ---------- */
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(10px);
+      }
+
+      .nav .wrap {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-right: auto;
+      }
+
+      .brand img {
+        width: 26px;
+        height: 26px;
+      }
+
+      /* транскрипция рядом с именем: марка читается как словарная статья,
+         то есть как то, что расширение показывает по слову */
+      .ipa {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 400;
+        letter-spacing: 0;
+        color: var(--ink-2);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1.4rem;
+        font-size: 0.95rem;
+        color: var(--ink-2);
+      }
+
+      .nav-links a {
+        text-decoration: none;
+      }
+
+      .nav-links a:hover {
+        color: var(--ink);
+      }
+
+      /* ---------- Кнопки ---------- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        padding: 0.62rem 1.15rem;
+        border-radius: var(--r-btn);
+        border: 1px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        font-size: 0.98rem;
+        text-decoration: none;
+        transition:
+          transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+          background-color 0.18s,
+          border-color 0.18s;
+      }
+
+      .btn-primary {
+        background: var(--amber);
+        color: var(--on-amber);
+      }
+
+      .btn-primary:hover {
+        background: color-mix(in srgb, var(--amber) 88%, var(--ink));
+      }
+
+      .btn-ghost {
+        border-color: var(--line);
+        color: var(--ink);
+        background: transparent;
+      }
+
+      .btn-ghost:hover {
+        border-color: var(--ink-2);
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn:active {
+        transform: translateY(0) scale(0.985);
+      }
+
+      .btn svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .nav .btn {
+        padding: 0.45rem 0.95rem;
+      }
+
+      /* ---------- Герой: асимметричный сплит ---------- */
+      .hero {
+        padding-top: clamp(2.75rem, 6vw, 5.5rem);
+      }
+
+      .hero-grid {
+        display: grid;
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: center;
+      }
+
+      .hero h1 + p {
+        margin-top: 1.15rem;
+      }
+
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        margin-top: 2rem;
+      }
+
+      /* ---------- Слот под скриншот. Заменяется на <img> одной строкой ---------- */
+      .shot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-align: center;
+        padding: 1.5rem;
+        aspect-ratio: 4 / 3;
+        border: 1px dashed var(--line);
+        border-radius: var(--r-card);
+        background: var(--bg-2);
+        color: var(--ink-2);
+        font-size: 0.85rem;
+      }
+
+      .shot code {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--ink);
+      }
+
+      .shot svg {
+        width: 22px;
+        height: 22px;
+        opacity: 0.55;
+      }
+
+      /* ---------- Совместимость ---------- */
+      .compat {
+        padding-block: clamp(2rem, 4vw, 3rem);
+        border-block: 1px solid var(--line);
+      }
+
+      .compat p {
+        color: var(--ink-2);
+        font-size: 0.95rem;
+      }
+
+      .logos {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: clamp(1.5rem, 4vw, 3rem);
+        margin-top: 1.25rem;
+      }
+
+      .logos img {
+        height: 26px;
+        width: auto;
+        opacity: 0.62;
+        transition: opacity 0.2s;
+      }
+
+      .logos img:hover {
+        opacity: 1;
+      }
+
+      /* ---------- Демонстрация подсветки ---------- */
+      .demo-text {
+        margin-top: 2.5rem;
+        padding: clamp(1.5rem, 4vw, 2.75rem);
+        border-radius: var(--r-card);
+        background: var(--card);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+        line-height: 1.75;
+        max-width: 66ch;
+      }
+
+      .w {
+        position: relative;
+        font: inherit;
+        color: inherit;
+        border: 0;
+        padding: 0.05em 0.16em;
+        margin-inline: -0.16em;
+        border-radius: 4px;
+        cursor: help;
+        background: var(--hl-new);
+      }
+
+      .w-saved {
+        background: var(--hl-saved);
+      }
+
+      .pop {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        z-index: 5;
+        width: max-content;
+        max-width: 17rem;
+        translate: -50% 4px;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.18s ease,
+          translate 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        display: grid;
+        gap: 0.35rem;
+        text-align: left;
+        padding: 0.7rem 0.85rem;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        box-shadow: var(--shadow);
+        font-size: 0.92rem;
+        line-height: 1.45;
+        cursor: default;
+      }
+
+      .w:hover .pop,
+      .w:focus-visible .pop {
+        opacity: 1;
+        visibility: visible;
+        translate: -50% 0;
+      }
+
+      .pop-head {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+      }
+
+      .lvl {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        color: var(--ink-2);
+      }
+
+      .pop-note {
+        color: var(--ink-2);
+        font-size: 0.85rem;
+      }
+
+      .source {
+        margin-top: 0.85rem;
+        font-size: 0.88rem;
+        color: var(--ink-2);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        margin-top: 1.5rem;
+        font-size: 0.92rem;
+        color: var(--ink-2);
+      }
+
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        background: var(--hl-new);
+      }
+
+      .swatch-saved {
+        background: var(--hl-saved);
+      }
+
+      /* ---------- Бенто ---------- */
+      .bento {
+        display: grid;
+        gap: 1rem;
+        margin-top: 2.75rem;
+      }
+
+      .cell {
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        padding: clamp(1.25rem, 2.5vw, 1.85rem);
+        border-radius: var(--r-card);
+        border: 1px solid var(--line);
+        background: var(--card);
+      }
+
+      .cell p {
+        color: var(--ink-2);
+        font-size: 0.98rem;
+      }
+
+      .cell svg {
+        width: 20px;
+        height: 20px;
+        color: var(--amber-strong);
+      }
+
+      .cell-amber {
+        background: color-mix(in srgb, var(--amber) 16%, var(--card));
+        border-color: color-mix(in srgb, var(--amber) 34%, var(--line));
+      }
+
+      .cell-tinted {
+        background: var(--bg-2);
+      }
+
+      .cell .shot {
+        margin-top: auto;
+        aspect-ratio: 16 / 10;
+      }
+
+      .days {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: auto;
+        padding-top: 0.5rem;
+      }
+
+      .days b {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.85rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--amber) 30%, transparent);
+      }
+
+      .file {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--ink-2);
+        margin-top: auto;
+        padding-top: 0.5rem;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.45rem;
+        margin-top: 0.4rem;
+      }
+
+      .chips b {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.85rem;
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--bg-2);
+      }
+
+      .chips span {
+        font-size: 0.9rem;
+        color: var(--ink-2);
+        padding-left: 0.35rem;
+      }
+
+      .ask {
+        font-size: 0.92rem;
+        color: var(--ink-2);
+      }
+
+      .ask a {
+        color: var(--ink);
+        text-decoration: underline;
+        text-decoration-color: var(--line);
+        text-underline-offset: 3px;
+      }
+
+      .ask a:hover {
+        text-decoration-color: var(--amber);
+      }
+
+      /* ---------- Модель ---------- */
+      .model {
+        background: var(--bg-2);
+        border-block: 1px solid var(--line);
+      }
+
+      .model-grid {
+        display: grid;
+        gap: 1rem;
+        margin-top: 2.5rem;
+      }
+
+      .panel {
+        display: grid;
+        gap: 0.85rem;
+        align-content: start;
+        padding: clamp(1.25rem, 2.5vw, 1.85rem);
+        border-radius: var(--r-card);
+        border: 1px solid var(--line);
+        background: var(--card);
+      }
+
+      .panel p {
+        color: var(--ink-2);
+        font-size: 0.98rem;
+      }
+
+      .kv {
+        display: grid;
+        gap: 0.3rem;
+        font-family: var(--font-mono);
+        font-size: 0.88rem;
+      }
+
+      .kv span {
+        color: var(--ink-2);
+      }
+
+      .kv b {
+        font-weight: 500;
+        word-break: break-all;
+      }
+
+      .stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      /* ---------- Установка ---------- */
+      pre {
+        margin: 0;
+        overflow-x: auto;
+        padding: 1rem 1.15rem;
+        border-radius: var(--r-card);
+        background: var(--bg-2);
+        border: 1px solid var(--line);
+        font-family: var(--font-mono);
+        font-size: 0.86rem;
+        line-height: 1.7;
+      }
+
+      .install-grid {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .steps {
+        margin: 0;
+        padding-left: 1.15rem;
+        color: var(--ink-2);
+        font-size: 0.98rem;
+      }
+
+      .steps li + li {
+        margin-top: 0.35rem;
+      }
+
+      .steps code,
+      .inline-code {
+        font-family: var(--font-mono);
+        font-size: 0.86em;
+        color: var(--ink);
+      }
+
+      /* ---------- Подвал ---------- */
+      footer {
+        border-top: 1px solid var(--line);
+        padding-block: 2.75rem 3.5rem;
+        color: var(--ink-2);
+        font-size: 0.94rem;
+      }
+
+      .foot-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem 2.5rem;
+        justify-content: space-between;
+        align-items: start;
+      }
+
+      .foot-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+      }
+
+      footer a:hover {
+        color: var(--ink);
+      }
+
+      /* ---------- Раскладка от 720px и от 900px ---------- */
+      @media (max-width: 719px) {
+        .nav-links {
+          display: none;
+        }
+      }
+
+      @media (min-width: 900px) {
+        .hero-grid {
+          grid-template-columns: 1.08fr 0.92fr;
+        }
+
+        .bento {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .cell-wide {
+          grid-column: span 2;
+          flex-direction: row;
+          align-items: stretch;
+          gap: 1.75rem;
+        }
+
+        .cell-wide > div {
+          display: flex;
+          flex-direction: column;
+          gap: 0.7rem;
+          flex: 1 1 42%;
+        }
+
+        .cell-wide .shot {
+          flex: 1 1 58%;
+          margin-top: 0;
+          aspect-ratio: auto;
+        }
+
+        .cell-full {
+          grid-column: span 3;
+          flex-direction: row;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .cell-full > div {
+          display: flex;
+          flex-direction: column;
+          gap: 0.7rem;
+          flex: 1 1 58%;
+        }
+
+        .cell-full > .cell-side {
+          flex: 1 1 42%;
+          gap: 0.9rem;
+        }
+
+        .cell-full .chips {
+          margin-top: 0;
+        }
+
+        .model-grid {
+          grid-template-columns: 1.15fr 0.85fr;
+          align-items: start;
+        }
+
+        .install-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      /* ---------- Движение: появление секций на скролле, нативным таймлайном.
+           Браузер без поддержки просто показывает содержимое. ---------- */
+      @media (prefers-reduced-motion: no-preference) {
+        @supports (animation-timeline: view()) {
+          .reveal {
+            animation: reveal linear both;
+            animation-timeline: view();
+            animation-range: entry 4% cover 26%;
+          }
+
+          @keyframes reveal {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: none;
+            }
+          }
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="nav">
+      <div class="wrap">
+        <a class="brand" href="#top">
+          <img src="logo.png" alt="" />
+          Erudit
+          <span class="ipa">[erʊˈdit]</span>
+        </a>
+        <nav class="nav-links">
+          <a href="#words">Слова</a>
+          <a href="#features">Возможности</a>
+          <a href="#model">Модель</a>
+          <a href="https://github.com/Hakoba/novelTranslator">GitHub</a>
+        </nav>
+        <a class="btn btn-primary" href="#install">Установить</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <h1>Сложные слова уже разобраны</h1>
+            <p class="lead">
+              На любой странице: расширение собирает текст, отдаёт вашей модели и показывает слова
+              выше вашего уровня с переводом и подсветкой.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#install">Установить</a>
+              <a class="btn btn-ghost" href="https://github.com/Hakoba/novelTranslator">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+                  />
+                  <path d="M9 18c-4.51 2-5-2-7-2" />
+                </svg>
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          <!-- СКРИНШОТ 1. Заменить весь этот div на:
+               <img class="shot" src="img/overlay.png" alt="Оверлей расширения поверх текста страницы" width="1600" height="1200"> -->
+          <div class="shot">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>
+            <span>Оверлей со списком слов поверх страницы</span>
+            <code>img/overlay.png, 1600&times;1200</code>
+          </div>
+        </div>
+      </section>
+
+      <section class="compat">
+        <div class="wrap">
+          <p>Совместимо с</p>
+          <div class="logos">
+            <img
+              src="img/logos/googlechrome.svg"
+              alt="Google Chrome"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/firefoxbrowser.svg"
+              alt="Firefox"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/ollama.svg"
+              alt="Ollama"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/lmstudio.svg"
+              alt="LM Studio"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/anthropic.svg"
+              alt="Anthropic"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/googlegemini.svg"
+              alt="Google Gemini"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/openrouter.svg"
+              alt="OpenRouter"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/deepl.svg"
+              alt="DeepL"
+              height="26"
+              loading="lazy"
+            />
+            <img
+              src="img/logos/anki.svg"
+              alt="Anki"
+              height="26"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section id="words">
+        <div class="wrap reveal">
+          <h2>Подсветка живёт в самом тексте</h2>
+          <p class="lead" style="margin-top: 1rem">
+            Оверлей держит список слов, а страница остаётся страницей: расширение не подключает свои
+            стили к документу сайта. Наведите на подсвеченное слово.
+          </p>
+
+          <p class="demo-text">
+            It is a truth
+            <button type="button" class="w w-saved">
+              universally<span class="pop" role="tooltip">
+                <span class="pop-head">universally <span class="lvl">B2</span></span>
+                <span>повсеместно, всеми</span>
+                <span class="pop-note">Уже в словаре, повтор через 7 дней</span>
+              </span>
+            </button>
+            <button type="button" class="w">
+              acknowledged<span class="pop" role="tooltip">
+                <span class="pop-head">acknowledged <span class="lvl">C1</span></span>
+                <span>признанный</span>
+                <span class="pop-note">Найдено на этой странице</span>
+              </span> </button
+            >, that a single man in possession of a good
+            <button type="button" class="w">
+              fortune<span class="pop" role="tooltip">
+                <span class="pop-head">fortune <span class="lvl">B2</span></span>
+                <span>состояние, богатство</span>
+                <span class="pop-note">Найдено на этой странице</span>
+              </span> </button
+            >, must be in want of a wife.
+          </p>
+
+          <p class="source">Джейн Остин, «Гордость и предубеждение», 1813</p>
+
+          <div class="legend">
+            <span><i class="swatch"></i> новое слово на странице</span>
+            <span><i class="swatch swatch-saved"></i> уже в вашем словаре</span>
+            <span>Пара языков настраивается: 13 языков текста, интерфейс на шести</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="wrap reveal">
+          <h2>Слово не теряется после чтения</h2>
+
+          <div class="bento">
+            <article class="cell cell-wide">
+              <div>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect width="8" height="18" x="3" y="3" rx="1" />
+                  <path d="M7 3v18" />
+                  <path
+                    d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"
+                  />
+                </svg>
+                <h3>Словарь</h3>
+                <p>
+                  Три входа: закладка в списке слов, выделение прямо на странице, ручная форма.
+                  Внутри поиск по слову и переводу, фильтр по уровню, правка перевода.
+                </p>
+              </div>
+              <!-- СКРИНШОТ 2. Заменить этот div на:
+                   <img class="shot" src="img/dictionary.png" alt="Экран словаря с поиском и фильтрами" width="1400" height="900"> -->
+              <div class="shot">
+                <span>Экран словаря</span>
+                <code>img/dictionary.png, 1400&times;900</code>
+              </div>
+            </article>
+
+            <article class="cell cell-amber">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"
+                />
+                <path d="M22 10v6" />
+                <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
+              </svg>
+              <h3>Тренировка</h3>
+              <p>
+                Карточка со словом и контекстом, самооценка «знал» или «не знал». Ошибка сбрасывает
+                лестницу интервалов целиком. В сессии 20 слов.
+              </p>
+              <p class="days">
+                <b>1</b><b>3</b><b>7</b><b>16</b><b>35</b><b>90</b>
+                <span class="lvl" style="border: 0">дней</span>
+              </p>
+            </article>
+
+            <article class="cell cell-tinted">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 15V3" />
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+              <h3>Anki в обе стороны</h3>
+              <p>
+                Колода собирается прямо в браузере: слово, перевод, контекст, пояснение, уровень в
+                тегах. Повторный экспорт обновляет заметку, а не плодит дубли.
+              </p>
+              <p class="file">.apkg</p>
+            </article>
+
+            <article class="cell">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
+                />
+                <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                <path
+                  d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
+                />
+                <path d="m2 2 20 20" />
+              </svg>
+              <h3>Скрытые слова</h3>
+              <p>
+                Имена, термины и давно знакомое убираются из списка и из подсветки навсегда. Список
+                отдельный от словаря, так что в тренировку и в экспорт они не попадут.
+              </p>
+            </article>
+
+            <article class="cell">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                <path d="M2 12h20" />
+              </svg>
+              <h3>Только там, где вы разрешили</h3>
+              <p>
+                Расширение запускается на адресах из вашего списка, по умолчанию там один
+                <span class="inline-code">reddit.com</span>. Добавить сайт можно из попапа, одной
+                кнопкой для открытой вкладки.
+              </p>
+            </article>
+
+            <article class="cell cell-full">
+              <div>
+                <h3>Текст находится сам, на любом сайте</h3>
+                <p>
+                  Глава новеллы, статья, тред на Reddit: расширению нужен текст, а не конкретный
+                  движок. Для четырёх сайтов есть готовые правила, на остальных читаемый блок
+                  ищется по плотности текста, а доля слов внутри ссылок отсекает меню и подборки
+                  «читайте также». Если разбор промахнулся, укажите область мышкой: селектор
+                  запомнится для этого домена.
+                </p>
+              </div>
+              <div class="cell-side">
+                <p class="chips">
+                  <b>reddit</b><b>webnovel</b><b>novelbin</b><b>royalroad</b
+                  ><span>остальные по плотности текста</span>
+                </p>
+                <p class="ask">
+                  Правило для своего сайта можно добавить всем сразу: пришлите
+                  <a href="https://github.com/Hakoba/novelTranslator/pulls">пул-реквест</a>, заведите
+                  <a href="https://github.com/Hakoba/novelTranslator/issues">issue</a> или напишите
+                  на <a href="mailto:amion980@gmail.com">amion980@gmail.com</a>.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="model" class="model">
+        <div class="wrap reveal">
+          <h2>Модель ваша, ключи ваши</h2>
+          <p class="lead" style="margin-top: 1rem">
+            Текст страницы уходит только на тот адрес, который вы вписали в настройках. Ключи лежат в
+            настройках браузера, в коде расширения их нет.
+          </p>
+
+          <div class="model-grid">
+            <div class="stack">
+              <div class="panel">
+                <h3>Локально</h3>
+                <p>
+                  LM Studio, Ollama, llama.cpp и любой другой сервер с OpenAI-совместимым API.
+                  Ничего не уходит из вашей машины.
+                </p>
+                <div class="kv">
+                  <span>адрес</span>
+                  <b>http://localhost:1234</b>
+                </div>
+                <div class="kv">
+                  <span>модель</span>
+                  <b>gpt-oss</b>
+                </div>
+                <div class="kv">
+                  <span>ключ</span>
+                  <b>не нужен</b>
+                </div>
+              </div>
+
+              <div class="panel">
+                <h3>Список уровней — внутри</h3>
+                <p>
+                  8833 английских слова из CEFR-J и Octanove лежат в самом расширении: 75 КБ, ни
+                  одного запроса. Слово, которое список считает ниже вашего уровня, модель в список
+                  не протащит, а переводу из словаря он проставит уровень. Ваш собственный словарь
+                  тоже хранится только в браузере — сервера у расширения нет.
+                </p>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="panel">
+                <h3>Облако</h3>
+                <p>
+                  Anthropic Messages, Google Gemini и OpenAI-совместимые провайдеры кнопками-пресетами:
+                  OpenRouter, Groq, DeepSeek, Mistral, Yandex AI Studio. Кнопка «Проверить
+                  подключение» показывает время ответа или ту же ошибку, что увидел бы оверлей.
+                </p>
+              </div>
+              <div class="panel">
+                <h3>Словари вместо модели</h3>
+                <p>
+                  Одиночное слово переводит Яндекс.Словарь, толкование с примером приходит из
+                  dictionaryapi.dev без ключа, фразу можно отдать в DeepL или LibreTranslate. Модель
+                  дороже и медленнее, поэтому её очередь последняя.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="install">
+        <div class="wrap reveal">
+          <h2>Установка</h2>
+          <p class="lead" style="margin-top: 1rem">
+            В магазинах расширения пока нет, сборка занимает две команды. Нужен Node.js 20 или
+            новее.
+          </p>
+
+          <pre><code>git clone https://github.com/Hakoba/novelTranslator
+cd novelTranslator
+npm install
+npm run build</code></pre>
+
+          <div class="install-grid">
+            <div class="panel">
+              <h3>Chrome</h3>
+              <ol class="steps">
+                <li>Откройте <code>chrome://extensions</code></li>
+                <li>Включите режим разработчика</li>
+                <li>«Загрузить распакованное расширение», папка <code>dist/chrome</code></li>
+              </ol>
+            </div>
+            <div class="panel">
+              <h3>Firefox</h3>
+              <ol class="steps">
+                <li>Откройте <code>about:debugging</code></li>
+                <li>«Этот Firefox», затем «Загрузить временное дополнение»</li>
+                <li>Выберите <code>dist/firefox/manifest.json</code></li>
+              </ol>
+            </div>
+          </div>
+
+          <p class="lead" style="margin-top: 1.5rem">
+            Дальше откройте настройки расширения, укажите адрес модели и нажмите «Проверить
+            подключение». Разрешённые сайты правятся там же или в попапе, одной кнопкой для текущей
+            вкладки.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap foot-grid">
+        <p>
+          Erudit, лицензия GPL-3.0-or-later.<br />
+          Форк и своя сборка разрешены: при распространении исходники открываются под той же
+          лицензией.
+        </p>
+        <nav class="foot-links">
+          <a href="https://github.com/Hakoba/novelTranslator">GitHub</a>
+          <a href="https://github.com/Hakoba/novelTranslator#readme">README</a>
+          <a href="https://github.com/Hakoba/novelTranslator/blob/master/docs/DEVELOPMENT.md"
+            >Архитектура</a
+          >
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

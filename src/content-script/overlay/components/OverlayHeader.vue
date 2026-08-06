@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ChevronDown, ChevronUp, Eraser, SquareDashedMousePointer, X } from 'lucide-vue-next'
+import { BookMarked, ChevronDown, ChevronUp, Eraser, SquareDashedMousePointer, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import AppLogo from '@/components/AppLogo.vue'
+import { openDictionaryTab } from '@/utils/dictionaryTab'
 
 defineProps<{
   isMinimized: boolean
@@ -24,6 +26,8 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex w-full items-center gap-2">
+    <AppLogo :size="18" />
+
     <strong
       class="flex-1 truncate"
       role="heading"
@@ -38,6 +42,18 @@ const emit = defineEmits<{
       severity="info"
       :aria-label="t('overlay.wordsFound')"
     />
+
+    <Button
+      text
+      rounded
+      severity="secondary"
+      size="small"
+      :aria-label="t('overlay.dictionary')"
+      :data-hint="t('overlay.dictionaryHint')"
+      @click="openDictionaryTab"
+    >
+      <BookMarked :size="16" />
+    </Button>
 
     <Button
       v-if="hasArea && !isPicking"

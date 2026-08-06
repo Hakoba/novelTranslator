@@ -2,4 +2,4 @@
  * id хост-элемента оверлея. По нему подсветка и пикер отличают собственный DOM
  * от документа сайта — иначе они начинают работать сами по себе.
  */
-export const OVERLAY_ROOT_ID = 'novel-translator-overlay-root'
+export const OVERLAY_ROOT_ID = 'erudit-overlay-root'

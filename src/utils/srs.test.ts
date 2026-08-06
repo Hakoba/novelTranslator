@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { DictionaryEntry } from '@/types/words'
-import { countNew, dueEntries, intervalDays, nextDueAt, reviewEntry } from './srs'
+import { countNew, dueEntries, dueInDays, intervalDays, nextDueAt, reviewEntry } from './srs'
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = 1_000 * DAY
@@ -78,6 +78,13 @@ test('countNew: считает нетренированные, кроме уда
   ]
 
   assert.equal(countNew(entries), 1)
+})
+
+test('dueInDays: нетренированное и просроченное — ноль, остальное вверх до дня', () => {
+  assert.equal(dueInDays(undefined, NOW), 0)
+  assert.equal(dueInDays(NOW - DAY, NOW), 0)
+  assert.equal(dueInDays(NOW + 7 * DAY, NOW), 7)
+  assert.equal(dueInDays(NOW + DAY / 3, NOW), 1)
 })
 
 test('nextDueAt: ближайшая будущая дата, иначе undefined', () => {

@@ -1,8 +1,11 @@
 import { onMounted, onUnmounted, ref, type Ref } from 'vue'
 import { OVERLAY_ROOT_ID } from '@/utils/overlayRoot'
+import { findSentence } from '@/utils/sentence'
 
 export type SelectionAnchor = {
   text: string
+  /** Предложение вокруг выделения — контекст для карточки словаря */
+  context?: string
   /** Координаты середины верхней грани выделения, viewport */
   x: number
   y: number
@@ -10,6 +13,20 @@ export type SelectionAnchor = {
 
 /** Длиннее — это уже абзац, а не слово или фраза для словаря */
 const MAX_SELECTION_LENGTH = 200
+
+/**
+ * Контекст ищем в ближайшем абзаце, а не в разобранном тексте главы: разбора
+ * может и не быть, а поиск по всей главе нашёл бы первое вхождение слова —
+ * запросто из другого места. Чтение `textContent` одного абзаца ничего не стоит.
+ */
+const TEXT_BLOCKS = 'p, li, blockquote, dd, td, h1, h2, h3, h4, h5, h6'
+
+function contextAround(element: Element | null, term: string): string | undefined {
+  const block = element?.closest(TEXT_BLOCKS) ?? element
+  const text = block?.textContent?.replace(/\s+/g, ' ').trim()
+
+  return text ? findSentence(text, term) : undefined
+}
 
 /**
  * События из shadow root оверлея на уровне document приходят с target = host,
@@ -35,7 +52,12 @@ function readSelection(): SelectionAnchor | undefined {
 
   const rect = range.getBoundingClientRect()
 
-  return { text, x: rect.left + rect.width / 2, y: rect.top }
+  return {
+    text,
+    context: contextAround(element, text),
+    x: rect.left + rect.width / 2,
+    y: rect.top,
+  }
 }
 
 /** Выделенная на странице фраза и место, куда повесить кнопку «в словарь» */

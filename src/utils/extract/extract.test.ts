@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { dedupeBlocks, joinBlocks, normalizeWhitespace } from './blocks'
+import { MAX_CHARS, appendedTail, dedupeBlocks, joinBlocks, limitChars, normalizeWhitespace } from './blocks'
 import { findRule } from './rules'
 import { pickBestIndex, scoreCandidate } from './score'
 
@@ -29,9 +29,30 @@ test('joinBlocks: короткие обрывки выбрасываются', (
   assert.equal(joinBlocks(['Дальше →', long, 'Глава 12']), long)
 })
 
-test('joinBlocks: длинный текст обрезается по лимиту', () => {
+test('joinBlocks: текст собирается целиком, обрезки тут нет', () => {
   const block = 'а'.repeat(5000)
-  assert.equal(joinBlocks([block, block.replace('а', 'б')]).length, 8000)
+  assert.equal(joinBlocks([block, block.replace('а', 'б')]).length, 10001)
+})
+
+test('limitChars: длинный текст обрезается по лимиту', () => {
+  assert.equal(limitChars('а'.repeat(10000)).length, MAX_CHARS)
+  assert.equal(limitChars('коротко'), 'коротко')
+})
+
+test('appendedTail: догруженная глава отдаётся без прежнего текста', () => {
+  assert.equal(appendedTail('Глава первая.', 'Глава первая.\nГлава вторая.'), '\nГлава вторая.')
+})
+
+test('appendedTail: страницу заменили — разбираем целиком', () => {
+  assert.equal(appendedTail('Глава первая.', 'Совсем другой текст.'), 'Совсем другой текст.')
+})
+
+test('appendedTail: без прошлого разбора весь текст новый', () => {
+  assert.equal(appendedTail('', 'Глава первая.'), 'Глава первая.')
+})
+
+test('appendedTail: текст не изменился — разбирать нечего', () => {
+  assert.equal(appendedTail('Глава первая.', 'Глава первая.'), '')
 })
 
 test('findRule: домен и поддомены, www не мешает', () => {

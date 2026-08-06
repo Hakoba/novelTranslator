@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { BookMarked, BookOpenText, Bot, Dumbbell, Globe, Library, Settings } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+import AppLogo from '@/components/AppLogo.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import { useLlmSettings } from '@/composables/useLlmSettings'
 import { needsApiKey } from '@/utils/settingsStatus'
@@ -23,8 +24,9 @@ const modelNeedsKey = computed<boolean>(() =>
 <template>
   <div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
     <header class="flex items-center justify-between gap-2">
-      <h1 class="m-0 text-xl font-semibold">
-        Novel Translator
+      <h1 class="m-0 flex items-center gap-2 text-xl font-semibold">
+        <AppLogo :size="26" />
+        Erudit
       </h1>
       <ThemeSwitch />
     </header>

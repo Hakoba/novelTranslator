@@ -1,10 +1,10 @@
 schema: spec-driven
 
 context: |
-  novelTranslator — браузерное расширение (Manifest V3, Chrome + Firefox) для чтения
+  Erudit — браузерное расширение (Manifest V3, Chrome + Firefox) для чтения
   англоязычных новелл: парсит главу, через LLM достаёт сложные слова/фразы уровня B1
   с переводом на русский, сохраняет их в личный словарь (chrome.storage.sync).
-  Основной сайт — novelbin.com.
+  Сайт по умолчанию — reddit.com, правила разбора есть и для читалок.
   Стек: Vue 3 (script setup) + TypeScript + Vite + Pinia + PrimeVue + Tailwind 4,
   webext-bridge / webextension-polyfill, UI на странице только через Shadow DOM.
   Конвенции кода — .junie/guidelines.md, архитектура — docs/DEVELOPMENT.md, обзор — CLAUDE.md.

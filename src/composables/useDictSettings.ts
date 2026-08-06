@@ -26,6 +26,26 @@ export const DEFAULT_DICT_SETTINGS: DictSettings = {
 
 export const YANDEX_DICT_KEY_URL = 'https://yandex.ru/dev/dictionary/'
 
+/**
+ * Общий ключ из сборки. Ключи модели платные и остаются в dev-сборке, а этот
+ * бесплатный и с суточной квотой — им расширение переводит слова сразу после
+ * установки, без похода за ключом. Квота одна на всех, поэтому свой ключ
+ * в настройках его перебивает, а не дополняет.
+ */
+const bundledKey = __YANDEX_DICT_KEY__
+
+export const HAS_BUNDLED_DICT_KEY = Boolean(bundledKey)
+
+/** Чей ключ пойдёт в запрос. Пустая строка — словарь Яндекса просто промолчит */
+export function dictKey(settings: DictSettings): string {
+  return settings.yandexKey.trim() || bundledKey
+}
+
+/** Общая квота кончается на всех сразу — про это надо говорить не так, как про чужой ключ */
+export function isBundledKey(settings: DictSettings): boolean {
+  return !settings.yandexKey.trim() && HAS_BUNDLED_DICT_KEY
+}
+
 const { data, promise } = useBrowserSyncStorage<DictSettings>('dict-settings', DEFAULT_DICT_SETTINGS)
 
 export function useDictSettings(): {

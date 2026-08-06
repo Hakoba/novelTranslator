@@ -35,7 +35,7 @@ function handleAddSite(): void {
     <div class="flex gap-2">
       <InputText
         v-model="newSiteUrl"
-        placeholder="https://novelbin.com/"
+        placeholder="https://www.reddit.com/"
         class="flex-1"
         :aria-label="t('sites.address')"
         @keyup.enter="handleAddSite"

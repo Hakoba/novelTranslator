@@ -36,15 +36,24 @@ function findRecord(original: string): DictionaryEntry | undefined {
 
 export function useDictionary(): {
   entries: ComputedRef<DictionaryEntry[]>
+  deletedEntries: ComputedRef<DictionaryEntry[]>
   promise: Promise<unknown>
   hasEntry: (original: string) => boolean
   addEntry: (input: NewDictionaryEntry) => DictionaryEntry
   updateEntry: (id: string, patch: Partial<NewDictionaryEntry>) => void
   removeEntry: (id: string) => void
+  restoreEntry: (id: string) => void
+  purgeDeleted: () => void
 } {
   // computed
   const entries = computed<DictionaryEntry[]>(() =>
     data.value.filter((entry) => !entry.deletedAt),
+  )
+  // свежеудалённые сверху: возвращают обычно то, что убрали только что
+  const deletedEntries = computed<DictionaryEntry[]>(() =>
+    data.value
+      .filter((entry) => entry.deletedAt)
+      .sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0)),
   )
 
   // методы
@@ -95,5 +104,33 @@ export function useDictionary(): {
     entry.updatedAt = now
   }
 
-  return { entries, promise, hasEntry, addEntry, updateEntry, removeEntry }
+  /** Прогресс тренировки надгробие хранит вместе со словом — возвращается и он */
+  function restoreEntry(id: string): void {
+    const entry = data.value.find((item) => item.id === id)
+    if (!entry) return
+
+    entry.deletedAt = undefined
+    entry.updatedAt = Date.now()
+  }
+
+  /**
+   * Выбросить надгробия совсем. Пока словарь живёт только в этом браузере, это
+   * безопасно; с появлением синхронизации чистить придётся с оглядкой на другие
+   * устройства — они вернут слово, если не увидят отметку об удалении.
+   */
+  function purgeDeleted(): void {
+    data.value = data.value.filter((entry) => !entry.deletedAt)
+  }
+
+  return {
+    entries,
+    deletedEntries,
+    promise,
+    hasEntry,
+    addEntry,
+    updateEntry,
+    removeEntry,
+    restoreEntry,
+    purgeDeleted,
+  }
 }
