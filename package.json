@@ -57,7 +57,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hakoba/novelTranslator"
+    "url": "https://github.com/Hakoba/erudit"
   },
   "scripts": {
     "build": "npm run build:chrome && npm run build:firefox",
