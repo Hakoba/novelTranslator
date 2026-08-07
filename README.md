@@ -25,16 +25,10 @@ you explicitly allow.
 > **Status: 0.0.1.** Not in the extension stores yet, so it is installed from source.
 > Everything described below works; what is missing is listed under [Roadmap](#roadmap).
 
-<!-- Скриншоты. Как появятся файлы, заменить блок ниже на:
 <p align="center">
-  <img src="landing/img/overlay.png" alt="Слова выше уровня читателя, подсвеченные на странице" width="820">
+  <img src="landing/img/overlay.png" width="840"
+       alt="A Reddit post with the hard words highlighted in the text, a hover card for one of them and the overlay listing everything it found" />
 </p>
-Требования к кадрам — landing/img/README.md
--->
-
-<div align="center">
-<i>Screenshots are being prepared — see <a href="landing/img/README.md">landing/img/README.md</a> for the shot list.</i>
-</div>
 
 ## Why another one
 
@@ -64,6 +58,11 @@ set it to C1 and the page goes almost quiet.
   else. `reddit.com` is there by default; add or remove from the popup in one click.
 - **Six interface languages** — English, Russian, Spanish, Portuguese, Chinese, Korean — chosen
   independently of the language you are reading.
+
+<p align="center">
+  <img src="landing/img/dictionary.png" width="840"
+       alt="The dictionary screen: saved words with their level, the sentence they came from and an explanation, plus search, level filter and Anki export" />
+</p>
 
 ## Install
 
