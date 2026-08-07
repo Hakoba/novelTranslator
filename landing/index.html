@@ -9,13 +9,18 @@
       content="Браузерное расширение для чтения в оригинале. Собирает текст любой страницы, отдаёт вашей модели и показывает слова выше вашего уровня с переводом, подсветкой и словарём."
     />
     <link rel="icon" href="logo.png" />
+    <link rel="canonical" href="https://hakoba.github.io/erudit/" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Erudit" />
     <meta
       property="og:description"
       content="Сложные слова любой страницы уже разобраны."
     />
-    <meta property="og:image" content="logo.png" />
+    <!-- og:url и og:image только абсолютными: относительный путь ни краулеры,
+         ни мессенджеры не разрешают — превью ссылки приезжает без картинки -->
+    <meta property="og:url" content="https://hakoba.github.io/erudit/" />
+    <meta property="og:image" content="https://hakoba.github.io/erudit/logo.png" />
+    <meta name="twitter:card" content="summary" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
