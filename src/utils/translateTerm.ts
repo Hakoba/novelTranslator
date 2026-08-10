@@ -3,7 +3,7 @@ import { getDictSettings } from '@/composables/useDictSettings'
 import { getReaderSettings } from '@/composables/useReaderSettings'
 import { cefrLevel } from '@/utils/cefr/levels'
 import { firstTranslation } from '@/utils/dict/parse'
-import { lookupTerm } from '@/utils/dictClient'
+import { lookupTranslation } from '@/utils/dictClient'
 import { requestTranslation } from '@/utils/llmClient'
 import { machineTranslate } from '@/utils/mtClient'
 
@@ -32,7 +32,7 @@ export async function dictTranslate(term: string): Promise<WordWithExplanation |
   const { sourceLang } = await getReaderSettings()
 
   if (preferDictionary && isSingleWord(term)) {
-    const { results } = await lookupTerm(term)
+    const { results } = await lookupTranslation(term)
     const translate = firstTranslation(results.find((result) => result.source === 'yandex'))
 
     if (translate) return withLevel({ original: term, translate }, sourceLang)
