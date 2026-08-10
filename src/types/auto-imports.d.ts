@@ -140,6 +140,7 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
+  const isTargetLanguageText: typeof import('../utils/immersion').isTargetLanguageText
   const isUiLanguage: typeof import('../utils/languages').isUiLanguage
   const isValidUrl: typeof import('../composables/matchesSite').isValidUrl
   const joinBlocks: typeof import('../utils/extract/blocks').joinBlocks
@@ -148,6 +149,7 @@ declare global {
   const limitChars: typeof import('../utils/extract/blocks').limitChars
   const lookupFreeDictionary: typeof import('../utils/dictClient').lookupFreeDictionary
   const lookupTerm: typeof import('../utils/dictClient').lookupTerm
+  const lookupTranslation: typeof import('../utils/dictClient').lookupTranslation
   const lookupYandex: typeof import('../utils/dictClient').lookupYandex
   const machineTranslate: typeof import('../utils/mtClient').machineTranslate
   const makeDestructurable: typeof import('@vueuse/core').makeDestructurable
@@ -159,6 +161,7 @@ declare global {
   const markRaw: typeof import('vue').markRaw
   const matchedGroupIndex: typeof import('../utils/terms').matchedGroupIndex
   const matchesSite: typeof import('../composables/matchesSite').matchesSite
+  const matchesTranslate: typeof import('../utils/immersion').matchesTranslate
   const needsApiKey: typeof import('../utils/settingsStatus').needsApiKey
   const nextDueAt: typeof import('../utils/srs').nextDueAt
   const nextTick: typeof import('vue').nextTick
@@ -196,6 +199,7 @@ declare global {
   const pausableWatch: typeof import('@vueuse/core').pausableWatch
   const pickBestIndex: typeof import('../utils/extract/score').pickBestIndex
   const pickHardest: typeof import('../utils/cefr/hardWords').pickHardest
+  const pickImmersionWords: typeof import('../utils/immersion').pickImmersionWords
   const pinia: typeof import('../utils/pinia').pinia
   const plural: typeof import('../utils/plural').plural
   const pluralIndex: typeof import('../utils/plural').pluralIndex
@@ -217,12 +221,14 @@ declare global {
   const refDefault: typeof import('@vueuse/core').refDefault
   const refThrottled: typeof import('@vueuse/core').refThrottled
   const refWithControl: typeof import('@vueuse/core').refWithControl
+  const replaceTerms: typeof import('../utils/highlight').replaceTerms
   const requestDifficultWords: typeof import('../utils/llmClient').requestDifficultWords
   const requestExplanation: typeof import('../utils/llmClient').requestExplanation
   const requestTranslation: typeof import('../utils/llmClient').requestTranslation
   const resolveComponent: typeof import('vue').resolveComponent
   const resolveRef: typeof import('@vueuse/core').resolveRef
   const resolveUnref: typeof import('@vueuse/core').resolveUnref
+  const restoreReplacement: typeof import('../utils/highlight').restoreReplacement
   const revealTerm: typeof import('../utils/highlight').revealTerm
   const reviewEntry: typeof import('../utils/srs').reviewEntry
   const reviewWord: typeof import('../utils/cefr/levels').reviewWord
@@ -513,8 +519,11 @@ declare global {
   export type { CandidateStats } from '../utils/extract/score'
   import('../utils/extract/score')
   // @ts-ignore
-  export type { HighlightVariant, HighlightGroup } from '../utils/highlight'
+  export type { HighlightVariant, HighlightGroup, Replacement } from '../utils/highlight'
   import('../utils/highlight')
+  // @ts-ignore
+  export type { ImmersionMatch } from '../utils/immersion'
+  import('../utils/immersion')
   // @ts-ignore
   export type { Language, UiLanguage } from '../utils/languages'
   import('../utils/languages')
@@ -664,6 +673,7 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly isTargetLanguageText: UnwrapRef<typeof import('../utils/immersion')['isTargetLanguageText']>
     readonly isUiLanguage: UnwrapRef<typeof import('../utils/languages')['isUiLanguage']>
     readonly isValidUrl: UnwrapRef<typeof import('../composables/matchesSite')['isValidUrl']>
     readonly joinBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['joinBlocks']>
@@ -672,6 +682,7 @@ declare module 'vue' {
     readonly limitChars: UnwrapRef<typeof import('../utils/extract/blocks')['limitChars']>
     readonly lookupFreeDictionary: UnwrapRef<typeof import('../utils/dictClient')['lookupFreeDictionary']>
     readonly lookupTerm: UnwrapRef<typeof import('../utils/dictClient')['lookupTerm']>
+    readonly lookupTranslation: UnwrapRef<typeof import('../utils/dictClient')['lookupTranslation']>
     readonly lookupYandex: UnwrapRef<typeof import('../utils/dictClient')['lookupYandex']>
     readonly machineTranslate: UnwrapRef<typeof import('../utils/mtClient')['machineTranslate']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
@@ -683,6 +694,7 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly matchedGroupIndex: UnwrapRef<typeof import('../utils/terms')['matchedGroupIndex']>
     readonly matchesSite: UnwrapRef<typeof import('../composables/matchesSite')['matchesSite']>
+    readonly matchesTranslate: UnwrapRef<typeof import('../utils/immersion')['matchesTranslate']>
     readonly needsApiKey: UnwrapRef<typeof import('../utils/settingsStatus')['needsApiKey']>
     readonly nextDueAt: UnwrapRef<typeof import('../utils/srs')['nextDueAt']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
@@ -720,6 +732,7 @@ declare module 'vue' {
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly pickBestIndex: UnwrapRef<typeof import('../utils/extract/score')['pickBestIndex']>
     readonly pickHardest: UnwrapRef<typeof import('../utils/cefr/hardWords')['pickHardest']>
+    readonly pickImmersionWords: UnwrapRef<typeof import('../utils/immersion')['pickImmersionWords']>
     readonly pinia: UnwrapRef<typeof import('../utils/pinia')['pinia']>
     readonly pluralIndex: UnwrapRef<typeof import('../utils/plural')['pluralIndex']>
     readonly presetForProvider: UnwrapRef<typeof import('../composables/useLlmSettings')['presetForProvider']>
@@ -739,12 +752,14 @@ declare module 'vue' {
     readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly replaceTerms: UnwrapRef<typeof import('../utils/highlight')['replaceTerms']>
     readonly requestDifficultWords: UnwrapRef<typeof import('../utils/llmClient')['requestDifficultWords']>
     readonly requestExplanation: UnwrapRef<typeof import('../utils/llmClient')['requestExplanation']>
     readonly requestTranslation: UnwrapRef<typeof import('../utils/llmClient')['requestTranslation']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly restoreReplacement: UnwrapRef<typeof import('../utils/highlight')['restoreReplacement']>
     readonly revealTerm: UnwrapRef<typeof import('../utils/highlight')['revealTerm']>
     readonly reviewEntry: UnwrapRef<typeof import('../utils/srs')['reviewEntry']>
     readonly reviewWord: UnwrapRef<typeof import('../utils/cefr/levels')['reviewWord']>

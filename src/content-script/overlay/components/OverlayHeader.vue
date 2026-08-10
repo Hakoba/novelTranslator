@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookMarked, ChevronDown, ChevronUp, Eraser, RefreshCw, SquareDashedMousePointer, X } from 'lucide-vue-next'
+import { BookMarked, ChevronDown, ChevronUp, Eraser, RefreshCw, Replace, SquareDashedMousePointer, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
@@ -14,6 +14,8 @@ defineProps<{
   hasArea: boolean
   /** Разбор уже запускали: до первого раза перечитывать нечего, там своя кнопка */
   isStarted: boolean
+  /** Настройка вкраплений включена: кнопка её дублирует */
+  isImmersion: boolean
 }>()
 
 const { t } = useI18n()
@@ -23,6 +25,7 @@ const emit = defineEmits<{
   (e: 'pickArea'): void
   (e: 'resetArea'): void
   (e: 'reread'): void
+  (e: 'toggleImmersion'): void
   (e: 'close'): void
 }>()
 </script>
@@ -69,6 +72,18 @@ const emit = defineEmits<{
       @click="openDictionaryTab"
     >
       <BookMarked :size="16" />
+    </Button>
+
+    <Button
+      text
+      rounded
+      :severity="isImmersion ? 'primary' : 'secondary'"
+      size="small"
+      :aria-label="t('overlay.immersion')"
+      :data-hint="t('overlay.immersionHint')"
+      @click="emit('toggleImmersion')"
+    >
+      <Replace :size="16" />
     </Button>
 
     <Button
