@@ -18,8 +18,23 @@ export type LookupOutcome = {
   error?: string
 }
 
-// одно и то же слово раскрывают по нескольку раз за главу, а ответы словарей неизменны
-const cache = new Map<string, LookupOutcome>()
+// одно и то же слово раскрывают по нескольку раз за главу, а ответы словарей
+// неизменны. Кэш по источникам, а не по итогу: разбор страницы спрашивает один
+// Яндекс, карточка при наведении — оба, и ответ Яндекса у них общий
+const cache = new Map<string, Promise<LookupResult | undefined>>()
+
+function cachedLookup(
+  key: string,
+  fetch: () => Promise<LookupResult | undefined>,
+): Promise<LookupResult | undefined> {
+  const existing = cache.get(key)
+  if (existing) return existing
+
+  const promise = fetch()
+  cache.set(key, promise)
+
+  return promise
+}
 
 export async function lookupYandex(term: string): Promise<LookupResult | undefined> {
   const settings = await getDictSettings()
@@ -52,11 +67,7 @@ export async function lookupFreeDictionary(term: string): Promise<LookupResult |
   return parseFreeDictionary(res.data, term)
 }
 
-/**
- * Оба словаря разом: англо-русский даёт перевод, англо-английский — толкование.
- * Отказ одного не отменяет ответ другого.
- */
-export async function lookupTerm(term: string): Promise<LookupOutcome> {
+async function runLookup(term: string, withDefinitions: boolean): Promise<LookupOutcome> {
   const normalized = normalizeTerm(term)
   if (!normalized) return { results: [] }
 
@@ -64,12 +75,12 @@ export async function lookupTerm(term: string): Promise<LookupOutcome> {
   const { sourceLang, targetLang } = await getReaderSettings()
   const key = `${sourceLang}-${targetLang}:${normalized}`
 
-  const cached = cache.get(key)
-  if (cached) return cached
+  const sources = [cachedLookup(`yandex:${key}`, () => lookupYandex(term))]
+  if (withDefinitions) sources.push(cachedLookup(`free:${key}`, () => lookupFreeDictionary(term)))
 
-  const settled = await Promise.allSettled([lookupYandex(term), lookupFreeDictionary(term)])
+  const settled = await Promise.allSettled(sources)
 
-  const outcome: LookupOutcome = {
+  return {
     results: settled
       .map((item) => (item.status === 'fulfilled' ? item.value : undefined))
       .filter((result): result is LookupResult => Boolean(result)),
@@ -77,8 +88,21 @@ export async function lookupTerm(term: string): Promise<LookupOutcome> {
       .map((item) => (item.status === 'rejected' && item.reason instanceof Error ? item.reason.message : undefined))
       .find(Boolean),
   }
+}
 
-  cache.set(key, outcome)
+/**
+ * Оба словаря разом: англо-русский даёт перевод, англо-английский — толкование.
+ * Отказ одного не отменяет ответ другого.
+ */
+export function lookupTerm(term: string): Promise<LookupOutcome> {
+  return runLookup(term, true)
+}
 
-  return outcome
+/**
+ * Только перевод, без толкований. Разбор страницы зовёт словарь на каждое найденное
+ * слово разом — тратить на этот залп второй запрос к Free Dictionary незачем:
+ * его толкования нужны лишь карточке при наведении, она и сходит за ними сама.
+ */
+export function lookupTranslation(term: string): Promise<LookupOutcome> {
+  return runLookup(term, false)
 }
