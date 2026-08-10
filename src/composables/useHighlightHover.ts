@@ -1,4 +1,5 @@
 import { onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { OVERLAY_ROOT_ID } from '@/utils/overlayRoot'
 
 export type HoverHint = {
   /** Слово так, как оно написано в тексте страницы: карточку по нему собирает оверлей */
@@ -25,6 +26,10 @@ export function useHighlightHover(): { hint: Ref<HoverHint | undefined> } {
   }
 
   function onMouseOver(event: MouseEvent): void {
+    // события из shadow DOM ретаргетятся на хост: курсор в оверлее — подсказку
+    // не гасим, иначе до кнопок карточки вкрапления не добраться
+    if (event.target instanceof Element && event.target.id === OVERLAY_ROOT_ID) return
+
     const target = event.target instanceof Element
       ? event.target.closest('[data-nt-highlight="1"]')
       : null

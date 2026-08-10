@@ -110,8 +110,15 @@ export function clearHighlights(): void {
   nodes.forEach((el) => {
     const parent = el.parentNode
     if (!parent) return
-    while (el.firstChild) parent.insertBefore(el.firstChild, el)
-    parent.removeChild(el)
+
+    // вкрапление: внутри метки чужое слово, наружу должен вернуться оригинал
+    const original = el.getAttribute(ORIGINAL_ATTR)
+    if (original !== null) {
+      el.replaceWith(original)
+    } else {
+      while (el.firstChild) parent.insertBefore(el.firstChild, el)
+      parent.removeChild(el)
+    }
     parent.normalize()
   })
 }
@@ -141,6 +148,79 @@ export function highlightTerms(groups: HighlightGroup[]): void {
   for (const node of walkTextNodes(document.body)) {
     highlightNode(node, pattern, variants)
   }
+}
+
+// Вкрапления: вместо словоформы страницы — слово из словаря, оригинал в атрибуте
+const ORIGINAL_ATTR = 'data-nt-original'
+
+export type Replacement = {
+  /** Словоформа на странице */
+  form: string
+  /** Слово из словаря, которое встанет на её место */
+  text: string
+}
+
+/**
+ * Заменяет первое вхождение каждой словоформы меткой с изучаемым словом.
+ * В отличие от подсветки здесь меняется сам текст страницы, поэтому ссылки,
+ * код и редактируемые области не трогаем — подсветке в них можно.
+ */
+export function replaceTerms(replacements: Replacement[]): void {
+  const source = buildTermsPattern(replacements.map((item) => [item.form]))
+  if (!source) return
+
+  const pattern = new RegExp(source, 'giu')
+  // каждой словоформе — одно вхождение: заменённая выбывает из ожидания
+  const pending = new Map(replacements.map((item, index) => [index, item]))
+
+  for (const node of walkTextNodes(document.body)) {
+    if (!pending.size) return
+
+    const parent = node.parentElement
+    if (!parent || parent.isContentEditable || parent.closest('a, pre, code, textarea')) continue
+
+    replaceInNode(node, pattern, pending)
+  }
+}
+
+function replaceInNode(node: Text, pattern: RegExp, pending: Map<number, Replacement>): void {
+  const text = node.nodeValue ?? ''
+  pattern.lastIndex = 0
+
+  const fragment = document.createDocumentFragment()
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = pattern.exec(text)) !== null) {
+    const replacement = pending.get(matchedGroupIndex(match))
+    // уже заменённая словоформа: вхождение остаётся обычным текстом
+    if (!replacement) continue
+
+    pending.delete(matchedGroupIndex(match))
+    if (match.index > lastIndex) fragment.append(text.slice(lastIndex, match.index))
+
+    const mark = createMark(replacement.text, 'saved')
+    mark.setAttribute(ORIGINAL_ATTR, match[0])
+    fragment.append(mark)
+    lastIndex = match.index + match[0].length
+  }
+
+  if (!lastIndex) return
+  if (lastIndex < text.length) fragment.append(text.slice(lastIndex))
+
+  node.parentNode?.replaceChild(fragment, node)
+}
+
+/** Ответ получен: вкрапление раскрывается обратно в оригинальную словоформу */
+export function restoreReplacement(term: string): void {
+  const key = normalizeTerm(term)
+  const marks = Array.from(document.querySelectorAll(`[${ORIGINAL_ATTR}]`))
+  const mark = marks.find((item) => normalizeTerm(item.textContent ?? '') === key)
+  if (!mark) return
+
+  const parent = mark.parentNode
+  mark.replaceWith(mark.getAttribute(ORIGINAL_ATTR) ?? '')
+  parent?.normalize()
 }
 
 /** Сколько времени горит вспышка после перехода к слову */

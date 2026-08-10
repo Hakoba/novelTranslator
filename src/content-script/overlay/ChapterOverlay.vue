@@ -15,12 +15,14 @@ import { useIgnoredWords } from '@/composables/useIgnoredWords'
 import { type SelectionMode, useReaderSettings } from '@/composables/useReaderSettings'
 import { type SelectionAnchor, useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
-import { clearHighlights, highlightTerms, revealTerm } from '@/utils/highlight'
+import { clearHighlights, highlightTerms, replaceTerms, restoreReplacement, revealTerm } from '@/utils/highlight'
+import { type ImmersionMatch, isTargetLanguageText, pickImmersionWords } from '@/utils/immersion'
 import { translateTerm } from '@/utils/translateTerm'
 import { normalizeTerm } from '@/utils/dictionary'
 import { normalizeHost } from '@/utils/extract/rules'
+import { extractReadableText } from '@/utils/pageText'
 import { findSentence } from '@/utils/sentence'
-import { dueInDays } from '@/utils/srs'
+import { dueInDays, reviewEntry } from '@/utils/srs'
 import type { WordWithExplanation } from '@/types/words'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
@@ -34,7 +36,7 @@ const {
   errorMessage,
   fetchDifficultWords,
 } = useDifficultWords()
-const { entries, addEntry, hasEntry } = useDictionary()
+const { entries, addEntry, hasEntry, updateEntry } = useDictionary()
 const { selectors, setSelector, clearSelector } = useAreaSelectors()
 const { anchor, clearSelection } = useTextSelection()
 const { isIgnored, ignoreWord } = useIgnoredWords()
@@ -57,6 +59,9 @@ const selectionWord = ref<WordWithExplanation | undefined>(undefined)
 // снимок словаря на момент разбора: если фильтровать по живому, строка исчезает
 // из списка прямо под курсором в момент клика по закладке
 const knownTerms = ref<Set<string>>(new Set())
+/** Страница распознана как родная, слова словаря вкраплены в текст */
+const isImmersionActive = ref<boolean>(false)
+const immersionWords = ref<ImmersionMatch[]>([])
 
 // computed
 // скрытое слово убираем по живому списку, а не по снимку: строка должна пропасть сразу
@@ -101,6 +106,16 @@ const hoverWord = computed<WordWithExplanation | undefined>(() => {
   }
 })
 
+/** Вкрапление под курсором: текст метки — изучаемое слово, по нему и ищем запись */
+const hoverImmersion = computed<ImmersionMatch | undefined>(() => {
+  const term = hint.value?.term
+  if (!term) return undefined
+
+  const key = normalizeTerm(term)
+
+  return immersionWords.value.find((match) => normalizeTerm(match.entry.original) === key)
+})
+
 // watchers
 watch(words, (): void => {
   knownTerms.value = new Set(entries.value.map((entry) => normalizeTerm(entry.original)))
@@ -116,7 +131,8 @@ watch(anchor, (selected): void => {
 
 // immediate: без разбора страницы ничего не меняется, а сохранённые слова подсветить надо сразу
 watch([newWords, savedTerms, isLoading], (): void => {
-  if (isLoading.value) return
+  // при активных вкраплениях clearHighlights стёр бы их после первого же ответа
+  if (isLoading.value || isImmersionActive.value) return
 
   clearHighlights()
   highlightTerms([
@@ -124,6 +140,15 @@ watch([newWords, savedTerms, isLoading], (): void => {
     { terms: newWords.value.map((word) => word.original), variant: 'new' },
   ])
 }, { immediate: true })
+
+// выключили режим — вернуть оригиналы и продолжить как обычно, без перезагрузки
+watch(() => readerSettings.value.immersion, (): void => {
+  clearHighlights()
+  immersionWords.value = []
+  isImmersionActive.value = false
+
+  if (isStarted.value) void analyze()
+})
 
 // lifecycle
 onMounted(async (): Promise<void> => {
@@ -137,11 +162,46 @@ onUnmounted((): void => {
 })
 
 // методы
-/** `full` — читать страницу целиком: смена области и ручной перезапуск отменяют прошлый разбор */
-function analyze(full = false): Promise<void> {
+/**
+ * `full` — читать страницу целиком: смена области и ручной перезапуск отменяют
+ * прошлый разбор. Единственная развилка режимов: страница на языке перевода
+ * при включённых вкраплениях идёт не в разбор, а в подмену слов.
+ */
+async function analyze(full = false): Promise<void> {
   isStarted.value = true
 
+  if (readerSettings.value.immersion) {
+    const { sourceLang, targetLang } = readerSettings.value
+    const pageText = await extractReadableText()
+
+    if (isTargetLanguageText(pageText, targetLang, sourceLang)) {
+      startImmersion(pageText)
+      return
+    }
+  }
+
+  if (isImmersionActive.value) {
+    clearHighlights()
+    immersionWords.value = []
+    isImmersionActive.value = false
+  }
+
   return fetchDifficultWords(full)
+}
+
+/** Режим вкраплений работает офлайн: только словарь, без модели и внешних словарей */
+function startImmersion(pageText: string): void {
+  clearHighlights()
+  isImmersionActive.value = true
+  immersionWords.value = pickImmersionWords(pageText, entries.value, Date.now())
+  replaceTerms(immersionWords.value.map((match) => ({ form: match.form, text: match.entry.original })))
+}
+
+/** Самооценка двигает SRS той же лестницей, что тренировка; метка раскрывается в оригинал */
+function answerImmersion(match: ImmersionMatch, isKnown: boolean): void {
+  updateEntry(match.entry.id, reviewEntry(match.entry, isKnown, Date.now()))
+  restoreReplacement(match.entry.original)
+  immersionWords.value = immersionWords.value.filter((item) => item !== match)
 }
 
 /** Разбор перезапускаем сразу: иначе на экране остаётся результат по прошлой области */
@@ -182,6 +242,15 @@ function addToDictionary(word: WordWithExplanation): void {
 /** Пояснения тут не будет: их подтягивает WordItem, а списком слов их никто не раскрывал */
 function addAll(): void {
   newWords.value.forEach(addToDictionary)
+}
+
+/**
+ * У бокового края экрана центрированная карточка обрезалась бы: зажимаем `left`
+ * по полуширине самой широкой карточки (max-w-72 = 288px) с отступом 8px.
+ * Узкая карточка у края встанет чуть правее слова — это дешевле измерения ширины.
+ */
+function clampX(x: number): string {
+  return `clamp(152px, ${x}px, calc(100vw - 152px))`
 }
 
 /** Слово уже в словаре — вместо «найдено на странице» говорим, когда его повторять */
@@ -244,11 +313,42 @@ async function translateAndSave(): Promise<void> {
 </script>
 
 <template>
+  <!-- зазор до слова закрыт паддингом обёртки: курсор доезжает до кнопок, не теряя карточку -->
+  <div
+    v-if="hint && hoverImmersion"
+    class="fixed -translate-x-1/2 -translate-y-full pb-1.5"
+    :style="{ left: clampX(hint.x), top: `${hint.y}px` }"
+  >
+    <WordCard
+      :term="hoverImmersion.entry.original"
+      :translate="hoverImmersion.entry.translate"
+      :level="hoverImmersion.entry.level"
+      :note="t('overlay.immersionOriginal', { form: hoverImmersion.form })"
+    >
+      <div class="flex justify-end gap-2">
+        <Button
+          size="small"
+          severity="danger"
+          outlined
+          :label="t('training.unknown')"
+          @click="answerImmersion(hoverImmersion, false)"
+        />
+        <Button
+          size="small"
+          severity="success"
+          outlined
+          :label="t('training.known')"
+          @click="answerImmersion(hoverImmersion, true)"
+        />
+      </div>
+    </WordCard>
+  </div>
+
   <!-- подсказка не перехватывает мышь: иначе курсор «проваливался» бы в неё с самого слова -->
   <div
-    v-if="hint && hoverWord"
+    v-else-if="hint && hoverWord"
     class="fixed -translate-x-1/2 -translate-y-[calc(100%+6px)]"
-    :style="{ left: `${hint.x}px`, top: `${hint.y}px`, pointerEvents: 'none' }"
+    :style="{ left: clampX(hint.x), top: `${hint.y}px`, pointerEvents: 'none' }"
   >
     <WordCard
       :term="hoverWord.original"
@@ -261,7 +361,7 @@ async function translateAndSave(): Promise<void> {
   <div
     v-if="anchor && selectionMode !== 'off'"
     class="fixed -translate-x-1/2 -translate-y-[calc(100%+8px)]"
-    :style="{ left: `${anchor.x}px`, top: `${anchor.y}px` }"
+    :style="{ left: clampX(anchor.x), top: `${anchor.y}px` }"
   >
     <!-- предохранитель: перевод стоит запроса, поэтому сначала спрашиваем, нужен ли он -->
     <Button
@@ -365,10 +465,12 @@ async function translateAndSave(): Promise<void> {
         :is-picking="Boolean(cancelPicking)"
         :has-area="hasArea"
         :is-started="isStarted"
+        :is-immersion="readerSettings.immersion"
         @toggle-minimized="isMinimized = !isMinimized"
         @pick-area="togglePicking"
         @reset-area="resetArea"
         @reread="analyze(true)"
+        @toggle-immersion="readerSettings.immersion = !readerSettings.immersion"
         @close="emit('close')"
       />
     </header>
@@ -410,6 +512,13 @@ async function translateAndSave(): Promise<void> {
         </p>
         <div class="nt-bar w-40" />
       </div>
+
+      <p
+        v-else-if="isImmersionActive"
+        class="m-0 text-muted"
+      >
+        {{ t('overlay.immersionActive', { count: immersionWords.length }) }}
+      </p>
 
       <div
         v-else-if="errorMessage"

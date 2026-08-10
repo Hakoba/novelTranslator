@@ -38,6 +38,8 @@ export interface ReaderSettings {
   promptExtra: string
   /** Язык интерфейса самого расширения */
   uiLang: string
+  /** Вкраплять слова словаря в страницы на языке перевода */
+  immersion: boolean
   /** Реакция на выделение текста на странице */
   selectionMode: SelectionMode
 }
@@ -56,6 +58,7 @@ export const DEFAULT_READER_SETTINGS: ReaderSettings = {
   promptExtra: '',
   // интерфейс переведён не на все языки: незнакомый язык браузера уводим в английский
   uiLang: defaultUiLanguage(),
+  immersion: false,
   selectionMode: 'translate',
 }
 
