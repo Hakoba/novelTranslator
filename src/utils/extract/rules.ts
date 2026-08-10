@@ -22,10 +22,6 @@ export const SITE_RULES: SiteRule[] = [
     selectors: ['.cha-words', '.cha-content'],
   },
   {
-    host: 'novelbin.com',
-    selectors: ['#chr-content', '.chr-c'],
-  },
-  {
     host: 'royalroad.com',
     selectors: ['.chapter-inner'],
   },
