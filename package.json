@@ -32,7 +32,7 @@
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
+    "typescript-eslint": "^8.66.0",
     "unplugin-auto-import": "^21.1.0",
     "unplugin-imagemin": "^0.6.9",
     "unplugin-turbo-console": "^2.2.0",
