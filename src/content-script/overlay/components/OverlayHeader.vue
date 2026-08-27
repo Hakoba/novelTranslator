@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookMarked, ChevronDown, ChevronUp, Eraser, RefreshCw, Replace, SquareDashedMousePointer, X } from 'lucide-vue-next'
+import { BookMarked, Eraser, PanelRightClose, RefreshCw, Replace, SquareDashedMousePointer, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
@@ -7,7 +7,6 @@ import AppLogo from '@/components/AppLogo.vue'
 import { openDictionaryTab } from '@/utils/dictionaryTab'
 
 defineProps<{
-  isMinimized: boolean
   wordsCount: number
   isLoading: boolean
   isPicking: boolean
@@ -21,7 +20,7 @@ defineProps<{
 const { t } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'toggleMinimized'): void
+  (e: 'collapse'): void
   (e: 'pickArea'): void
   (e: 'resetArea'): void
   (e: 'reread'): void
@@ -116,18 +115,11 @@ const emit = defineEmits<{
       rounded
       severity="secondary"
       size="small"
-      :aria-label="t(isMinimized ? 'overlay.expand' : 'overlay.collapse')"
-      :data-hint="t(isMinimized ? 'overlay.expandHint' : 'overlay.collapseHint')"
-      @click="emit('toggleMinimized')"
+      :aria-label="t('overlay.collapse')"
+      :data-hint="t('overlay.collapseHint')"
+      @click="emit('collapse')"
     >
-      <ChevronDown
-        v-if="isMinimized"
-        :size="16"
-      />
-      <ChevronUp
-        v-else
-        :size="16"
-      />
+      <PanelRightClose :size="16" />
     </Button>
 
     <Button

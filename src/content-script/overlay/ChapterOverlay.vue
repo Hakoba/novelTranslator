@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { BookmarkCheck, BookmarkPlus, LoaderCircle, RotateCw } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import OverlayHeader from './components/OverlayHeader.vue'
+import OverlayRail from './components/OverlayRail.vue'
 import AppLogo from '@/components/AppLogo.vue'
 import WordCard from './components/WordCard.vue'
 import WordItem from './components/WordItem.vue'
@@ -12,6 +13,7 @@ import { useDictionary } from '@/composables/useDictionary'
 import { useAreaSelectors } from '@/composables/useAreaSelectors'
 import { useHighlightHover } from '@/composables/useHighlightHover'
 import { useIgnoredWords } from '@/composables/useIgnoredWords'
+import { useOverlayDock } from '@/composables/useOverlayDock'
 import { type SelectionMode, useReaderSettings } from '@/composables/useReaderSettings'
 import { type SelectionAnchor, useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
@@ -19,7 +21,6 @@ import { clearHighlights, highlightTerms, replaceTerms, restoreReplacement, reve
 import { type ImmersionMatch, isTargetLanguageText, pickImmersionWords } from '@/utils/immersion'
 import { translateTerm } from '@/utils/translateTerm'
 import { normalizeTerm } from '@/utils/dictionary'
-import { normalizeHost } from '@/utils/extract/rules'
 import { extractReadableText } from '@/utils/pageText'
 import { findSentence } from '@/utils/sentence'
 import { dueInDays, reviewEntry } from '@/utils/srs'
@@ -37,7 +38,8 @@ const {
   fetchDifficultWords,
 } = useDifficultWords()
 const { entries, addEntry, hasEntry, updateEntry } = useDictionary()
-const { selectors, setSelector, clearSelector } = useAreaSelectors()
+const { hasSelector, setSelector, clearSelector } = useAreaSelectors()
+const { isCollapsed, width: dockWidth } = useOverlayDock()
 const { anchor, clearSelection } = useTextSelection()
 const { isIgnored, ignoreWord } = useIgnoredWords()
 const { hint } = useHighlightHover()
@@ -49,7 +51,6 @@ const loadingChars = computed<string[]>(() =>
 )
 
 // state
-const isMinimized = ref<boolean>(false)
 // разбор ещё не запускали: с выключенным автозапуском вместо пустого списка нужна кнопка
 const isStarted = ref<boolean>(false)
 const cancelPicking = ref<(() => void) | undefined>(undefined)
@@ -70,9 +71,7 @@ const newWords = computed<WordWithExplanation[]>(() =>
     (word) => !knownTerms.value.has(normalizeTerm(word.original)) && !isIgnored(word.original),
   ),
 )
-const hasArea = computed<boolean>(() =>
-  selectors.value.some((item) => item.host === normalizeHost(location.host)),
-)
+const hasArea = computed<boolean>(() => hasSelector(location.href))
 const savedTerms = computed<string[]>(() => entries.value.map((entry) => entry.original))
 
 const selectionMode = computed<SelectionMode>(() => readerSettings.value.selectionMode)
@@ -206,7 +205,7 @@ function answerImmersion(match: ImmersionMatch, isKnown: boolean): void {
 
 /** Разбор перезапускаем сразу: иначе на экране остаётся результат по прошлой области */
 function resetArea(): void {
-  clearSelector(location.host)
+  clearSelector(location.href)
   if (isStarted.value) void analyze(true)
 }
 
@@ -216,15 +215,18 @@ function togglePicking(): void {
     return
   }
 
-  // сворачиваемся, чтобы панель не закрывала выбираемый текст
-  isMinimized.value = true
+  // сворачиваемся в рельс, чтобы отдать выбираемому тексту всю ширину, и возвращаем
+  // прежнее состояние: свернул пользователь сам — панель не должна раскрыться за него
+  const wasCollapsed = isCollapsed.value
+  isCollapsed.value = true
+
   cancelPicking.value = startAreaPicker((selector) => {
     cancelPicking.value = undefined
-    isMinimized.value = false
+    isCollapsed.value = wasCollapsed
 
     if (!selector) return
 
-    setSelector(location.host, selector)
+    setSelector(location.href, selector)
     void analyze(true)
   })
 }
@@ -248,9 +250,10 @@ function addAll(): void {
  * У бокового края экрана центрированная карточка обрезалась бы: зажимаем `left`
  * по полуширине самой широкой карточки (max-w-72 = 288px) с отступом 8px.
  * Узкая карточка у края встанет чуть правее слова — это дешевле измерения ширины.
+ * Справа отсчёт идёт от края текста, а не окна: панель занимает свою полосу.
  */
 function clampX(x: number): string {
-  return `clamp(152px, ${x}px, calc(100vw - 152px))`
+  return `clamp(152px, ${x}px, calc(100vw - ${152 + dockWidth.value}px))`
 }
 
 /** Слово уже в словаре — вместо «найдено на странице» говорим, когда его повторять */
@@ -451,22 +454,36 @@ async function translateAndSave(): Promise<void> {
     </WordCard>
   </div>
 
+  <!-- панель прижата к краю на всю высоту: ровно на её ширину ужата и сама страница -->
   <section
-    class="fixed bottom-4 right-4 flex max-h-[70vh] w-[420px] max-w-[calc(100vw-2rem)] flex-col
-           rounded-xl border border-line bg-surface text-content
-           shadow-[0_10px_32px_-8px_rgba(0,0,0,.35)]"
+    class="fixed inset-y-0 right-0 flex flex-col border-l border-line bg-surface text-content
+           shadow-[-8px_0_28px_-16px_rgba(0,0,0,.45)]"
+    :style="{ width: `${dockWidth}px` }"
     aria-label="Erudit"
   >
-    <header class="border-b border-line px-3 py-2.5">
+    <OverlayRail
+      v-if="isCollapsed"
+      :words-count="newWords.length"
+      :is-loading="isLoading"
+      :is-started="isStarted"
+      :is-picking="Boolean(cancelPicking)"
+      @expand="isCollapsed = false"
+      @reread="analyze(true)"
+      @cancel-picking="togglePicking"
+    />
+
+    <header
+      v-else
+      class="border-b border-line px-3 py-2.5"
+    >
       <OverlayHeader
-        :is-minimized="isMinimized"
         :words-count="newWords.length"
         :is-loading="isLoading"
         :is-picking="Boolean(cancelPicking)"
         :has-area="hasArea"
         :is-started="isStarted"
         :is-immersion="readerSettings.immersion"
-        @toggle-minimized="isMinimized = !isMinimized"
+        @collapse="isCollapsed = true"
         @pick-area="togglePicking"
         @reset-area="resetArea"
         @reread="analyze(true)"
@@ -475,10 +492,9 @@ async function translateAndSave(): Promise<void> {
       />
     </header>
 
-    <!-- скругление на теле, а не overflow-hidden на секции: тот резал бы подсказки к кнопкам -->
     <div
-      v-if="!isMinimized"
-      class="flex-1 overflow-y-auto rounded-b-xl p-3"
+      v-if="!isCollapsed"
+      class="flex-1 overflow-y-auto p-3"
     >
       <div
         v-if="!isStarted"

@@ -5,6 +5,7 @@ import Aura from "@primeuix/themes/aura"
 import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 import { useAccessSites } from "@/composables/useAccessSites"
 import { useDictionary } from "@/composables/useDictionary"
+import { releasePage } from "@/composables/useOverlayDock"
 import { useTheme } from "@/composables/useTheme"
 import { mirrorPrimeVueStyles } from "@/content-script/mirrorStyles"
 import { i18n } from "@/utils/i18n"
@@ -80,6 +81,8 @@ function unmountOverlay(): void {
   app?.unmount()
   stopMirror?.()
   host?.remove()
+  // отступ ставит сам оверлей, но снять его некому: его watchEffect уже остановлен
+  releasePage()
   app = null
   host = null
   stopMirror = null

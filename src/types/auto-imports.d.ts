@@ -19,6 +19,7 @@ declare global {
   const DEFAULT_READER_SETTINGS: typeof import('../composables/useReaderSettings').DEFAULT_READER_SETTINGS
   const DEMO_URL: typeof import('../composables/useAccessSites').DEMO_URL
   const DICTIONARY_URL: typeof import('../utils/dictionaryTab').DICTIONARY_URL
+  const DOCK_WIDTH: typeof import('../composables/useOverlayDock').DOCK_WIDTH
   const EMPTY_FILTERS: typeof import('../utils/dictionary').EMPTY_FILTERS
   const EffectScope: typeof import('vue').EffectScope
   const FIELD_NAMES: typeof import('../utils/ankiSchema').FIELD_NAMES
@@ -35,6 +36,7 @@ declare global {
   const PROMPT_EXTRA_LIMIT: typeof import('../composables/useReaderSettings').PROMPT_EXTRA_LIMIT
   const PROVIDERS: typeof import('../utils/llm/providers').PROVIDERS
   const PROVIDER_LIST: typeof import('../utils/llm/providers').PROVIDER_LIST
+  const RAIL_WIDTH: typeof import('../composables/useOverlayDock').RAIL_WIDTH
   const REQUEST_TIMEOUT_MS: typeof import('../utils/llmClient').REQUEST_TIMEOUT_MS
   const SELECTION_MODES: typeof import('../composables/useReaderSettings').SELECTION_MODES
   const SITE_RULES: typeof import('../utils/extract/rules').SITE_RULES
@@ -53,6 +55,7 @@ declare global {
   const appRouter: typeof import('../utils/router/index').appRouter
   const appendedTail: typeof import('../utils/extract/blocks').appendedTail
   const applyTheme: typeof import('../composables/useTheme').applyTheme
+  const areaPattern: typeof import('../composables/matchesSite').areaPattern
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
   const baseForms: typeof import('../utils/cefr/forms').baseForms
@@ -221,6 +224,7 @@ declare global {
   const refDefault: typeof import('@vueuse/core').refDefault
   const refThrottled: typeof import('@vueuse/core').refThrottled
   const refWithControl: typeof import('@vueuse/core').refWithControl
+  const releasePage: typeof import('../composables/useOverlayDock').releasePage
   const replaceTerms: typeof import('../utils/highlight').replaceTerms
   const requestDifficultWords: typeof import('../utils/llmClient').requestDifficultWords
   const requestExplanation: typeof import('../utils/llmClient').requestExplanation
@@ -372,6 +376,7 @@ declare global {
   const useObjectUrl: typeof import('@vueuse/core').useObjectUrl
   const useOffsetPagination: typeof import('@vueuse/core').useOffsetPagination
   const useOnline: typeof import('@vueuse/core').useOnline
+  const useOverlayDock: typeof import('../composables/useOverlayDock').useOverlayDock
   const usePageLeave: typeof import('@vueuse/core').usePageLeave
   const useParallax: typeof import('@vueuse/core').useParallax
   const useParentElement: typeof import('@vueuse/core').useParentElement
@@ -553,6 +558,7 @@ declare module 'vue' {
     readonly DEFAULT_READER_SETTINGS: UnwrapRef<typeof import('../composables/useReaderSettings')['DEFAULT_READER_SETTINGS']>
     readonly DEMO_URL: UnwrapRef<typeof import('../composables/useAccessSites')['DEMO_URL']>
     readonly DICTIONARY_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['DICTIONARY_URL']>
+    readonly DOCK_WIDTH: UnwrapRef<typeof import('../composables/useOverlayDock')['DOCK_WIDTH']>
     readonly EMPTY_FILTERS: UnwrapRef<typeof import('../utils/dictionary')['EMPTY_FILTERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FIELD_NAMES: UnwrapRef<typeof import('../utils/ankiSchema')['FIELD_NAMES']>
@@ -569,6 +575,7 @@ declare module 'vue' {
     readonly PROMPT_EXTRA_LIMIT: UnwrapRef<typeof import('../composables/useReaderSettings')['PROMPT_EXTRA_LIMIT']>
     readonly PROVIDERS: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDERS']>
     readonly PROVIDER_LIST: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDER_LIST']>
+    readonly RAIL_WIDTH: UnwrapRef<typeof import('../composables/useOverlayDock')['RAIL_WIDTH']>
     readonly REQUEST_TIMEOUT_MS: UnwrapRef<typeof import('../utils/llmClient')['REQUEST_TIMEOUT_MS']>
     readonly SELECTION_MODES: UnwrapRef<typeof import('../composables/useReaderSettings')['SELECTION_MODES']>
     readonly SITE_RULES: UnwrapRef<typeof import('../utils/extract/rules')['SITE_RULES']>
@@ -586,6 +593,7 @@ declare module 'vue' {
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
     readonly appendedTail: UnwrapRef<typeof import('../utils/extract/blocks')['appendedTail']>
     readonly applyTheme: UnwrapRef<typeof import('../composables/useTheme')['applyTheme']>
+    readonly areaPattern: UnwrapRef<typeof import('../composables/matchesSite')['areaPattern']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly baseForms: UnwrapRef<typeof import('../utils/cefr/forms')['baseForms']>
@@ -752,6 +760,7 @@ declare module 'vue' {
     readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly releasePage: UnwrapRef<typeof import('../composables/useOverlayDock')['releasePage']>
     readonly replaceTerms: UnwrapRef<typeof import('../utils/highlight')['replaceTerms']>
     readonly requestDifficultWords: UnwrapRef<typeof import('../utils/llmClient')['requestDifficultWords']>
     readonly requestExplanation: UnwrapRef<typeof import('../utils/llmClient')['requestExplanation']>
@@ -903,6 +912,7 @@ declare module 'vue' {
     readonly useObjectUrl: UnwrapRef<typeof import('@vueuse/core')['useObjectUrl']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
+    readonly useOverlayDock: UnwrapRef<typeof import('../composables/useOverlayDock')['useOverlayDock']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>

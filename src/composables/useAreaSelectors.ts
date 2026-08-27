@@ -1,9 +1,10 @@
 import type { Ref } from 'vue'
 import { useBrowserLocalStorage } from './useBrowserStorage'
-import { normalizeHost } from '@/utils/extract/rules'
+import { areaPattern, matchesSite } from './matchesSite'
 
 export interface AreaSelector {
-  host: string
+  /** Адрес-паттерн страниц одного вида: `https://reddit.com/r/nosleep/comments/` */
+  pattern: string
   /** CSS-селектор области, которую пользователь выбрал руками */
   selector: string
   addedAt: number
@@ -13,23 +14,28 @@ export interface AreaSelector {
 // дефолта и у пустого объекта вычистил бы всё сохранённое
 const { data, promise } = useBrowserLocalStorage<AreaSelector[]>('AREA_SELECTORS', [])
 
+/** Из нескольких подходящих записей берём самую длинную: у поста путь длиннее, чем у ленты */
+function findMatch(url: string): AreaSelector | undefined {
+  return data.value
+    .filter((item) => matchesSite(url, item.pattern))
+    .sort((first, second) => second.pattern.length - first.pattern.length)[0]
+}
+
 export function useAreaSelectors(): {
   selectors: Ref<AreaSelector[]>
   promise: Promise<unknown>
-  hasSelector: (host: string) => boolean
-  setSelector: (host: string, selector: string) => void
-  clearSelector: (host: string) => void
+  hasSelector: (url: string) => boolean
+  setSelector: (url: string, selector: string) => void
+  clearSelector: (url: string) => void
 } {
   // методы
-  function hasSelector(host: string): boolean {
-    const key = normalizeHost(host)
-
-    return data.value.some((item) => item.host === key)
+  function hasSelector(url: string): boolean {
+    return Boolean(findMatch(url))
   }
 
-  function setSelector(host: string, selector: string): void {
-    const key = normalizeHost(host)
-    const existing = data.value.find((item) => item.host === key)
+  function setSelector(url: string, selector: string): void {
+    const pattern = areaPattern(url)
+    const existing = data.value.find((item) => item.pattern === pattern)
 
     if (existing) {
       existing.selector = selector
@@ -37,22 +43,20 @@ export function useAreaSelectors(): {
       return
     }
 
-    data.value.push({ host: key, selector, addedAt: Date.now() })
+    data.value.push({ pattern, selector, addedAt: Date.now() })
   }
 
-  /** Без записи разбор снова идёт по общим правилам — надгробие тут не нужно */
-  function clearSelector(host: string): void {
-    const key = normalizeHost(host)
-    data.value = data.value.filter((item) => item.host !== key)
+  /** Убираем все подходящие записи, а не только точную: кнопка сброса должна снять область с концами */
+  function clearSelector(url: string): void {
+    data.value = data.value.filter((item) => !matchesSite(url, item.pattern))
   }
 
   return { selectors: data, promise, hasSelector, setSelector, clearSelector }
 }
 
 /** Для не-Vue кода (pageText): дожидается загрузки из storage */
-export async function getAreaSelector(host: string): Promise<string | undefined> {
+export async function getAreaSelector(url: string): Promise<string | undefined> {
   await promise
-  const key = normalizeHost(host)
 
-  return data.value.find((item) => item.host === key)?.selector
+  return findMatch(url)?.selector
 }

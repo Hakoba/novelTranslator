@@ -35,6 +35,29 @@ export function matchesSite(currentUrl: string, pattern: string): boolean {
   }
 }
 
+/** Сегмент с цифрой — идентификатор поста или главы: дальше путь уникален для страницы */
+function isVolatile(segment: string): boolean {
+  return /\d/.test(segment)
+}
+
+/**
+ * Ключ для ручного выбора области: путь до первого сегмента-идентификатора.
+ * Выбранная на странице поста область должна работать на всех постах, но не на ленте
+ * того же сайта: у reddit это `/r/sub/comments/` против `/r/sub/`.
+ */
+export function areaPattern(url: string): string {
+  try {
+    const parsed = new URL(url)
+    const segments = parsed.pathname.split('/').filter(Boolean)
+    const cut = segments.findIndex(isVolatile)
+    const stable = cut === -1 ? segments : segments.slice(0, cut)
+
+    return `${parsed.protocol}//${parsed.host}/${stable.map((segment) => `${segment}/`).join('')}`
+  } catch {
+    return url
+  }
+}
+
 /** www.example.com и example.com — один сайт: иначе запись из адресной строки не совпадает с введённой руками */
 function stripWww(host: string): string {
   return host.startsWith('www.') ? host.slice(4) : host

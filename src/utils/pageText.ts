@@ -76,7 +76,7 @@ function collectCandidates(): Element[] {
  * правило для сайта → общий скоринг по плотности текста.
  */
 async function findContentRoots(): Promise<Element[]> {
-  const manualSelector = await getAreaSelector(location.host)
+  const manualSelector = await getAreaSelector(location.href)
   const manual = manualSelector ? queryAll(manualSelector) : []
   if (manual.length) return manual
 
