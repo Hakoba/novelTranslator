@@ -140,6 +140,7 @@ export default {
     addCurrent: '允许 {host}',
     addCurrentHint: '添加当前标签页的网站——重新加载页面后扩展就会在那里工作',
     currentAllowed: '该网站已经允许',
+    openPanel: '打开侧边栏',
   },
 
   setup: {
@@ -234,6 +235,7 @@ export default {
     resetAreaHint: '忘记已选的区块',
     dictionary: '我的词汇表',
     dictionaryHint: '在新标签页中打开词汇表',
+    settingsHint: '在新标签页中打开设置',
     pickArea: '选择正文区域',
     pickAreaHint: '选择正文区块',
     pickAreaCancel: '取消区域选择',
@@ -276,6 +278,8 @@ export default {
     nothingFound: '没有找到难词。',
     pickerHint: '点击含正文的区块 · 按 Esc 取消',
     pickerChars: '{count} 个字符',
+    panelUnavailable: 'Erudit 未在此页面运行。',
+    panelReload: '刷新页面',
   },
 
   lookup: {

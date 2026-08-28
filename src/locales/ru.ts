@@ -144,6 +144,7 @@ export default {
     addCurrent: 'Разрешить {host}',
     addCurrentHint: 'Добавить сайт из открытой вкладки — расширение включится на нём после перезагрузки страницы',
     currentAllowed: 'Этот сайт уже разрешён',
+    openPanel: 'Открыть боковую панель',
   },
 
   setup: {
@@ -238,6 +239,7 @@ export default {
     resetAreaHint: 'Забыть выбранный блок',
     dictionary: 'Мой словарь',
     dictionaryHint: 'Открыть словарь в новой вкладке',
+    settingsHint: 'Открыть настройки в новой вкладке',
     pickArea: 'Выбрать область с текстом',
     pickAreaHint: 'Выбрать блок с текстом',
     pickAreaCancel: 'Отменить выбор области',
@@ -280,6 +282,8 @@ export default {
     nothingFound: 'Сложных слов не нашлось.',
     pickerHint: 'Кликните по блоку с текстом · Esc — отмена',
     pickerChars: '{count} симв.',
+    panelUnavailable: 'Erudit не работает на этой странице.',
+    panelReload: 'Перезагрузить страницу',
   },
 
   lookup: {

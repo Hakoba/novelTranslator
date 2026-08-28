@@ -32,6 +32,11 @@ declare global {
   const MODEL_NAME: typeof import('../utils/ankiSchema').MODEL_NAME
   const OPENAI_COMPATIBLE_PRESETS: typeof import('../composables/useLlmSettings').OPENAI_COMPATIBLE_PRESETS
   const OVERLAY_ROOT_ID: typeof import('../utils/overlayRoot').OVERLAY_ROOT_ID
+  const PANEL_COMMAND: typeof import('../utils/panelBus').PANEL_COMMAND
+  const PANEL_GET: typeof import('../utils/panelBus').PANEL_GET
+  const PANEL_OPEN: typeof import('../utils/panelBus').PANEL_OPEN
+  const PANEL_PORT: typeof import('../utils/panelBus').PANEL_PORT
+  const PANEL_STATE: typeof import('../utils/panelBus').PANEL_STATE
   const PROFILE_LANG: typeof import('../utils/analyze').PROFILE_LANG
   const PROMPT_EXTRA_LIMIT: typeof import('../composables/useReaderSettings').PROMPT_EXTRA_LIMIT
   const PROVIDERS: typeof import('../utils/llm/providers').PROVIDERS
@@ -138,9 +143,12 @@ declare global {
   const isBelow: typeof import('../utils/cefr/levels').isBelow
   const isBundledKey: typeof import('../composables/useDictSettings').isBundledKey
   const isDefined: typeof import('@vueuse/core').isDefined
+  const isPanelCommand: typeof import('../utils/panelBus').isPanelCommand
+  const isPanelState: typeof import('../utils/panelBus').isPanelState
   const isProxy: typeof import('vue').isProxy
   const isReactive: typeof import('vue').isReactive
   const isReadonly: typeof import('vue').isReadonly
+  const isRecord: typeof import('../utils/panelBus').isRecord
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
   const isTargetLanguageText: typeof import('../utils/immersion').isTargetLanguageText
@@ -195,6 +203,8 @@ declare global {
   const onUpdated: typeof import('vue').onUpdated
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
   const openDictionaryTab: typeof import('../utils/dictionaryTab').openDictionaryTab
+  const openOptionsTab: typeof import('../utils/dictionaryTab').openOptionsTab
+  const panelStateFromMessage: typeof import('../utils/panelBus').panelStateFromMessage
   const parseApkg: typeof import('../utils/anki').parseApkg
   const parseFreeDictionary: typeof import('../utils/dict/parse').parseFreeDictionary
   const parseWords: typeof import('../utils/llmParse').parseWords
@@ -228,6 +238,7 @@ declare global {
   const replaceTerms: typeof import('../utils/highlight').replaceTerms
   const requestDifficultWords: typeof import('../utils/llmClient').requestDifficultWords
   const requestExplanation: typeof import('../utils/llmClient').requestExplanation
+  const requestPanelState: typeof import('../utils/panelBus').requestPanelState
   const requestTranslation: typeof import('../utils/llmClient').requestTranslation
   const resolveComponent: typeof import('vue').resolveComponent
   const resolveRef: typeof import('@vueuse/core').resolveRef
@@ -239,6 +250,7 @@ declare global {
   const reviewWords: typeof import('../utils/cefr/levels').reviewWords
   const scoreCandidate: typeof import('../utils/extract/score').scoreCandidate
   const sendBgFetch: typeof import('../utils/bgFetch').sendBgFetch
+  const sendPanelCommand: typeof import('../utils/panelBus').sendPanelCommand
   const setActivePinia: typeof import('pinia').setActivePinia
   const setMapStoreSuffix: typeof import('pinia').setMapStoreSuffix
   const shallowReactive: typeof import('vue').shallowReactive
@@ -539,6 +551,9 @@ declare global {
   export type { TranslatorId, TranslatorCredentials, TranslateRequest, Translator } from '../utils/mt/translators'
   import('../utils/mt/translators')
   // @ts-ignore
+  export type { PanelState, PanelCommand } from '../utils/panelBus'
+  import('../utils/panelBus')
+  // @ts-ignore
   export type { ReviewProgress } from '../utils/srs'
   import('../utils/srs')
 }
@@ -571,6 +586,11 @@ declare module 'vue' {
     readonly MODEL_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['MODEL_NAME']>
     readonly OPENAI_COMPATIBLE_PRESETS: UnwrapRef<typeof import('../composables/useLlmSettings')['OPENAI_COMPATIBLE_PRESETS']>
     readonly OVERLAY_ROOT_ID: UnwrapRef<typeof import('../utils/overlayRoot')['OVERLAY_ROOT_ID']>
+    readonly PANEL_COMMAND: UnwrapRef<typeof import('../utils/panelBus')['PANEL_COMMAND']>
+    readonly PANEL_GET: UnwrapRef<typeof import('../utils/panelBus')['PANEL_GET']>
+    readonly PANEL_OPEN: UnwrapRef<typeof import('../utils/panelBus')['PANEL_OPEN']>
+    readonly PANEL_PORT: UnwrapRef<typeof import('../utils/panelBus')['PANEL_PORT']>
+    readonly PANEL_STATE: UnwrapRef<typeof import('../utils/panelBus')['PANEL_STATE']>
     readonly PROFILE_LANG: UnwrapRef<typeof import('../utils/analyze')['PROFILE_LANG']>
     readonly PROMPT_EXTRA_LIMIT: UnwrapRef<typeof import('../composables/useReaderSettings')['PROMPT_EXTRA_LIMIT']>
     readonly PROVIDERS: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDERS']>
@@ -676,9 +696,12 @@ declare module 'vue' {
     readonly isBelow: UnwrapRef<typeof import('../utils/cefr/levels')['isBelow']>
     readonly isBundledKey: UnwrapRef<typeof import('../composables/useDictSettings')['isBundledKey']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
+    readonly isPanelCommand: UnwrapRef<typeof import('../utils/panelBus')['isPanelCommand']>
+    readonly isPanelState: UnwrapRef<typeof import('../utils/panelBus')['isPanelState']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
+    readonly isRecord: UnwrapRef<typeof import('../utils/panelBus')['isRecord']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
     readonly isTargetLanguageText: UnwrapRef<typeof import('../utils/immersion')['isTargetLanguageText']>
@@ -733,6 +756,8 @@ declare module 'vue' {
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly openDictionaryTab: UnwrapRef<typeof import('../utils/dictionaryTab')['openDictionaryTab']>
+    readonly openOptionsTab: UnwrapRef<typeof import('../utils/dictionaryTab')['openOptionsTab']>
+    readonly panelStateFromMessage: UnwrapRef<typeof import('../utils/panelBus')['panelStateFromMessage']>
     readonly parseApkg: UnwrapRef<typeof import('../utils/anki')['parseApkg']>
     readonly parseFreeDictionary: UnwrapRef<typeof import('../utils/dict/parse')['parseFreeDictionary']>
     readonly parseWords: UnwrapRef<typeof import('../utils/llmParse')['parseWords']>
@@ -764,6 +789,7 @@ declare module 'vue' {
     readonly replaceTerms: UnwrapRef<typeof import('../utils/highlight')['replaceTerms']>
     readonly requestDifficultWords: UnwrapRef<typeof import('../utils/llmClient')['requestDifficultWords']>
     readonly requestExplanation: UnwrapRef<typeof import('../utils/llmClient')['requestExplanation']>
+    readonly requestPanelState: UnwrapRef<typeof import('../utils/panelBus')['requestPanelState']>
     readonly requestTranslation: UnwrapRef<typeof import('../utils/llmClient')['requestTranslation']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
@@ -775,6 +801,7 @@ declare module 'vue' {
     readonly reviewWords: UnwrapRef<typeof import('../utils/cefr/levels')['reviewWords']>
     readonly scoreCandidate: UnwrapRef<typeof import('../utils/extract/score')['scoreCandidate']>
     readonly sendBgFetch: UnwrapRef<typeof import('../utils/bgFetch')['sendBgFetch']>
+    readonly sendPanelCommand: UnwrapRef<typeof import('../utils/panelBus')['sendPanelCommand']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>

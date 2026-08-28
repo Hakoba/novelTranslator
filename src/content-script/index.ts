@@ -6,6 +6,7 @@ import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 import { useAccessSites } from "@/composables/useAccessSites"
 import { useDictionary } from "@/composables/useDictionary"
 import { releasePage } from "@/composables/useOverlayDock"
+import { publishPanelState } from "@/content-script/panelBridge"
 import { useTheme } from "@/composables/useTheme"
 import { mirrorPrimeVueStyles } from "@/content-script/mirrorStyles"
 import { i18n } from "@/utils/i18n"
@@ -83,6 +84,8 @@ function unmountOverlay(): void {
   host?.remove()
   // отступ ставит сам оверлей, но снять его некому: его watchEffect уже остановлен
   releasePage()
+  // боковая панель и счётчик на иконке не должны показывать снятый разбор
+  publishPanelState(null)
   app = null
   host = null
   stopMirror = null

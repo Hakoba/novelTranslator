@@ -1,6 +1,7 @@
-import browser from "webextension-polyfill"
+import browser, { type Runtime } from "webextension-polyfill"
 import type { BgFetchResponse } from "@/utils/bgFetch"
 import { DICTIONARY_URL } from "@/utils/dictionaryTab"
+import { PANEL_OPEN, PANEL_STATE } from "@/utils/panelBus"
 
 // Sample code if using extensionpay.com
 // import { extPay } from 'src/utils/payment/extPay'
@@ -84,12 +85,46 @@ async function openDictionary(): Promise<void> {
   await browser.tabs.create({ url: browser.runtime.getURL(DICTIONARY_URL) })
 }
 
+/** Счётчик найденных слов на иконке: оверлей публикует снимок панели, мы его подслушиваем */
+function updateBadge(tabId: number | undefined, state: unknown): void {
+  if (tabId === undefined) return
+
+  const count = isObject(state) && Array.isArray(state.words) ? state.words.length : 0
+  void browser.action.setBadgeText({ tabId, text: count ? String(count) : '' })
+}
+
+void browser.action.setBadgeBackgroundColor({ color: '#3b82f6' })
+
+/**
+ * Горячая клавиша открытия панели. Обработчик команды браузер считает жестом
+ * пользователя, поэтому `sidePanel.open` отсюда разрешён — в отличие от вызова
+ * по таймеру или после await. Команда объявлена только в Chrome-манифесте.
+ */
+if (__HAS_SIDE_PANEL__) {
+  chrome.commands.onCommand.addListener((command, tab) => {
+    if (command !== 'open-panel' || tab?.windowId === undefined) return
+
+    chrome.sidePanel.open({ windowId: tab.windowId }).catch((e: unknown) => {
+      console.info('[nt] панель не открылась по горячей клавише:', e)
+    })
+  })
+}
+
 // Proxy fetch requests: content script не может ходить на http-эндпоинт LLM со https-страницы
 // Возвращаем Promise только для своих сообщений, чужие отдаём другим слушателям (undefined)
-browser.runtime.onMessage.addListener((message: unknown) => {
+browser.runtime.onMessage.addListener((message: unknown, sender: Runtime.MessageSender) => {
   if (!isObject(message)) return
   if (message.type === 'llm/fetch') return proxyFetch(message)
   if (message.type === 'ui/open-dictionary') return openDictionary()
+  if (message.type === 'ui/open-options') return browser.runtime.openOptionsPage()
+  if (message.type === PANEL_STATE) updateBadge(sender.tab?.id, message.state)
+  // строго синхронно: жест пользователя не переживает await, панель без него не откроется.
+  // Приходит только из Chrome-сборки (кнопка за __HAS_SIDE_PANEL__), в Firefox API нет
+  if (message.type === PANEL_OPEN && sender.tab?.id !== undefined) {
+    chrome.sidePanel.open({ tabId: sender.tab.id }).catch((e: unknown) => {
+      console.info('[nt] панель не открылась:', e)
+    })
+  }
 })
 
 export {}

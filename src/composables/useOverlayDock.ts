@@ -28,11 +28,19 @@ export function useOverlayDock(): {
   width: Ref<number>
   promise: Promise<unknown>
 } {
-  const width = computed<number>(() => data.value ? RAIL_WIDTH : DOCK_WIDTH)
+  // со сборкой под боковую панель браузера док не рисуется: место ему не нужно,
+  // и карточки отсчитывают правый край прямо от окна
+  const width = computed<number>(() => {
+    if (__HAS_SIDE_PANEL__) return 0
+
+    return data.value ? RAIL_WIDTH : DOCK_WIDTH
+  })
 
   // эффект живёт в скоупе компонента и умирает вместе с ним, но отступ не снимает:
   // при переходе внутри SPA оверлей пересоздаётся, и сайт иначе дёргался бы вёрсткой
-  watchEffect(() => insetPage(width.value))
+  watchEffect(() => {
+    if (!__HAS_SIDE_PANEL__) insetPage(width.value)
+  })
 
   return { isCollapsed: data, width, promise }
 }

@@ -79,6 +79,8 @@ export default defineConfig(() => {
     build: {
       outDir: browserOutDir,
     },
+    // у Firefox другая модель (sidebar_action) — пока остаётся док в странице
+    define: { __HAS_SIDE_PANEL__: "false" },
     plugins: browserPlugins,
   }
 

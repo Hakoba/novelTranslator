@@ -19,6 +19,7 @@ declare module 'vue' {
     InputText: typeof import('primevue/inputtext')['default']
     LookupPanel: typeof import('./../components/LookupPanel.vue')['default']
     Message: typeof import('primevue/message')['default']
+    OverlayHeader: typeof import('./../components/OverlayHeader.vue')['default']
     Password: typeof import('primevue/password')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -26,5 +27,7 @@ declare module 'vue' {
     Textarea: typeof import('primevue/textarea')['default']
     ThemeSwitch: typeof import('./../components/ThemeSwitch.vue')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
+    WordItem: typeof import('./../components/WordItem.vue')['default']
+    WordListPanel: typeof import('./../components/WordListPanel.vue')['default']
   }
 }

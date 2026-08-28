@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { BookMarked, Eraser, PanelRightClose, RefreshCw, Replace, SquareDashedMousePointer, X } from 'lucide-vue-next'
+import { BookMarked, Eraser, PanelRightClose, RefreshCw, Replace, Settings, SquareDashedMousePointer, X } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
 import AppLogo from '@/components/AppLogo.vue'
-import { openDictionaryTab } from '@/utils/dictionaryTab'
+import { openDictionaryTab, openOptionsTab } from '@/utils/dictionaryTab'
 
 defineProps<{
   wordsCount: number
@@ -15,6 +15,8 @@ defineProps<{
   isStarted: boolean
   /** Настройка вкраплений включена: кнопка её дублирует */
   isImmersion: boolean
+  /** Док в странице: свернуть и закрыть можно только его, у боковой панели браузера свой крестик */
+  isDocked?: boolean
 }>()
 
 const { t } = useI18n()
@@ -30,16 +32,21 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex w-full items-center gap-2">
-    <AppLogo :size="18" />
+  <!-- перенос строк: в узкой боковой панели кнопки иначе уезжают за край -->
+  <div class="flex w-full flex-wrap items-center gap-2">
+    <!-- в боковой панели имя и значок расширения рисует сам браузер — свои не повторяем,
+         иначе в узкой панели на них уходит вся ширина и заголовок всё равно обрезается -->
+    <template v-if="isDocked">
+      <AppLogo :size="18" />
 
-    <strong
-      class="flex-1 truncate"
-      role="heading"
-      aria-level="2"
-    >
-      {{ t('overlay.title') }}
-    </strong>
+      <strong
+        class="flex-1 truncate"
+        role="heading"
+        aria-level="2"
+      >
+        {{ t('overlay.title') }}
+      </strong>
+    </template>
 
     <Badge
       v-if="!isLoading && wordsCount"
@@ -115,6 +122,19 @@ const emit = defineEmits<{
       rounded
       severity="secondary"
       size="small"
+      :aria-label="t('nav.settings')"
+      :data-hint="t('overlay.settingsHint')"
+      @click="openOptionsTab"
+    >
+      <Settings :size="16" />
+    </Button>
+
+    <Button
+      v-if="isDocked"
+      text
+      rounded
+      severity="secondary"
+      size="small"
       :aria-label="t('overlay.collapse')"
       :data-hint="t('overlay.collapseHint')"
       @click="emit('collapse')"
@@ -123,6 +143,7 @@ const emit = defineEmits<{
     </Button>
 
     <Button
+      v-if="isDocked"
       text
       rounded
       severity="secondary"

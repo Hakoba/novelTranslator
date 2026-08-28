@@ -140,6 +140,7 @@ export default {
     addCurrent: '{host} 허용',
     addCurrentHint: '열려 있는 탭의 사이트를 추가합니다 — 페이지를 새로 고치면 그곳에서 동작합니다',
     currentAllowed: '이미 허용된 사이트입니다',
+    openPanel: '사이드 패널 열기',
   },
 
   setup: {
@@ -234,6 +235,7 @@ export default {
     resetAreaHint: '선택한 블록 잊기',
     dictionary: '내 사전',
     dictionaryHint: '새 탭에서 사전 열기',
+    settingsHint: '새 탭에서 설정 열기',
     pickArea: '본문 영역 고르기',
     pickAreaHint: '본문 블록 고르기',
     pickAreaCancel: '영역 선택 취소',
@@ -276,6 +278,8 @@ export default {
     nothingFound: '어려운 단어를 찾지 못했습니다.',
     pickerHint: '본문이 있는 블록을 클릭하세요 · Esc로 취소',
     pickerChars: '{count}자',
+    panelUnavailable: 'Erudit이 이 페이지에서 꺼져 있습니다.',
+    panelReload: '페이지 새로고침',
   },
 
   lookup: {

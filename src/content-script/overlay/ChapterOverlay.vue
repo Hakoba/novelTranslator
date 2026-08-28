@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookmarkCheck, BookmarkPlus, LoaderCircle, RotateCw } from 'lucide-vue-next'
+import Badge from 'primevue/badge'
 import Button from 'primevue/button'
-import OverlayHeader from './components/OverlayHeader.vue'
+import OverlayHeader from '@/components/OverlayHeader.vue'
 import OverlayRail from './components/OverlayRail.vue'
 import AppLogo from '@/components/AppLogo.vue'
 import WordCard from './components/WordCard.vue'
-import WordItem from './components/WordItem.vue'
+import WordListPanel from '@/components/WordListPanel.vue'
 import { useDifficultWords } from '@/composables/useDifficultWords'
 import { useDictionary } from '@/composables/useDictionary'
 import { useAreaSelectors } from '@/composables/useAreaSelectors'
@@ -17,7 +18,9 @@ import { useOverlayDock } from '@/composables/useOverlayDock'
 import { type SelectionMode, useReaderSettings } from '@/composables/useReaderSettings'
 import { type SelectionAnchor, useTextSelection } from '@/composables/useTextSelection'
 import { startAreaPicker } from '@/content-script/areaPicker'
-import { clearHighlights, highlightTerms, replaceTerms, restoreReplacement, revealTerm } from '@/utils/highlight'
+import { isPanelOpen, publishPanelState, releasePanelCommandHandler, requestPanelOpen, setPanelCommandHandler } from '@/content-script/panelBridge'
+import type { PanelCommand } from '@/utils/panelBus'
+import { clearHighlights, hasOccurrence, highlightTerms, replaceTerms, restoreReplacement, revealTerm } from '@/utils/highlight'
 import { type ImmersionMatch, isTargetLanguageText, pickImmersionWords } from '@/utils/immersion'
 import { translateTerm } from '@/utils/translateTerm'
 import { normalizeTerm } from '@/utils/dictionary'
@@ -45,10 +48,8 @@ const { isIgnored, ignoreWord } = useIgnoredWords()
 const { hint } = useHighlightHover()
 const { settings: readerSettings, promise: readerSettingsLoaded } = useReaderSettings()
 
-// по букве в span — иначе волну не сдвинуть по фазе; пробел неразрывный, обычный схлопнется
-const loadingChars = computed<string[]>(() =>
-  [...t('overlay.analyzing')].map((char) => char === ' ' ? '\u00a0' : char),
-)
+/** Сборка с боковой панелью браузера: док в страницу не рисуется, список слов живёт в панели */
+const hasSidePanel = __HAS_SIDE_PANEL__
 
 // state
 // разбор ещё не запускали: с выключенным автозапуском вместо пустого списка нужна кнопка
@@ -63,6 +64,8 @@ const knownTerms = ref<Set<string>>(new Set())
 /** Страница распознана как родная, слова словаря вкраплены в текст */
 const isImmersionActive = ref<boolean>(false)
 const immersionWords = ref<ImmersionMatch[]>([])
+/** Нормализованные термины, найденные в тексте страницы: у них в списке есть переход */
+const onPageTerms = ref<string[]>([])
 
 // computed
 // скрытое слово убираем по живому списку, а не по снимку: строка должна пропасть сразу
@@ -138,7 +141,36 @@ watch([newWords, savedTerms, isLoading], (): void => {
     { terms: savedTerms.value, variant: 'saved' },
     { terms: newWords.value.map((word) => word.original), variant: 'new' },
   ])
+  // сразу после подсветки: раньше неё вхождений в DOM ещё нет
+  onPageTerms.value = newWords.value
+    .filter((word) => hasOccurrence(word.original))
+    .map((word) => normalizeTerm(word.original))
 }, { immediate: true })
+
+// снимок для боковой панели: watchEffect сам подписан на всё, что входит в снимок
+watchEffect(() => publishPanelState({
+  isStarted: isStarted.value,
+  isLoading: isLoading.value,
+  isPicking: Boolean(cancelPicking.value),
+  hasArea: hasArea.value,
+  isImmersionActive: isImmersionActive.value,
+  immersionCount: immersionWords.value.length,
+  errorMessage: errorMessage.value,
+  sourceText: sourceText.value,
+  words: newWords.value.map((word) => ({ ...word })),
+  onPage: onPageTerms.value.slice(),
+  totalWords: words.value.length,
+}))
+
+/** Команды из боковой панели: всё, что трогает DOM страницы, выполняет оверлей */
+function handlePanelCommand(command: PanelCommand): void {
+  if (command.command === 'analyze') void analyze(command.full)
+  if (command.command === 'reveal') revealTerm(command.term)
+  if (command.command === 'pickArea') togglePicking()
+  if (command.command === 'resetArea') resetArea()
+}
+
+setPanelCommandHandler(handlePanelCommand)
 
 // выключили режим — вернуть оригиналы и продолжить как обычно, без перезагрузки
 watch(() => readerSettings.value.immersion, (): void => {
@@ -158,6 +190,7 @@ onMounted(async (): Promise<void> => {
 onUnmounted((): void => {
   clearHighlights()
   cancelPicking.value?.()
+  releasePanelCommandHandler(handlePanelCommand)
 })
 
 // методы
@@ -443,6 +476,7 @@ async function translateAndSave(): Promise<void> {
             <BookmarkCheck
               v-if="hasEntry(anchor.text)"
               :size="16"
+              fill="currentColor"
             />
             <BookmarkPlus
               v-else
@@ -454,8 +488,40 @@ async function translateAndSave(): Promise<void> {
     </WordCard>
   </div>
 
-  <!-- панель прижата к краю на всю высоту: ровно на её ширину ужата и сама страница -->
+  <!-- Chrome: дока в странице нет, панель открывает ярлык-закладка вплотную к правому
+       краю — sidePanel.open требует жеста пользователя. Прижат к краю, а не плавает,
+       чтобы не накрывать виджеты сайтов; пока панель открыта, её порт жив и ярлык спрятан -->
+  <button
+    v-if="hasSidePanel && !isPanelOpen"
+    type="button"
+    class="fixed! right-0 top-1/2 flex -translate-y-1/2 cursor-pointer flex-col items-center
+           gap-1.5 rounded-l-lg border border-r-0 border-line bg-surface px-1.5 py-2.5
+           text-content shadow-[-6px_0_16px_-8px_rgba(0,0,0,.45)] hover:bg-surface-hover"
+    :aria-label="t('popup.openPanel')"
+    :data-hint="t('popup.openPanel')"
+    @click="requestPanelOpen"
+  >
+    <LoaderCircle
+      v-if="isLoading"
+      :size="16"
+      class="animate-spin text-muted"
+    />
+    <AppLogo
+      v-else
+      :size="16"
+    />
+    <Badge
+      v-if="!isLoading && newWords.length"
+      :value="String(newWords.length)"
+      severity="info"
+      :aria-label="t('overlay.wordsFound')"
+    />
+  </button>
+
+  <!-- панель прижата к краю на всю высоту: ровно на её ширину ужата и сама страница.
+       Со сборкой под боковую панель браузера список слов рисует она, дока нет вовсе -->
   <section
+    v-if="!hasSidePanel"
     class="fixed inset-y-0 right-0 flex flex-col border-l border-line bg-surface text-content
            shadow-[-8px_0_28px_-16px_rgba(0,0,0,.45)]"
     :style="{ width: `${dockWidth}px` }"
@@ -483,6 +549,7 @@ async function translateAndSave(): Promise<void> {
         :has-area="hasArea"
         :is-started="isStarted"
         :is-immersion="readerSettings.immersion"
+        is-docked
         @collapse="isCollapsed = true"
         @pick-area="togglePicking"
         @reset-area="resetArea"
@@ -492,102 +559,23 @@ async function translateAndSave(): Promise<void> {
       />
     </header>
 
-    <div
+    <WordListPanel
       v-if="!isCollapsed"
       class="flex-1 overflow-y-auto p-3"
-    >
-      <div
-        v-if="!isStarted"
-        class="flex flex-col items-start gap-2"
-      >
-        <p class="m-0 text-muted">
-          {{ t('overlay.autoAnalyzeOff') }}
-        </p>
-        <Button
-          size="small"
-          :label="t('overlay.analyze')"
-          @click="analyze()"
-        />
-      </div>
-
-      <div
-        v-else-if="isLoading"
-        class="flex flex-col items-center gap-3 py-10"
-        :aria-label="t('overlay.analyzing')"
-        aria-busy="true"
-      >
-        <p
-          class="nt-wave m-0 text-lg font-medium"
-          aria-hidden="true"
-        >
-          <span
-            v-for="(char, index) in loadingChars"
-            :key="index"
-            :style="{ animationDelay: `${index * 55}ms` }"
-          >{{ char }}</span>
-        </p>
-        <div class="nt-bar w-40" />
-      </div>
-
-      <p
-        v-else-if="isImmersionActive"
-        class="m-0 text-muted"
-      >
-        {{ t('overlay.immersionActive', { count: immersionWords.length }) }}
-      </p>
-
-      <div
-        v-else-if="errorMessage"
-        class="flex flex-col items-start gap-2"
-      >
-        <p class="m-0 text-muted">
-          {{ errorMessage }}
-        </p>
-        <Button
-          size="small"
-          :label="t('common.retry')"
-          @click="analyze()"
-        />
-      </div>
-
-      <div
-        v-else-if="newWords.length"
-        class="flex flex-col gap-2"
-      >
-        <!-- на одно слово кнопка не нужна: рядом с ним и так есть своя закладка -->
-        <div v-if="newWords.length > 1">
-          <Button
-            size="small"
-            severity="secondary"
-            outlined
-            :label="t('overlay.addAll', { count: newWords.length })"
-            @click="addAll"
-          >
-            <template #icon>
-              <BookmarkPlus :size="16" />
-            </template>
-          </Button>
-        </div>
-
-        <ul class="m-0 flex list-none flex-col gap-1.5 p-0">
-          <WordItem
-            v-for="word in newWords"
-            :key="word.original"
-            :word="word"
-            :source-text="sourceText"
-            @add-to-dictionary="addToDictionary"
-            @ignore="ignoreWord(word.original)"
-            @reveal="revealTerm(word.original)"
-          />
-        </ul>
-      </div>
-
-      <p
-        v-else
-        class="m-0 text-muted"
-      >
-        {{ t(words.length ? 'overlay.allKnown' : 'overlay.nothingFound') }}
-      </p>
-    </div>
+      :is-started="isStarted"
+      :is-loading="isLoading"
+      :is-immersion-active="isImmersionActive"
+      :immersion-count="immersionWords.length"
+      :error-message="errorMessage"
+      :words="newWords"
+      :on-page="onPageTerms"
+      :total-words="words.length"
+      :source-text="sourceText"
+      @analyze="analyze()"
+      @add="addToDictionary"
+      @add-all="addAll"
+      @ignore="ignoreWord"
+      @reveal="revealTerm"
+    />
   </section>
 </template>

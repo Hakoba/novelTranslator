@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookMarked, Check, Plus, Settings } from 'lucide-vue-next'
+import { BookMarked, Check, PanelRight, Plus, Settings } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
 import { isValidUrl, matchesSite } from '@/composables/matchesSite'
@@ -15,6 +15,11 @@ const { entries } = useDictionary()
 // state
 /** Адрес открытой вкладки: из него берём домен для кнопки «разрешить» */
 const currentUrl = ref<string>('')
+/** Окно узнаём заранее: sidePanel.open требует жеста, и await в обработчике клика его бы съел */
+const windowId = ref<number | undefined>(undefined)
+
+/** Сборка с боковой панелью браузера — кнопка открытия есть только там */
+const hasSidePanel = __HAS_SIDE_PANEL__
 
 // computed
 const summary = computed<string>(() => {
@@ -40,9 +45,18 @@ function allowCurrent(): void {
   if (currentUrl.value) addSite(new URL(currentUrl.value).origin)
 }
 
+/** Список слов при чтении живёт в боковой панели браузера — сама она не открывается */
+function openSidePanel(): void {
+  if (windowId.value === undefined) return
+
+  void chrome.sidePanel.open({ windowId: windowId.value })
+  window.close()
+}
+
 // хуки
 onMounted(async () => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+  windowId.value = tab?.windowId
   // у страниц chrome:// и about: адрес не отдают либо он не http — кнопку тогда не показываем
   if (tab?.url && isValidUrl(tab.url)) currentUrl.value = tab.url
 })
@@ -70,6 +84,18 @@ onMounted(async () => {
     >
       <template #icon>
         <BookMarked :size="18" />
+      </template>
+    </Button>
+
+    <Button
+      v-if="hasSidePanel"
+      severity="secondary"
+      outlined
+      :label="t('popup.openPanel')"
+      @click="openSidePanel"
+    >
+      <template #icon>
+        <PanelRight :size="16" />
       </template>
     </Button>
 

@@ -79,6 +79,8 @@ export default defineConfig(() => {
     build: {
       outDir: browserOutDir,
     },
+    // Chrome рисует список слов в боковой панели браузера (chrome.sidePanel)
+    define: { __HAS_SIDE_PANEL__: "true" },
     plugins: browserPlugins,
   }
 

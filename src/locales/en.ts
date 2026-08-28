@@ -140,6 +140,7 @@ export default {
     addCurrent: 'Allow {host}',
     addCurrentHint: 'Add the site from the open tab — the extension turns on there after a page reload',
     currentAllowed: 'This site is already allowed',
+    openPanel: 'Open the side panel',
   },
 
   setup: {
@@ -234,6 +235,7 @@ export default {
     resetAreaHint: 'Forget the selected block',
     dictionary: 'My dictionary',
     dictionaryHint: 'Open the dictionary in a new tab',
+    settingsHint: 'Open the settings in a new tab',
     pickArea: 'Pick the area with text',
     pickAreaHint: 'Pick the block with text',
     pickAreaCancel: 'Cancel area selection',
@@ -276,6 +278,8 @@ export default {
     nothingFound: 'No hard words found.',
     pickerHint: 'Click a block with text · Esc to cancel',
     pickerChars: '{count} chars',
+    panelUnavailable: 'Erudit is not active on this page.',
+    panelReload: 'Reload the page',
   },
 
   lookup: {

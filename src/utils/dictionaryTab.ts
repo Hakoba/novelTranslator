@@ -11,3 +11,11 @@ export const DICTIONARY_URL = 'src/ui/options-page/index.html?route=/options-pag
 export function openDictionaryTab(): void {
   void browser.runtime.sendMessage({ type: 'ui/open-dictionary' })
 }
+
+/**
+ * Настройки — тоже через background: `openOptionsPage` есть на страницах расширения,
+ * но не в content script, а шапка одна на оверлей и на боковую панель.
+ */
+export function openOptionsTab(): void {
+  void browser.runtime.sendMessage({ type: 'ui/open-options' })
+}

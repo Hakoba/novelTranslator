@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookmarkCheck, BookmarkPlus, Crosshair, EyeOff, LoaderCircle } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import LookupPanel from '@/components/LookupPanel.vue'
 import type { WordWithExplanation } from '@/types/words'
 import { useDictionary } from '@/composables/useDictionary'
-import { hasOccurrence } from '@/utils/highlight'
 import { requestExplanation } from '@/utils/llmClient'
 
-const props = defineProps<{ word: WordWithExplanation; sourceText: string }>()
+const props = defineProps<{
+  word: WordWithExplanation
+  sourceText: string
+  /**
+   * Есть ли к чему вести: модель иногда отвечает начальной формой, которой в тексте
+   * нет. Считает родитель по подсветке — из боковой панели страницу не видно.
+   */
+  isOnPage: boolean
+}>()
 
 const emit = defineEmits<{
   (e: 'addToDictionary', word: WordWithExplanation): void
@@ -25,23 +32,12 @@ const { hasEntry } = useDictionary()
 const isTipsOpen = ref<boolean>(false)
 const isExplanationLoading = ref<boolean>(false)
 const explanation = ref<string | undefined>(props.word.explanation)
-/**
- * Есть ли к чему вести: модель иногда отвечает начальной формой, которой в тексте
- * нет. Считаем один раз при монтировании — подсветку ставит родительский watcher,
- * и он успевает отработать раньше рендера списка.
- */
-const isOnPage = ref<boolean>(false)
 
 // computed
 const tipsId = computed<string>(
   () => `nt-tips-${props.word.original.replace(/[^a-zA-Z0-9_-]+/g, '-')}`,
 )
 const isSaved = computed<boolean>(() => hasEntry(props.word.original))
-
-// lifecycle
-onMounted((): void => {
-  isOnPage.value = hasOccurrence(props.word.original)
-})
 
 // методы
 /** Пояснение модели — отдельной кнопкой: раскрытие карточки должно оставаться бесплатным */
@@ -165,9 +161,11 @@ function addToDictionary(): void {
         <EyeOff :size="16" />
       </Button>
 
+      <!-- до добавления кнопка нейтральная: залитая зелёная закладка появляется только
+           у сохранённого слова, иначе смену состояния не разглядеть -->
       <Button
         size="small"
-        severity="success"
+        :severity="isSaved ? 'success' : 'secondary'"
         text
         rounded
         :disabled="isSaved"
@@ -177,6 +175,7 @@ function addToDictionary(): void {
         <BookmarkCheck
           v-if="isSaved"
           :size="16"
+          fill="currentColor"
         />
         <BookmarkPlus
           v-else

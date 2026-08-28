@@ -140,6 +140,7 @@ export default {
     addCurrent: 'Permitir {host}',
     addCurrentHint: 'Adicionar o site do separador aberto — a extensão liga-se lá depois de recarregar a página',
     currentAllowed: 'Este site já está permitido',
+    openPanel: 'Abrir o painel lateral',
   },
 
   setup: {
@@ -234,6 +235,7 @@ export default {
     resetAreaHint: 'Esquecer o bloco escolhido',
     dictionary: 'O meu dicionário',
     dictionaryHint: 'Abrir o dicionário num separador novo',
+    settingsHint: 'Abrir as definições num separador novo',
     pickArea: 'Escolher a área com o texto',
     pickAreaHint: 'Escolher o bloco com o texto',
     pickAreaCancel: 'Cancelar a escolha da área',
@@ -276,6 +278,8 @@ export default {
     nothingFound: 'Não se encontraram palavras difíceis.',
     pickerHint: 'Clica num bloco com texto · Esc para cancelar',
     pickerChars: '{count} caracteres',
+    panelUnavailable: 'O Erudit não está ativo nesta página.',
+    panelReload: 'Recarregar a página',
   },
 
   lookup: {

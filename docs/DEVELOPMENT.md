@@ -3,7 +3,7 @@
 ## Архитектура
 
 - **Контексты расширения**: background (service worker), content script, popup, options, setup,
-  devtools, offscreen.
+  side-panel (боковая панель Chrome), devtools, offscreen.
 - **File-based routing**: маршруты страниц автоматически собираются из `src/ui/*/pages`.
 - **UI**: PrimeVue (единственная UI-библиотека) + Tailwind CSS 4. Компоненты PrimeVue
   автоимпортируются через `PrimeVueResolver`, тема — Aura, переключение по классу `.dark`.
@@ -31,6 +31,11 @@
 - **Ответ модели парсится терпимо**: markdown-фенсы и текст вокруг JSON отбрасываются
   (`llmParse.ts`).
 - **PrimeVue Dialog не годится для оверлея** — он рендерится в `document.body`, вне shadow root.
+- **Список слов в Chrome — в боковой панели браузера** (`chrome.sidePanel`,
+  `src/ui/side-panel/`): вьюпорт ужимает сам браузер, вёрстка сайта не трогается.
+  Оверлей публикует снимок состояния и принимает команды (`utils/panelBus.ts`,
+  `content-script/panelBridge.ts`); Firefox пока остаётся с доком в странице —
+  развилка по build-флагу `__HAS_SIDE_PANEL__`.
 
 ## Конвенции
 

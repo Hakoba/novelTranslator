@@ -11,10 +11,11 @@ import { define } from "./define.config.mjs"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const gitignorePath = path.resolve(__dirname, ".gitignore")
+// __HAS_SIDE_PANEL__ живёт не в define.config.mjs, а в браузерных vite-конфигах
 const viteDefineGlobals = Object.keys(define).reduce((acc, key) => {
   acc[key] = "readonly"
   return acc
-}, {})
+}, { __HAS_SIDE_PANEL__: "readonly" })
 
 export default [
   includeIgnoreFile(gitignorePath),

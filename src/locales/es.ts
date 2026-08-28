@@ -140,6 +140,7 @@ export default {
     addCurrent: 'Permitir {host}',
     addCurrentHint: 'Añadir el sitio de la pestaña abierta: la extensión se activa ahí tras recargar la página',
     currentAllowed: 'Este sitio ya está permitido',
+    openPanel: 'Abrir el panel lateral',
   },
 
   setup: {
@@ -234,6 +235,7 @@ export default {
     resetAreaHint: 'Olvidar el bloque seleccionado',
     dictionary: 'Mi diccionario',
     dictionaryHint: 'Abrir el diccionario en una pestaña nueva',
+    settingsHint: 'Abrir los ajustes en una pestaña nueva',
     pickArea: 'Elegir el área con el texto',
     pickAreaHint: 'Elegir el bloque con el texto',
     pickAreaCancel: 'Cancelar la selección del área',
@@ -276,6 +278,8 @@ export default {
     nothingFound: 'No se encontraron palabras difíciles.',
     pickerHint: 'Haz clic en un bloque con texto · Esc para cancelar',
     pickerChars: '{count} caracteres',
+    panelUnavailable: 'Erudit no está activo en esta página.',
+    panelReload: 'Recargar la página',
   },
 
   lookup: {
