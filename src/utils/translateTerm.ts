@@ -24,18 +24,22 @@ async function withLevel(
 }
 
 /**
- * Дешёвые источники: словарь знает одиночные слова, машинный переводчик — фразы.
- * Модели тут нет намеренно — в режиме «только словари» звать её нельзя.
+ * Дешёвый источник — тот, что выбран в настройках: Яндекс.Словарь или машинный
+ * переводчик. Модели тут нет намеренно: в режиме «только словари» звать её нельзя,
+ * а «не переводить» так и оставляет слово без перевода.
  */
 export async function dictTranslate(term: string): Promise<WordWithExplanation | undefined> {
-  const { preferDictionary } = await getDictSettings()
+  const { translator } = await getDictSettings()
   const { sourceLang } = await getReaderSettings()
 
-  if (preferDictionary && isSingleWord(term)) {
+  // Яндекс.Словарь знает только одиночные слова: фразу он не переведёт, и она уходит к модели
+  if (translator === 'yandex') {
+    if (!isSingleWord(term)) return undefined
+
     const { results } = await lookupTranslation(term)
     const translate = firstTranslation(results.find((result) => result.source === 'yandex'))
 
-    if (translate) return withLevel({ original: term, translate }, sourceLang)
+    return translate ? withLevel({ original: term, translate }, sourceLang) : undefined
   }
 
   const machine = await machineTranslate(term)

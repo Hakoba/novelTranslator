@@ -22,6 +22,7 @@ declare global {
   const DICTIONARY_KEY: typeof import('../utils/dictionary').DICTIONARY_KEY
   const DICTIONARY_URL: typeof import('../utils/dictionaryTab').DICTIONARY_URL
   const DOCK_WIDTH: typeof import('../composables/useOverlayDock').DOCK_WIDTH
+  const EDGE_AUTH_URL: typeof import('../utils/mt/translators').EDGE_AUTH_URL
   const EMPTY_FILTERS: typeof import('../utils/dictionary').EMPTY_FILTERS
   const EffectScope: typeof import('vue').EffectScope
   const FAQ_URL: typeof import('../utils/dictionaryTab').FAQ_URL
@@ -59,6 +60,7 @@ declare global {
   const YANDEX_DICT_KEY_URL: typeof import('../composables/useDictSettings').YANDEX_DICT_KEY_URL
   const YANDEX_DICT_URL: typeof import('../utils/dictClient').YANDEX_DICT_URL
   const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
+  const YANDEX_SOURCE: typeof import('../utils/mt/translators').YANDEX_SOURCE
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
   const analyzeText: typeof import('../utils/analyze').analyzeText
   const appRouter: typeof import('../utils/router/index').appRouter
@@ -79,6 +81,7 @@ declare global {
   const buildTermsPattern: typeof import('../utils/terms').buildTermsPattern
   const cefrLevel: typeof import('../utils/cefr/levels').cefrLevel
   const checkModel: typeof import('../utils/llmClient').checkModel
+  const chunk: typeof import('../utils/dictionary').chunk
   const clearHighlights: typeof import('../utils/highlight').clearHighlights
   const collectLevels: typeof import('../utils/dictionary').collectLevels
   const computed: typeof import('vue').computed
@@ -279,6 +282,7 @@ declare global {
   const syncRefs: typeof import('@vueuse/core').syncRefs
   const t: typeof import('../utils/i18n').t
   const templateRef: typeof import('@vueuse/core').templateRef
+  const textToAnalyze: typeof import('../utils/extract/blocks').textToAnalyze
   const textWords: typeof import('../utils/cefr/hardWords').textWords
   const throttledRef: typeof import('@vueuse/core').throttledRef
   const throttledWatch: typeof import('@vueuse/core').throttledWatch
@@ -297,6 +301,8 @@ declare global {
   const unref: typeof import('vue').unref
   const unrefElement: typeof import('@vueuse/core').unrefElement
   const until: typeof import('@vueuse/core').until
+  const untranslatedEntries: typeof import('../utils/dictionary').untranslatedEntries
+  const unwrapSettled: typeof import('../utils/settled').unwrapSettled
   const useAccessSites: typeof import('../composables/useAccessSites').useAccessSites
   const useActiveElement: typeof import('@vueuse/core').useActiveElement
   const useAnimate: typeof import('@vueuse/core').useAnimate
@@ -536,6 +542,9 @@ declare global {
   export type { ThemeMode } from '../composables/useTheme'
   import('../composables/useTheme')
   // @ts-ignore
+  export type { AnalyzeOutcome } from '../utils/analyze'
+  import('../utils/analyze')
+  // @ts-ignore
   export type { ApkgOptions, ImportedNote } from '../utils/anki'
   import('../utils/anki')
   // @ts-ignore
@@ -578,11 +587,14 @@ declare global {
   export type { ProviderId, ChatMessage, ChatCredentials, ChatRequest, Provider } from '../utils/llm/providers'
   import('../utils/llm/providers')
   // @ts-ignore
-  export type { TranslatorId, TranslatorCredentials, TranslateRequest, Translator } from '../utils/mt/translators'
+  export type { TranslatorId, MachineTranslatorId, TranslatorCredentials, TranslateRequest, Translator } from '../utils/mt/translators'
   import('../utils/mt/translators')
   // @ts-ignore
   export type { PanelState, PanelCommand } from '../utils/panelBus'
   import('../utils/panelBus')
+  // @ts-ignore
+  export type { SettledOutcome } from '../utils/settled'
+  import('../utils/settled')
   // @ts-ignore
   export type { ReviewProgress, DictionaryProgress } from '../utils/srs'
   import('../utils/srs')
@@ -606,6 +618,7 @@ declare module 'vue' {
     readonly DICTIONARY_KEY: UnwrapRef<typeof import('../utils/dictionary')['DICTIONARY_KEY']>
     readonly DICTIONARY_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['DICTIONARY_URL']>
     readonly DOCK_WIDTH: UnwrapRef<typeof import('../composables/useOverlayDock')['DOCK_WIDTH']>
+    readonly EDGE_AUTH_URL: UnwrapRef<typeof import('../utils/mt/translators')['EDGE_AUTH_URL']>
     readonly EMPTY_FILTERS: UnwrapRef<typeof import('../utils/dictionary')['EMPTY_FILTERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FAQ_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['FAQ_URL']>
@@ -642,6 +655,7 @@ declare module 'vue' {
     readonly YANDEX_DICT_KEY_URL: UnwrapRef<typeof import('../composables/useDictSettings')['YANDEX_DICT_KEY_URL']>
     readonly YANDEX_DICT_URL: UnwrapRef<typeof import('../utils/dictClient')['YANDEX_DICT_URL']>
     readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
+    readonly YANDEX_SOURCE: UnwrapRef<typeof import('../utils/mt/translators')['YANDEX_SOURCE']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly analyzeText: UnwrapRef<typeof import('../utils/analyze')['analyzeText']>
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
@@ -662,6 +676,7 @@ declare module 'vue' {
     readonly buildTermsPattern: UnwrapRef<typeof import('../utils/terms')['buildTermsPattern']>
     readonly cefrLevel: UnwrapRef<typeof import('../utils/cefr/levels')['cefrLevel']>
     readonly checkModel: UnwrapRef<typeof import('../utils/llmClient')['checkModel']>
+    readonly chunk: UnwrapRef<typeof import('../utils/dictionary')['chunk']>
     readonly clearHighlights: UnwrapRef<typeof import('../utils/highlight')['clearHighlights']>
     readonly collectLevels: UnwrapRef<typeof import('../utils/dictionary')['collectLevels']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -860,6 +875,7 @@ declare module 'vue' {
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly t: UnwrapRef<typeof import('../utils/i18n')['t']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
+    readonly textToAnalyze: UnwrapRef<typeof import('../utils/extract/blocks')['textToAnalyze']>
     readonly textWords: UnwrapRef<typeof import('../utils/cefr/hardWords')['textWords']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
@@ -878,6 +894,8 @@ declare module 'vue' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
+    readonly untranslatedEntries: UnwrapRef<typeof import('../utils/dictionary')['untranslatedEntries']>
+    readonly unwrapSettled: UnwrapRef<typeof import('../utils/settled')['unwrapSettled']>
     readonly useAccessSites: UnwrapRef<typeof import('../composables/useAccessSites')['useAccessSites']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>

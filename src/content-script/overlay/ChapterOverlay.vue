@@ -103,8 +103,10 @@ const hoverWord = computed<WordWithExplanation | undefined>(() => {
   if (!saved && !found) return undefined
 
   return {
-    original: term,
+    // форма из словаря, а не со страницы: подсветка точная, расходится только регистр
+    original: found?.original ?? saved?.original ?? term,
     translate: found?.translate ?? saved?.translate ?? '',
+    explanation: found?.explanation,
     level: found?.level ?? saved?.level,
   }
 })
@@ -398,18 +400,36 @@ async function translateAndSave(): Promise<void> {
     </WordCard>
   </div>
 
-  <!-- подсказка не перехватывает мышь: иначе курсор «проваливался» бы в неё с самого слова -->
+  <!-- зазор до слова закрыт паддингом обёртки: курсор доезжает до кнопки, не теряя карточку -->
   <div
     v-else-if="hint && hoverWord"
-    class="fixed -translate-x-1/2 -translate-y-[calc(100%+6px)]"
-    :style="{ left: clampX(hint.x), top: `${hint.y}px`, pointerEvents: 'none' }"
+    class="fixed -translate-x-1/2 -translate-y-full pb-1.5"
+    :style="{ left: clampX(hint.x), top: `${hint.y}px` }"
   >
     <WordCard
       :term="hoverWord.original"
       :translate="hoverWord.translate"
       :level="hoverWord.level"
       :note="savedNote(hoverWord.original) ?? t('overlay.foundHere')"
-    />
+    >
+      <!-- у сохранённого слова кнопки нет: про него всё сказано в `note` -->
+      <div
+        v-if="!hasEntry(hoverWord.original)"
+        class="flex justify-end"
+      >
+        <Button
+          size="small"
+          severity="success"
+          outlined
+          :label="t('overlay.addToDictionary')"
+          @click="addToDictionary(hoverWord)"
+        >
+          <template #icon>
+            <BookmarkPlus :size="16" />
+          </template>
+        </Button>
+      </div>
+    </WordCard>
   </div>
 
   <div

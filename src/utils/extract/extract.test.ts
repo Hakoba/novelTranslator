@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { MAX_CHARS, appendedTail, dedupeBlocks, joinBlocks, limitChars, normalizeWhitespace } from './blocks'
+import { MAX_CHARS, appendedTail, dedupeBlocks, joinBlocks, limitChars, normalizeWhitespace, textToAnalyze } from './blocks'
 import { findRule } from './rules'
 import { pickBestIndex, scoreCandidate } from './score'
 
@@ -53,6 +53,66 @@ test('appendedTail: без прошлого разбора весь текст �
 
 test('appendedTail: текст не изменился — разбирать нечего', () => {
   assert.equal(appendedTail('Глава первая.', 'Глава первая.'), '')
+})
+
+test('textToAnalyze: обычный проход берёт только дописанное', () => {
+  const text = textToAnalyze({
+    full: false,
+    pageText: 'Первый кусок.\nВторой кусок.',
+    analyzedText: 'Первый кусок.',
+    lastChunk: 'Первый кусок.',
+    hasError: false,
+  })
+
+  assert.equal(text, '\nВторой кусок.')
+})
+
+test('textToAnalyze: ручной перезапуск читает страницу целиком', () => {
+  const text = textToAnalyze({
+    full: true,
+    pageText: 'Первый кусок.\nВторой кусок.',
+    analyzedText: 'Первый кусок.',
+    lastChunk: 'Первый кусок.',
+    hasError: false,
+  })
+
+  assert.equal(text, 'Первый кусок.\nВторой кусок.')
+})
+
+test('textToAnalyze: текст не изменился, прошлый разбор прошёл — отправлять нечего', () => {
+  const text = textToAnalyze({
+    full: false,
+    pageText: 'Первый кусок.',
+    analyzedText: 'Первый кусок.',
+    lastChunk: 'Первый кусок.',
+    hasError: false,
+  })
+
+  assert.equal(text, '')
+})
+
+test('textToAnalyze: повтор после ошибки берёт тот же кусок', () => {
+  const text = textToAnalyze({
+    full: false,
+    pageText: 'Первый кусок.',
+    analyzedText: 'Первый кусок.',
+    lastChunk: 'Первый кусок.',
+    hasError: true,
+  })
+
+  assert.equal(text, 'Первый кусок.')
+})
+
+test('textToAnalyze: длинный кусок обрезается по лимиту', () => {
+  const text = textToAnalyze({
+    full: true,
+    pageText: 'а'.repeat(10000),
+    analyzedText: '',
+    lastChunk: '',
+    hasError: false,
+  })
+
+  assert.equal(text.length, MAX_CHARS)
 })
 
 test('findRule: домен и поддомены, www не мешает', () => {

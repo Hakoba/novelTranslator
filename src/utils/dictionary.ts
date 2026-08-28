@@ -85,3 +85,22 @@ export function levelFilterOptions(entries: DictionaryEntry[]): LevelOption[] {
 
   return options
 }
+
+/**
+ * Записи, до которых перевод не доехал: слово попало в словарь, пока источник
+ * молчал — не знал его, отказал по ключу или кончилась квота.
+ */
+export function untranslatedEntries(entries: DictionaryEntry[]): DictionaryEntry[] {
+  return entries.filter((entry) => !entry.translate.trim() && !entry.deletedAt)
+}
+
+/**
+ * Резать список на пачки: словарь бывает на сотни слов, а залп из сотни запросов
+ * подряд бесключевые переводчики встречают капчей или молчанием.
+ */
+export function chunk<T>(list: T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let index = 0; index < list.length; index += size) chunks.push(list.slice(index, index + size))
+
+  return chunks
+}

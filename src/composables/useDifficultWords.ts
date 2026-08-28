@@ -1,15 +1,15 @@
 import { ref, type Ref } from 'vue'
 import type { WordWithExplanation } from '@/types/words'
 import { analyzeText } from '@/utils/analyze'
-import { appendedTail, limitChars } from '@/utils/extract/blocks'
+import { textToAnalyze } from '@/utils/extract/blocks'
 import { REQUEST_TIMEOUT_MS } from '@/utils/llmClient'
 import { extractReadableText } from '@/utils/pageText'
 import { t } from '@/utils/i18n'
 
 /**
  * Текст прошлого разбора — на уровне модуля, а не композабла: при переходе внутри
- * SPA оверлей пересоздаётся, а страница остаётся той же, и догруженную главу надо
- * отличить от уже разобранной. Живёт ровно столько, сколько content script.
+ * SPA оверлей пересоздаётся, а страница остаётся той же, и дописанный текст надо
+ * отличить от уже разобранного. Живёт ровно столько, сколько content script.
  */
 let analyzedText = ''
 
@@ -37,25 +37,38 @@ export function useDifficultWords(): {
     const pageText = await extractReadableText()
     if (request !== currentRequest) return
 
-    // на читалке с догрузкой главы разбирается только дописанное, иначе разбор
-    // упрётся в старую главу: лимит символов отрезает текст с конца
-    const parsedText = limitChars(full ? pageText : appendedTail(analyzedText, pageText))
-
-    words.value = []
-    errorMessage.value = ''
-    sourceText.value = ''
+    // на странице с догрузкой разбирается только дописанное, иначе разбор упрётся
+    // в уже разобранный текст: лимит символов отрезает его с конца
+    const parsedText = textToAnalyze({
+      full,
+      pageText,
+      analyzedText,
+      lastChunk: sourceText.value,
+      hasError: Boolean(errorMessage.value),
+    })
 
     if (!pageText) {
+      words.value = []
+      sourceText.value = ''
       errorMessage.value = t('errors.noText')
       return
     }
 
-    // текст есть, но весь уже разобран: страница сменилась раньше, чем догрузилась глава
+    // Отправлять нечего. Разбор, который этот оверлей уже показал, не трогаем:
+    // повторный проход ничего не добавил, а сообщение вместо готового списка
+    // читается как поломка. Объясняем только там, где показывать нечего —
+    // страницу сменили раньше, чем на ней появился новый текст
     if (!parsedText) {
-      errorMessage.value = t('errors.noNewText')
+      if (!sourceText.value) {
+        words.value = []
+        errorMessage.value = t('errors.noNewText')
+      }
+
       return
     }
 
+    words.value = []
+    errorMessage.value = ''
     analyzedText = pageText
     sourceText.value = parsedText
 
@@ -63,7 +76,12 @@ export function useDifficultWords(): {
 
     try {
       const result = await analyzeText(parsedText)
-      if (request === currentRequest) words.value = result
+      if (request === currentRequest) {
+        // отказ переводчика слова не отменяет: они найдены офлайн-профилем,
+        // у них есть уровень и подсветка — пропадать им не за что
+        words.value = result.words
+        errorMessage.value = result.error ?? ''
+      }
     } catch (error) {
       if (request !== currentRequest) return
 

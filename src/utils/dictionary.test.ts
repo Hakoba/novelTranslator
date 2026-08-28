@@ -3,10 +3,12 @@ import { test } from 'node:test'
 import type { DictionaryEntry } from '@/types/words'
 import {
   EMPTY_FILTERS,
+  chunk,
   collectLevels,
   levelFilterOptions,
   normalizeTerm,
   queryEntries,
+  untranslatedEntries,
 } from './dictionary'
 
 function entry(patch: Partial<DictionaryEntry>): DictionaryEntry {
@@ -97,4 +99,21 @@ test('levelFilterOptions: «Без уровня» появляется, толь
     levelFilterOptions([...ENTRIES, withoutLevel]).map((option) => option.value),
     ['B1', 'C1', 'none'],
   )
+})
+
+test('untranslatedEntries: пустой перевод и пробелы считаются пропуском, удалённые — нет', () => {
+  const list = [
+    entry({ original: 'brittle', translate: 'хрупкий' }),
+    entry({ original: 'gloom', translate: '' }),
+    entry({ original: 'ripple', translate: '   ' }),
+    entry({ original: 'shard', translate: '', deletedAt: 5 }),
+  ]
+
+  assert.deepEqual(untranslatedEntries(list).map((item) => item.original), ['gloom', 'ripple'])
+})
+
+test('chunk: последняя пачка неполная, пустой список даёт пустой результат', () => {
+  assert.deepEqual(chunk([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]])
+  assert.deepEqual(chunk([], 3), [])
+  assert.deepEqual(chunk([1, 2], 5), [[1, 2]])
 })

@@ -5,11 +5,21 @@ import type { TranslatorId } from '@/utils/mt/translators'
 export interface DictSettings {
   /** Ключ Яндекс.Словаря (dictionary.yandex.net), бесплатный, выдаётся в кабинете разработчика */
   yandexKey: string
-  /** Одиночные слова переводить словарём, а не моделью: быстрее и не тратит токены */
-  preferDictionary: boolean
-  /** Машинный переводчик для фраз: дешевле модели, но без уровня и пояснений */
+  /**
+   * Кто переводит слова и фразы до модели: Яндекс.Словарь или машинный переводчик.
+   * Дешевле модели, но без уровня и пояснений.
+   * По умолчанию Google — единственный из бесключевых, кто знает все пары языков
+   * расширения; эндпоинт неофициальный, и об этом сказано в настройках
+   */
   translator: TranslatorId
+  /** Почта поднимает суточную квоту MyMemory с 5 до 50 тысяч слов; ключом не является */
+  myMemoryEmail: string
+  /** Инстанс Lingva: публичные держат добровольцы, и они регулярно ложатся */
+  lingvaUrl: string
   deeplKey: string
+  azureKey: string
+  /** Регион ресурса Azure; у ресурсов Global пустой */
+  azureRegion: string
   /** Свой или публичный сервер LibreTranslate */
   libreUrl: string
   libreKey: string
@@ -17,9 +27,12 @@ export interface DictSettings {
 
 export const DEFAULT_DICT_SETTINGS: DictSettings = {
   yandexKey: '',
-  preferDictionary: true,
-  translator: 'none',
+  translator: 'google',
+  myMemoryEmail: '',
+  lingvaUrl: 'https://lingva.ml',
   deeplKey: '',
+  azureKey: '',
+  azureRegion: '',
   libreUrl: 'https://libretranslate.com',
   libreKey: '',
 }

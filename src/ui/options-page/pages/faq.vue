@@ -19,7 +19,7 @@ const FAQ_DOC_URL = `${__GITHUB_URL__}/blob/master/docs/FAQ.md`
 /** Ключ вопроса даёт пару ключей локали: `<id>Q` и `<id>A` */
 const GROUPS: { label: string; items: string[] }[] = [
   { label: 'start', items: ['free', 'silent', 'panel'] },
-  { label: 'words', items: ['level', 'engine', 'colors', 'simple'] },
+  { label: 'words', items: ['level', 'engine', 'translator', 'colors', 'simple'] },
   { label: 'page', items: ['area', 'reread'] },
   { label: 'dictionary', items: ['repeat', 'sync', 'anki'] },
   { label: 'privacy', items: ['local', 'data'] },

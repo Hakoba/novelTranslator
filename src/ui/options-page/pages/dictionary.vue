@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookA, Check, Download, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
+import { BookA, Check, Download, Languages, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
 import AppLoader from '@/components/AppLoader.vue'
 import InlineSvg from '@/components/InlineSvg.vue'
 import dictionaryArt from '@/assets/illustrations/dictionary.svg?raw'
@@ -13,20 +13,27 @@ import { parseApkg } from '@/utils/anki'
 import LookupPanel from '@/components/LookupPanel.vue'
 import { firstTranslation } from '@/utils/dict/parse'
 import { lookupTerm } from '@/utils/dictClient'
+import { unwrapSettled } from '@/utils/settled'
+import { dictTranslate } from '@/utils/translateTerm'
 import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
 import { useIgnoredWords } from '@/composables/useIgnoredWords'
 import { CEFR_LEVELS, type CefrLevel, type DictionaryEntry } from '@/types/words'
 import {
   EMPTY_FILTERS,
+  chunk,
   levelFilterOptions,
   queryEntries,
+  untranslatedEntries,
   type DictionaryFilters,
   type DictionarySort,
   type LevelOption,
 } from '@/utils/dictionary'
 
 const PAGE_SIZE = 20
+
+/** Пачка запросов за раз: залпом на весь словарь бесключевые переводчики отвечают капчей */
+const FILL_BATCH = 5
 
 // composables
 const { t } = useI18n()
@@ -51,6 +58,13 @@ const editedTranslate = ref<string>('')
 const lookupId = ref<string>('')
 const isFormOpen = ref<boolean>(false)
 const isSuggesting = ref<boolean>(false)
+const fillState = ref<{ busy: boolean; done: number; total: number; message: string; failed: boolean }>({
+  busy: false,
+  done: 0,
+  total: 0,
+  message: '',
+  failed: false,
+})
 const importState = ref<{ busy: boolean; message: string; failed: boolean }>({
   busy: false,
   message: '',
@@ -68,6 +82,8 @@ const visibleEntries = computed<DictionaryEntry[]>(() =>
   queryEntries(entries.value, filters.value, sort.value),
 )
 const levelOptions = computed<LevelOption[]>(() => levelFilterOptions(entries.value))
+/** Слова, добавленные в словарь, пока источник перевода молчал */
+const missing = computed<DictionaryEntry[]>(() => untranslatedEntries(entries.value))
 const sortOptions = computed<{ label: string; value: DictionarySort }[]>(() => [
   { label: t('dictionary.sortNewest'), value: 'newest' },
   { label: t('dictionary.sortOldest'), value: 'oldest' },
@@ -114,6 +130,47 @@ async function suggestTranslation(force = false): Promise<void> {
     if (translate) draft.value.translate = translate
   } finally {
     isSuggesting.value = false
+  }
+}
+
+/**
+ * Дозаполнить пустые переводы выбранным источником. Пачками, а не залпом; отказ
+ * на одном слове остальных не отменяет, а общий отказ — например, кончившаяся
+ * квота — приходит сообщением из `unwrapSettled`.
+ */
+async function fillTranslations(): Promise<void> {
+  const list = missing.value
+  if (!list.length || fillState.value.busy) return
+
+  fillState.value = { busy: true, done: 0, total: list.length, message: '', failed: false }
+  let filled = 0
+  let error = ''
+
+  for (const batch of chunk(list, FILL_BATCH)) {
+    const settled = await Promise.allSettled(batch.map(async (item): Promise<boolean> => {
+      const found = await dictTranslate(item.original)
+      if (!found?.translate) return false
+
+      updateEntry(item.id, { translate: found.translate })
+
+      return true
+    }))
+
+    const outcome = unwrapSettled(settled, batch.map(() => false))
+    filled += outcome.values.filter(Boolean).length
+    fillState.value.done += batch.length
+    if (outcome.error) {
+      error = outcome.error
+      break
+    }
+  }
+
+  fillState.value = {
+    busy: false,
+    done: 0,
+    total: 0,
+    failed: Boolean(error),
+    message: error || t('dictionary.fillDone', { filled, left: missing.value.length }),
   }
 }
 
@@ -184,6 +241,30 @@ function submitDraft(): void {
       <div class="flex flex-wrap items-center justify-between gap-2">
         <span>{{ t('dictionary.title') }}</span>
         <div class="flex flex-wrap gap-2">
+          <Button
+            v-if="missing.length || fillState.busy"
+            size="small"
+            severity="secondary"
+            outlined
+            :title="t('dictionary.fillHint')"
+            :disabled="fillState.busy"
+            :label="fillState.busy
+              ? t('dictionary.fillBusy', { done: fillState.done, total: fillState.total })
+              : t('dictionary.fill', { count: missing.length })"
+            @click="fillTranslations"
+          >
+            <template #icon>
+              <AppLoader
+                v-if="fillState.busy"
+                variant="swap"
+                :size="16"
+              />
+              <Languages
+                v-else
+                :size="16"
+              />
+            </template>
+          </Button>
           <Button
             v-if="entries.length"
             size="small"
@@ -272,6 +353,14 @@ function submitDraft(): void {
           :closable="false"
         >
           {{ exportError }}
+        </Message>
+
+        <Message
+          v-if="fillState.message"
+          :severity="fillState.failed ? 'error' : 'success'"
+          :closable="false"
+        >
+          {{ fillState.message }}
         </Message>
 
         <Message

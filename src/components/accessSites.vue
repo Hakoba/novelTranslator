@@ -1,13 +1,25 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import InlineSvg from '@/components/InlineSvg.vue'
 import sitesEmptyArt from '@/assets/illustrations/sites-empty.svg?raw'
 import { useAccessSites } from '@/composables/useAccessSites'
+import type { AccessMode } from '@/composables/matchesSite'
 
+/**
+ * Список сайтов вместе с режимом: режим задаёт, что этот список значит, и порознь
+ * они читаются неверно. Поэтому переключатель живёт здесь, а не на экране настроек, —
+ * и приезжает заодно на экран после установки.
+ */
 const { t } = useI18n()
-const { sites, isDenyMode, addSite, removeSite, toggleSite } = useAccessSites()
+const { options, sites, isDenyMode, addSite, removeSite, toggleSite } = useAccessSites()
+
+// computed
+const modes = computed<{ label: string; value: AccessMode }[]>(() => [
+  { label: t('sites.modeAllow'), value: 'allow' },
+  { label: t('sites.modeDeny'), value: 'deny' },
+])
 
 // state
 const newSiteUrl = ref<string>('')
@@ -34,7 +46,39 @@ function handleAddSite(): void {
 
 <template>
   <section class="flex flex-col gap-3">
-    <div class="flex gap-2">
+    <div class="flex flex-col gap-2">
+      <span class="text-sm text-muted">{{ t('sites.mode') }}</span>
+      <SelectButton
+        v-model="options.mode"
+        :options="modes"
+        option-label="label"
+        option-value="value"
+        :allow-empty="false"
+      />
+    </div>
+
+    <!-- защита осмысленна только там, где расширение включается само -->
+    <div
+      v-if="isDenyMode"
+      class="flex flex-col gap-1"
+    >
+      <div class="flex items-center gap-2">
+        <Checkbox
+          v-model="options.guarded"
+          input-id="access-guard"
+          binary
+        />
+        <label
+          for="access-guard"
+          class="cursor-pointer"
+        >
+          {{ t('sites.guard') }}
+        </label>
+      </div>
+      <small class="text-muted">{{ t('sites.guardHint') }}</small>
+    </div>
+
+    <div class="flex gap-2 pt-1">
       <InputText
         v-model="newSiteUrl"
         placeholder="https://www.reddit.com/"
