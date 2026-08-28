@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookmarkCheck, BookmarkPlus, Crosshair, EyeOff, LoaderCircle } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus, Crosshair, EyeOff } from 'lucide-vue-next'
 import Button from 'primevue/button'
+import AppLoader from '@/components/AppLoader.vue'
 import LookupPanel from '@/components/LookupPanel.vue'
 import type { WordWithExplanation } from '@/types/words'
 import { useDictionary } from '@/composables/useDictionary'
@@ -116,10 +117,9 @@ function addToDictionary(): void {
           v-if="explanation || isExplanationLoading"
           class="m-0 flex items-center gap-2 text-muted"
         >
-          <LoaderCircle
+          <AppLoader
             v-if="isExplanationLoading"
-            :size="14"
-            class="shrink-0 animate-spin"
+            :size="16"
           />
           {{ isExplanationLoading ? t('overlay.explanationLoading') : explanation }}
         </p>

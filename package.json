@@ -72,7 +72,8 @@
     "lint": "eslint . --fix --cache",
     "lint:manifest": "web-ext lint --pretty",
     "test": "tsx --test \"src/**/*.test.ts\"",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "version": "node scripts/release.mjs && git add CHANGELOG.md"
   },
   "type": "module",
   "version": "0.0.1",

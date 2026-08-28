@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { LoaderCircle } from 'lucide-vue-next'
+import AppLoader from '@/components/AppLoader.vue'
 import type { LookupResult, LookupSense } from '@/types/lookup'
 import type { CefrLevel } from '@/types/words'
 import { YANDEX_DICT_URL, lookupTerm } from '@/utils/dictClient'
@@ -81,10 +81,10 @@ function senseText(sense: LookupSense): string {
     </p>
 
     <p class="m-0 flex items-center gap-2">
-      <LoaderCircle
+      <AppLoader
         v-if="isLoading"
-        :size="14"
-        class="shrink-0 animate-spin"
+        variant="swap"
+        :size="20"
       />
       {{ isLoading ? t('overlay.translating') : translate }}
     </p>

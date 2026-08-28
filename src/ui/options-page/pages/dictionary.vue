@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookA, Check, Download, LoaderCircle, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
+import { BookA, Check, Download, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
+import AppLoader from '@/components/AppLoader.vue'
+import InlineSvg from '@/components/InlineSvg.vue'
+import dictionaryArt from '@/assets/illustrations/dictionary.svg?raw'
+import dictionaryEmptyArt from '@/assets/illustrations/dictionary-empty.svg?raw'
+import noResultsArt from '@/assets/illustrations/no-results.svg?raw'
 // путь до wasm даёт сборщик: в расширении относительные пути sql.js не находит
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 import { parseApkg } from '@/utils/anki'
@@ -190,10 +195,9 @@ function submitDraft(): void {
             @click="exportToAnki(visibleEntries)"
           >
             <template #icon>
-              <LoaderCircle
+              <AppLoader
                 v-if="isExporting"
                 :size="16"
-                class="animate-spin"
               />
               <Download
                 v-else
@@ -211,10 +215,9 @@ function submitDraft(): void {
             @click="$file?.click()"
           >
             <template #icon>
-              <LoaderCircle
+              <AppLoader
                 v-if="importState.busy"
                 :size="16"
-                class="animate-spin"
               />
               <Upload
                 v-else
@@ -250,8 +253,15 @@ function submitDraft(): void {
       </div>
     </template>
 
+    <!-- эмблема стоит в подписи, а не в заголовке: там уже теснятся кнопки колоды -->
     <template #subtitle>
-      {{ entries.length ? t('dictionary.saved', { count: entries.length }) : t('dictionary.empty') }}
+      <span class="flex items-center gap-3">
+        <InlineSvg
+          :markup="dictionaryArt"
+          class="w-16 text-content"
+        />
+        {{ entries.length ? t('dictionary.saved', { count: entries.length }) : t('dictionary.empty') }}
+      </span>
     </template>
 
     <template #content>
@@ -321,10 +331,10 @@ function submitDraft(): void {
                   @click="suggestTranslation(true)"
                 >
                   <template #icon>
-                    <LoaderCircle
+                    <AppLoader
                       v-if="isSuggesting"
-                      :size="16"
-                      class="animate-spin"
+                      variant="underline"
+                      :size="18"
                     />
                     <BookA
                       v-else
@@ -415,19 +425,32 @@ function submitDraft(): void {
           />
         </div>
 
-        <p
+        <div
           v-if="!entries.length"
-          class="m-0 text-muted"
+          class="flex flex-col items-center gap-4 py-8 text-center"
         >
-          {{ t('dictionary.emptyHint') }}
-        </p>
+          <InlineSvg
+            :markup="dictionaryEmptyArt"
+            class="w-44 text-content"
+          />
+          <p class="m-0 max-w-sm text-muted">
+            {{ t('dictionary.emptyHint') }}
+          </p>
+        </div>
 
-        <p
+        <!-- словарь не пуст, но фильтры ничего не оставили: это про фильтры, не про словарь -->
+        <div
           v-else-if="!visibleEntries.length"
-          class="m-0 text-muted"
+          class="flex flex-col items-center gap-4 py-8 text-center"
         >
-          {{ t('dictionary.nothingFound') }}
-        </p>
+          <InlineSvg
+            :markup="noResultsArt"
+            class="w-40 text-content"
+          />
+          <p class="m-0 max-w-sm text-muted">
+            {{ t('dictionary.nothingFound') }}
+          </p>
+        </div>
 
         <DataView
           v-else

@@ -1,7 +1,7 @@
 import overlayCss from "./overlay.css?inline"
 import { createApp, defineComponent, h, ref, watchEffect } from "vue"
 import PrimeVue from "primevue/config"
-import Aura from "@primeuix/themes/aura"
+import { eruditTheme } from "@/utils/theme"
 import ChapterOverlay from "@/content-script/overlay/ChapterOverlay.vue"
 import { useAccessSites } from "@/composables/useAccessSites"
 import { useDictionary } from "@/composables/useDictionary"
@@ -71,7 +71,7 @@ function mountOverlay(): void {
   app.use(i18n)
   app.use(PrimeVue, {
     theme: {
-      preset: Aura,
+      preset: eruditTheme,
       options: { darkModeSelector: ".dark" },
     },
   })

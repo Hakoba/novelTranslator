@@ -1,0 +1,19 @@
+<!--
+  Страница цела, но не разобрана: гореть нечему, ждём нажатия.
+  Янтарный треугольник — третий в семье значков: зелёная галочка «готово»,
+  янтарный крестик «сорвалось», этот — «ещё не начинали».
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="20" y="18" width="124" height="84" rx="12"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <g fill="currentColor" opacity=".16">
+    <rect x="36" y="36" width="88" height="6" rx="3" />
+    <rect x="36" y="50" width="70" height="6" rx="3" />
+    <rect x="36" y="64" width="80" height="6" rx="3" />
+    <rect x="36" y="78" width="48" height="6" rx="3" />
+  </g>
+
+  <circle cx="132" cy="92" r="14" fill="var(--color-mark-new, #eebd4a)" />
+  <path d="M129.5 87l8 5-8 5z" fill="var(--color-surface, #ffffff)" stroke="var(--color-surface, #ffffff)"
+        stroke-width="2" stroke-linejoin="round" />
+</svg>

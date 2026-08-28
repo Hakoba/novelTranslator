@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { BookMarked, BookOpenText, Bot, CircleQuestionMark, Dumbbell, Github, Globe, Library, Settings } from 'lucide-vue-next'
+import { BookMarked, BookOpenText, Bot, CircleQuestionMark, DatabaseBackup, Dumbbell, Github, Globe, Library, Settings } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import AppLogo from '@/components/AppLogo.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
@@ -115,6 +115,15 @@ const modelNeedsKey = computed<boolean>(() =>
         >
           <Dumbbell :size="18" />
           {{ t('nav.training') }}
+        </RouterLink>
+
+        <RouterLink
+          to="/options-page/backup"
+          :class="LINK_CLASS"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <DatabaseBackup :size="18" />
+          {{ t('nav.backup') }}
         </RouterLink>
 
         <RouterLink

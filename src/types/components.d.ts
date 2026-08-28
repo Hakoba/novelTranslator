@@ -12,10 +12,13 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccessSites: typeof import('./../components/accessSites.vue')['default']
+    AppLoader: typeof import('./../components/AppLoader.vue')['default']
     AppLogo: typeof import('./../components/AppLogo.vue')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
+    Checkbox: typeof import('primevue/checkbox')['default']
     DataView: typeof import('primevue/dataview')['default']
+    InlineSvg: typeof import('./../components/InlineSvg.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
     LookupPanel: typeof import('./../components/LookupPanel.vue')['default']
     Message: typeof import('primevue/message')['default']
@@ -24,6 +27,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Select: typeof import('primevue/select')['default']
+    SelectButton: typeof import('primevue/selectbutton')['default']
     Textarea: typeof import('primevue/textarea')['default']
     ThemeSwitch: typeof import('./../components/ThemeSwitch.vue')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']

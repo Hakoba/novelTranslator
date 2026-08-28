@@ -2,10 +2,12 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Plus, Trash2 } from 'lucide-vue-next'
+import InlineSvg from '@/components/InlineSvg.vue'
+import sitesEmptyArt from '@/assets/illustrations/sites-empty.svg?raw'
 import { useAccessSites } from '@/composables/useAccessSites'
 
 const { t } = useI18n()
-const { sites, addSite, removeSite, toggleSite } = useAccessSites()
+const { sites, isDenyMode, addSite, removeSite, toggleSite } = useAccessSites()
 
 // state
 const newSiteUrl = ref<string>('')
@@ -58,7 +60,7 @@ function handleAddSite(): void {
     </Message>
 
     <small class="text-muted">
-      {{ t('sites.hint') }}
+      {{ t(isDenyMode ? 'sites.hintDeny' : 'sites.hintAllow') }}
     </small>
 
     <ul
@@ -94,11 +96,17 @@ function handleAddSite(): void {
       </li>
     </ul>
 
-    <p
+    <div
       v-else
-      class="text-muted m-0"
+      class="flex flex-col items-center gap-3 py-4 text-center"
     >
-      {{ t('sites.empty') }}
-    </p>
+      <InlineSvg
+        :markup="sitesEmptyArt"
+        class="w-32 text-content"
+      />
+      <p class="m-0 text-muted">
+        {{ t(isDenyMode ? 'sites.emptyDeny' : 'sites.empty') }}
+      </p>
+    </div>
   </section>
 </template>

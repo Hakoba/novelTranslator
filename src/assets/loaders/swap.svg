@@ -1,0 +1,27 @@
+<!--
+  Ожидание перевода: два слова меняются местами по кругу — буквально перенос
+  с языка на язык. Префикс `nt-ld-` обязателен, см. underline.svg.
+-->
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <style>
+    .nt-ld-s-a, .nt-ld-s-b { animation: 1.7s ease-in-out infinite; }
+    .nt-ld-s-a { animation-name: nt-ld-s-out; }
+    .nt-ld-s-b { animation-name: nt-ld-s-back; }
+    @keyframes nt-ld-s-out {
+      0%, 100% { transform: translate(0, 0) }
+      25% { transform: translate(5.5px, -5px) }
+      50% { transform: translate(11px, 0) }
+      75% { transform: translate(5.5px, 5px) }
+    }
+    @keyframes nt-ld-s-back {
+      0%, 100% { transform: translate(0, 0) }
+      25% { transform: translate(-5.5px, 5px) }
+      50% { transform: translate(-11px, 0) }
+      75% { transform: translate(-5.5px, -5px) }
+    }
+    @media (prefers-reduced-motion: reduce) { .nt-ld-s-a, .nt-ld-s-b { animation: none } }
+  </style>
+  <rect class="nt-ld-s-a" x="2" y="9.5" width="9" height="5" rx="2.5" fill="currentColor" opacity=".35" />
+  <rect class="nt-ld-s-b" x="13" y="9.5" width="9" height="5" rx="2.5"
+        fill="var(--color-mark-new, #eebd4a)" />
+</svg>

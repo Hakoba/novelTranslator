@@ -1,0 +1,34 @@
+<!--
+  Собранное уезжает в файл и возвращается обратно: слева хранилище браузера,
+  справа файл копии. Зелёная стрелка — сохранение уже собранного,
+  янтарная — то, что приезжает в браузер как новое.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="12" y="24" width="58" height="76" rx="10"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <!-- шапка с кружками: слева браузер, справа файл — иначе оба читаются документами -->
+  <path d="M12 40h58" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <g fill="currentColor" opacity=".25">
+    <circle cx="21" cy="32" r="2" />
+    <circle cx="29" cy="32" r="2" />
+  </g>
+  <rect x="22" y="50" width="38" height="6" rx="3" fill="var(--color-mark-new, #eebd4a)" />
+  <g fill="currentColor" opacity=".18">
+    <rect x="22" y="64" width="30" height="6" rx="3" />
+    <rect x="22" y="78" width="36" height="6" rx="3" />
+  </g>
+
+  <path d="M104 24h28l16 16v54a6 6 0 0 1-6 6h-38a6 6 0 0 1-6-6V30a6 6 0 0 1 6-6z"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <path d="M132 24v16h16" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" stroke-linejoin="round" />
+  <g fill="currentColor" opacity=".18">
+    <rect x="112" y="54" width="28" height="6" rx="3" />
+    <rect x="112" y="68" width="22" height="6" rx="3" />
+    <rect x="112" y="82" width="26" height="6" rx="3" />
+  </g>
+
+  <g stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M76 50h20m0 0-5-5m5 5-5 5" stroke="var(--color-mark-saved, #7fb894)" />
+    <path d="M98 74H78m0 0 5-5m-5 5 5 5" stroke="var(--color-mark-new, #eebd4a)" />
+  </g>
+</svg>

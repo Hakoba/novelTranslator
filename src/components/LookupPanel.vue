@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { LoaderCircle } from 'lucide-vue-next'
+import AppLoader from '@/components/AppLoader.vue'
 import { type LookupResult } from '@/types/lookup'
 import { useReaderSettings } from '@/composables/useReaderSettings'
 import { YANDEX_DICT_URL, lookupTerm } from '@/utils/dictClient'
@@ -42,9 +42,9 @@ onMounted(async (): Promise<void> => {
       v-if="isLoading"
       class="m-0 flex items-center gap-2 text-muted"
     >
-      <LoaderCircle
-        :size="14"
-        class="animate-spin"
+      <AppLoader
+        variant="underline"
+        :size="18"
       />
       {{ t('lookup.loading') }}
     </p>

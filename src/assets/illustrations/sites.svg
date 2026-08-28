@@ -1,0 +1,22 @@
+<!--
+  Список сайтов: один разрешён и отмечен зелёным, второй выключен.
+  Пара к sites-empty — то же окно, но не пустое.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="20" y="26" width="128" height="76" rx="10"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <path d="M20 46h128" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <g fill="currentColor" opacity=".22">
+    <circle cx="34" cy="36" r="3" />
+    <circle cx="46" cy="36" r="3" />
+    <circle cx="58" cy="36" r="3" />
+  </g>
+
+  <rect x="34" y="58" width="70" height="8" rx="4" fill="currentColor" opacity=".22" />
+  <circle cx="128" cy="62" r="9" fill="var(--color-mark-saved, #7fb894)" />
+  <path d="M124 62l3 3 5.5-6" stroke="var(--color-surface, #ffffff)" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" />
+
+  <rect x="34" y="80" width="52" height="8" rx="4" fill="currentColor" opacity=".12" />
+  <circle cx="128" cy="84" r="9" fill="currentColor" opacity=".12" />
+</svg>

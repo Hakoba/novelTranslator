@@ -1,0 +1,19 @@
+<!--
+  Что расширение делает, одной картинкой: на странице горит слово, из него
+  выезжает карточка с переводом. Янтарь в тексте и янтарь в карточке — одно слово.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="10" y="16" width="104" height="92" rx="12"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <rect x="26" y="34" width="72" height="6" rx="3" fill="currentColor" opacity=".18" />
+  <rect x="26" y="48" width="60" height="6" rx="3" fill="currentColor" opacity=".18" />
+  <rect x="26" y="62" width="32" height="6" rx="3" fill="var(--color-mark-new, #eebd4a)" />
+  <rect x="64" y="62" width="34" height="6" rx="3" fill="currentColor" opacity=".18" />
+  <rect x="26" y="76" width="66" height="6" rx="3" fill="currentColor" opacity=".18" />
+  <rect x="26" y="90" width="40" height="6" rx="3" fill="currentColor" opacity=".18" />
+
+  <rect x="76" y="66" width="82" height="44" rx="10"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <rect x="88" y="78" width="30" height="7" rx="3.5" fill="var(--color-mark-new, #eebd4a)" />
+  <rect x="88" y="92" width="54" height="6" rx="3" fill="currentColor" opacity=".28" />
+</svg>

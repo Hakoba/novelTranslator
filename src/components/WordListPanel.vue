@@ -4,6 +4,11 @@ import { useI18n } from 'vue-i18n'
 import { BookmarkPlus, Crosshair } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import WordItem from '@/components/WordItem.vue'
+import InlineSvg from '@/components/InlineSvg.vue'
+import allKnownArt from '@/assets/illustrations/all-known.svg?raw'
+import analyzeOffArt from '@/assets/illustrations/analyze-off.svg?raw'
+import errorArt from '@/assets/illustrations/error.svg?raw'
+import pickingArt from '@/assets/illustrations/picking.svg?raw'
 import type { ImmersionWord, WordWithExplanation } from '@/types/words'
 import { normalizeTerm } from '@/utils/dictionary'
 import { hintAttrs } from '@/utils/hint'
@@ -12,6 +17,8 @@ import { hintAttrs } from '@/utils/hint'
 const props = defineProps<{
   isStarted: boolean
   isLoading: boolean
+  /** Идёт выбор области: кликать надо по странице, и панель объясняет, что от неё ждут */
+  isPicking: boolean
   isImmersionActive: boolean
   /** Вкраплённые в страницу слова словаря — списком, чтобы каждое можно было найти в тексте */
   immersionWords: ImmersionWord[]
@@ -47,10 +54,28 @@ function isOnPage(word: WordWithExplanation): boolean {
 
 <template>
   <div>
+    <!-- пока идёт выбор, в панели делать нечего: кликать надо по странице -->
     <div
-      v-if="!isStarted"
-      class="flex flex-col items-start gap-2"
+      v-if="isPicking"
+      class="flex flex-col items-center gap-3 py-4 text-center"
     >
+      <InlineSvg
+        :markup="pickingArt"
+        class="w-32 text-content"
+      />
+      <p class="m-0 text-muted">
+        {{ t('overlay.pickerHint') }}
+      </p>
+    </div>
+
+    <div
+      v-else-if="!isStarted"
+      class="flex flex-col items-center gap-3 py-4 text-center"
+    >
+      <InlineSvg
+        :markup="analyzeOffArt"
+        class="w-32 text-content"
+      />
       <p class="m-0 text-muted">
         {{ t('overlay.autoAnalyzeOff') }}
       </p>
@@ -137,8 +162,12 @@ function isOnPage(word: WordWithExplanation): boolean {
 
     <div
       v-else-if="errorMessage"
-      class="flex flex-col items-start gap-2"
+      class="flex flex-col items-center gap-3 py-4 text-center"
     >
+      <InlineSvg
+        :markup="errorArt"
+        class="w-28 text-content"
+      />
       <p class="m-0 text-muted">
         {{ errorMessage }}
       </p>
@@ -182,11 +211,17 @@ function isOnPage(word: WordWithExplanation): boolean {
       </ul>
     </div>
 
-    <p
+    <div
       v-else
-      class="m-0 text-muted"
+      class="flex flex-col items-center gap-4 py-6 text-center"
     >
-      {{ t(totalWords ? 'overlay.allKnown' : 'overlay.nothingFound') }}
-    </p>
+      <InlineSvg
+        :markup="allKnownArt"
+        class="w-32 text-content"
+      />
+      <p class="m-0 text-muted">
+        {{ t(totalWords ? 'overlay.allKnown' : 'overlay.nothingFound') }}
+      </p>
+    </div>
   </div>
 </template>

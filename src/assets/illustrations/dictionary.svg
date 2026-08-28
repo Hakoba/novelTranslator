@@ -1,0 +1,26 @@
+<!--
+  Собранные слова списком: слово, перевод и зелёная закладка у каждого —
+  тот же зелёный, которым сохранённое слово помечено в тексте.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" fill="var(--color-surface, #ffffff)">
+    <rect x="18" y="18" width="124" height="28" rx="9" />
+    <rect x="18" y="52" width="124" height="28" rx="9" />
+    <rect x="18" y="86" width="124" height="28" rx="9" />
+  </g>
+
+  <!-- точка у строки вместо закладки: три сплошных флажка съедали всю картинку.
+       Цвет точки — как у слова в тексте: янтарная новая, зелёные освоенные -->
+  <circle cx="36" cy="32" r="4" fill="var(--color-mark-new, #eebd4a)" />
+  <g fill="var(--color-mark-saved, #7fb894)">
+    <circle cx="36" cy="66" r="4" />
+    <circle cx="36" cy="100" r="4" />
+  </g>
+
+  <rect x="48" y="28" width="34" height="8" rx="4" fill="var(--color-mark-new, #eebd4a)" />
+  <rect x="90" y="28" width="36" height="7" rx="3.5" fill="currentColor" opacity=".18" />
+  <rect x="48" y="62" width="28" height="8" rx="4" fill="currentColor" opacity=".3" />
+  <rect x="84" y="62" width="42" height="7" rx="3.5" fill="currentColor" opacity=".18" />
+  <rect x="48" y="96" width="38" height="8" rx="4" fill="currentColor" opacity=".3" />
+  <rect x="94" y="96" width="32" height="7" rx="3.5" fill="currentColor" opacity=".18" />
+</svg>

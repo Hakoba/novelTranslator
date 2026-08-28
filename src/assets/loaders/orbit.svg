@@ -1,0 +1,23 @@
+<!--
+  Общее ожидание там, где ждём не словарь: дуга бежит по кольцу и то удлиняется,
+  то собирается в точку. Префикс `nt-ld-` обязателен, см. underline.svg.
+-->
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <style>
+    .nt-ld-o-arc {
+      transform-origin: 12px 12px;
+      animation: nt-ld-o-spin .9s linear infinite, nt-ld-o-dash 1.8s ease-in-out infinite;
+    }
+    @keyframes nt-ld-o-spin { to { transform: rotate(360deg) } }
+    @keyframes nt-ld-o-dash {
+      0%, 100% { stroke-dasharray: 6 48 }
+      50% { stroke-dasharray: 32 48 }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .nt-ld-o-arc { animation: nt-ld-o-spin 1.6s linear infinite; stroke-dasharray: 20 48 }
+    }
+  </style>
+  <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.5" opacity=".18" />
+  <circle class="nt-ld-o-arc" cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-dasharray="6 48" />
+</svg>

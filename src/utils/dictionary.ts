@@ -2,6 +2,9 @@ import type { CefrLevel, DictionaryEntry } from '@/types/words'
 
 // Чистая логика словаря: без браузерных API, чтобы тестировать в node.
 
+/** Ключ словаря в `storage.local`: его знают и `useDictionary`, и резервная копия */
+export const DICTIONARY_KEY = 'DICTIONARY'
+
 export type DictionarySort = 'newest' | 'oldest' | 'alphabetical'
 
 /** 'none' — записи без уровня: словарь его не даёт, проставляет только модель */

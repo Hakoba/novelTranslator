@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Bot, Cloud, Cpu, ExternalLink, KeyRound, Laptop, Link, LoaderCircle, Plug, Zap } from 'lucide-vue-next'
+import { Bot, Cloud, Cpu, ExternalLink, KeyRound, Laptop, Link, Plug, Zap } from 'lucide-vue-next'
+import AppLoader from '@/components/AppLoader.vue'
+import InlineSvg from '@/components/InlineSvg.vue'
+import modelArt from '@/assets/illustrations/model.svg?raw'
+import modelOfflineArt from '@/assets/illustrations/model-offline.svg?raw'
 import {
   HAS_DEV_YANDEX_CREDENTIALS,
   LOCAL_PRESET,
@@ -21,6 +25,12 @@ const checkState = ref<'idle' | 'busy' | 'ok' | 'fail'>('idle')
 const checkMessage = ref<string>('')
 
 // computed
+/** Проверка перевешивает настройки: она знает наверняка, а адрес с моделью — только обещают */
+const isLinked = computed<boolean>(() =>
+  checkState.value === 'fail'
+    ? false
+    : checkState.value === 'ok' || Boolean(settings.value.baseUrl && settings.value.model),
+)
 const providerKeyUrl = computed<string | undefined>(() => getProvider(settings.value.provider).keyUrl)
 // названия видов API живут в локалях: «OpenAI-совместимый» на английском звучит иначе
 const providerOptions = computed<{ id: string; title: string }[]>(() =>
@@ -80,7 +90,7 @@ async function runCheck(): Promise<void> {
       {{ t('settings.model.subtitle') }}
     </template>
     <template #content>
-      <div class="flex max-w-2xl flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-4 pt-2">
         <!-- пресеты выше полей: сначала берут готовое, потом правят руками -->
         <div class="flex flex-col gap-2">
           <small class="text-muted">
@@ -209,40 +219,48 @@ async function runCheck(): Promise<void> {
           />
         </div>
 
-        <div class="flex flex-col gap-2 border-t border-line pt-4">
-          <div>
-            <Button
-              :label="checkState === 'busy' ? t('settings.model.checkBusy') : t('settings.model.check')"
-              severity="secondary"
-              outlined
-              :disabled="checkState === 'busy'"
-              @click="runCheck"
+        <!-- картинка держит статус связи: пока всё настроено — ядро горит, при
+             провале проверки или пустом адресе линия рвётся -->
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-4">
+          <InlineSvg
+            :markup="isLinked ? modelArt : modelOfflineArt"
+            class="w-32 text-content"
+          />
+
+          <div class="flex min-w-56 flex-1 flex-col gap-2">
+            <div>
+              <Button
+                :label="checkState === 'busy' ? t('settings.model.checkBusy') : t('settings.model.check')"
+                severity="secondary"
+                outlined
+                :disabled="checkState === 'busy'"
+                @click="runCheck"
+              >
+                <template #icon>
+                  <!-- спиннер PrimeVue — иконочный шрифт, которого в проекте нет: крутим свою иконку -->
+                  <AppLoader
+                    v-if="checkState === 'busy'"
+                    :size="16"
+                  />
+                  <Zap
+                    v-else
+                    :size="16"
+                  />
+                </template>
+              </Button>
+            </div>
+            <Message
+              v-if="checkState === 'ok' || checkState === 'fail'"
+              :severity="checkState === 'ok' ? 'success' : 'error'"
+              size="small"
+              variant="simple"
             >
-              <template #icon>
-                <!-- спиннер PrimeVue — иконочный шрифт, которого в проекте нет: крутим свою иконку -->
-                <LoaderCircle
-                  v-if="checkState === 'busy'"
-                  :size="16"
-                  class="animate-spin"
-                />
-                <Zap
-                  v-else
-                  :size="16"
-                />
-              </template>
-            </Button>
+              {{ checkMessage }}
+            </Message>
+            <small class="text-muted">
+              {{ t('settings.model.checkHint') }}
+            </small>
           </div>
-          <Message
-            v-if="checkState === 'ok' || checkState === 'fail'"
-            :severity="checkState === 'ok' ? 'success' : 'error'"
-            size="small"
-            variant="simple"
-          >
-            {{ checkMessage }}
-          </Message>
-          <small class="text-muted">
-            {{ t('settings.model.checkHint') }}
-          </small>
         </div>
       </div>
     </template>

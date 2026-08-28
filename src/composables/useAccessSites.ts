@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
 import { useBrowserSyncStorage } from './useBrowserStorage'
-import { isValidUrl, matchesSite, normalizeUrl } from './matchesSite'
+import { isSiteAllowed, isValidUrl, matchesSite, normalizeUrl, type AccessMode } from './matchesSite'
 
 export interface AccessSite {
   url: string
@@ -8,7 +8,15 @@ export interface AccessSite {
   addedAt: number
 }
 
-const STORAGE_KEY = 'ACCESS_SITES'
+export interface AccessOptions {
+  mode: AccessMode
+  guarded: boolean
+}
+
+const SITES_KEY = 'ACCESS_SITES'
+const BLOCKED_KEY = 'BLOCKED_SITES'
+const OPTIONS_KEY = 'ACCESS_OPTIONS'
+
 const DEFAULT_SITES: AccessSite[] = [
   {
     url: 'https://www.reddit.com/',
@@ -18,6 +26,12 @@ const DEFAULT_SITES: AccessSite[] = [
 ]
 
 /**
+ * Режим по умолчанию — белый список: расширение читает текст страницы, и делать это
+ * везде без спроса нельзя. Кто хочет наоборот, переключает на экране «Сайты».
+ */
+const DEFAULT_OPTIONS: AccessOptions = { mode: 'allow', guarded: true }
+
+/**
  * Куда позвать попробовать сразу после установки: длинные истории на английском,
  * отобранные по году, — там расширению есть что разбирать, в отличие от ленты.
  * Живёт рядом со списком по умолчанию, чтобы демо и разрешённый сайт не разъехались.
@@ -25,23 +39,42 @@ const DEFAULT_SITES: AccessSite[] = [
 export const DEMO_URL = 'https://www.reddit.com/r/stories/top/?t=year'
 
 export function useAccessSites(): {
-  sites: Ref<AccessSite[]>
+  options: Ref<AccessOptions>
+  isDenyMode: ComputedRef<boolean>
+  sites: ComputedRef<AccessSite[]>
   enabledSites: ComputedRef<AccessSite[]>
   promise: Promise<unknown>
   addSite: (url: string) => boolean
   removeSite: (url: string) => void
+  removeMatching: (url: string) => void
   toggleSite: (url: string) => void
   isCurrentSiteAllowed: () => boolean
+  isUrlAllowed: (url: string) => boolean
+  isSiteListed: (url: string) => boolean
 } {
-  const { data: sites, promise } = useBrowserSyncStorage<AccessSite[]>(
-    STORAGE_KEY,
+  // списки у режимов свои: переключение туда и обратно не должно стирать набранное
+  const { data: allowed, promise: allowedLoaded } = useBrowserSyncStorage<AccessSite[]>(
+    SITES_KEY,
     DEFAULT_SITES,
   )
+  const { data: blocked, promise: blockedLoaded } = useBrowserSyncStorage<AccessSite[]>(
+    BLOCKED_KEY,
+    [],
+  )
+  const { data: options, promise: optionsLoaded } = useBrowserSyncStorage<AccessOptions>(
+    OPTIONS_KEY,
+    DEFAULT_OPTIONS,
+  )
+
+  const promise = Promise.all([allowedLoaded, blockedLoaded, optionsLoaded])
 
   // computed
+  const isDenyMode = computed<boolean>(() => options.value.mode === 'deny')
+  const sites = computed<AccessSite[]>(() => (isDenyMode.value ? blocked.value : allowed.value))
   const enabledSites = computed<AccessSite[]>(() =>
     sites.value.filter((site) => site.enabled),
   )
+  const patterns = computed<string[]>(() => enabledSites.value.map((site) => site.url))
 
   // методы
   function addSite(url: string): boolean {
@@ -50,6 +83,7 @@ export function useAccessSites(): {
     const normalizedUrl = normalizeUrl(url)
     if (sites.value.some((site) => site.url === normalizedUrl)) return false
 
+    // мутируем список активного режима — `sites` отдаёт его же по ссылке
     sites.value.push({
       url: normalizedUrl,
       enabled: true,
@@ -69,17 +103,38 @@ export function useAccessSites(): {
     if (site) site.enabled = !site.enabled
   }
 
+  /** Убирает записи, накрывающие адрес: запись бывает шире домена (*.example.com, путь) */
+  function removeMatching(url: string): void {
+    const rest = sites.value.filter((site) => !matchesSite(url, site.url))
+    sites.value.splice(0, sites.value.length, ...rest)
+  }
+
+  /** Работает ли расширение на этом адресе — с учётом режима и защиты */
+  function isUrlAllowed(url: string): boolean {
+    return isSiteAllowed(url, options.value.mode, patterns.value, options.value.guarded)
+  }
+
   function isCurrentSiteAllowed(): boolean {
-    return enabledSites.value.some((site) => matchesSite(window.location.href, site.url))
+    return isUrlAllowed(window.location.href)
+  }
+
+  /** Есть ли в списке запись, накрывающая адрес: попапу решать, что предлагать */
+  function isSiteListed(url: string): boolean {
+    return sites.value.some((site) => matchesSite(url, site.url))
   }
 
   return {
+    options,
+    isDenyMode,
     sites,
     enabledSites,
     promise,
     addSite,
     removeSite,
+    removeMatching,
     toggleSite,
     isCurrentSiteAllowed,
+    isUrlAllowed,
+    isSiteListed,
   }
 }

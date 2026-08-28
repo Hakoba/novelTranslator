@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, CircleQuestionMark, ExternalLink } from 'lucide-vue-next'
+import InlineSvg from '@/components/InlineSvg.vue'
+import faqArt from '@/assets/illustrations/faq.svg?raw'
 
 /**
  * Справка внутри расширения: короткие ответы на то, обо что спотыкаются на практике.
@@ -20,7 +22,7 @@ const GROUPS: { label: string; items: string[] }[] = [
   { label: 'words', items: ['level', 'engine', 'colors', 'simple'] },
   { label: 'page', items: ['area', 'reread'] },
   { label: 'dictionary', items: ['repeat', 'sync', 'anki'] },
-  { label: 'privacy', items: ['data'] },
+  { label: 'privacy', items: ['local', 'data'] },
 ]
 </script>
 
@@ -32,11 +34,39 @@ const GROUPS: { label: string; items: string[] }[] = [
         {{ t('faq.title') }}
       </span>
     </template>
-    <template #subtitle>
-      {{ t('faq.subtitle') }}
-    </template>
     <template #content>
       <div class="flex max-w-3xl flex-col gap-8 pt-2">
+        <!-- картинка показывает то же, что список ниже: раскрытый вопрос и свёрнутый.
+             Ссылка на полный FAQ стоит здесь, а не в конце: до конца ещё долистать -->
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-4 rounded-xl border border-line bg-surface-hover p-5">
+          <InlineSvg
+            :markup="faqArt"
+            class="w-32 text-content"
+          />
+
+          <div class="flex min-w-56 flex-1 flex-col items-start gap-3">
+            <p class="m-0 text-muted">
+              {{ t('faq.subtitle') }}
+            </p>
+            <a
+              :href="FAQ_DOC_URL"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <Button
+                severity="secondary"
+                outlined
+                size="small"
+                :label="t('faq.full')"
+              >
+                <template #icon>
+                  <ExternalLink :size="16" />
+                </template>
+              </Button>
+            </a>
+          </div>
+        </div>
+
         <section
           v-for="group in GROUPS"
           :key="group.label"
@@ -74,24 +104,6 @@ const GROUPS: { label: string; items: string[] }[] = [
             </p>
           </details>
         </section>
-
-        <a
-          :href="FAQ_DOC_URL"
-          target="_blank"
-          rel="noreferrer noopener"
-          class="self-start"
-        >
-          <Button
-            severity="secondary"
-            outlined
-            size="small"
-            :label="t('faq.full')"
-          >
-            <template #icon>
-              <ExternalLink :size="16" />
-            </template>
-          </Button>
-        </a>
       </div>
     </template>
   </Card>

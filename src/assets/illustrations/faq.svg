@@ -1,0 +1,23 @@
+<!--
+  Раскрытый вопрос и свёрнутый под ним — то же, что делает список ниже:
+  янтарная точка вопроса, под ней ответ с янтарной линией слева.
+-->
+<svg viewBox="0 0 168 112" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="12" y="8" width="144" height="66" rx="12"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <circle cx="30" cy="26" r="4" fill="var(--color-mark-new, #eebd4a)" />
+  <rect x="40" y="22" width="72" height="7" rx="3.5" fill="currentColor" opacity=".45" />
+  <path d="M132 24l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" opacity=".35" />
+
+  <rect x="30" y="42" width="2.5" height="22" rx="1.25" fill="var(--color-mark-new, #eebd4a)" />
+  <rect x="40" y="43" width="98" height="6" rx="3" fill="currentColor" opacity=".2" />
+  <rect x="40" y="55" width="66" height="6" rx="3" fill="currentColor" opacity=".2" />
+
+  <rect x="12" y="82" width="144" height="24" rx="12"
+        fill="var(--color-surface-hover, #f4f4f5)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <circle cx="30" cy="94" r="4" fill="currentColor" opacity=".2" />
+  <rect x="40" y="90" width="54" height="7" rx="3.5" fill="currentColor" opacity=".2" />
+  <path d="M132 91l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" opacity=".2" />
+</svg>

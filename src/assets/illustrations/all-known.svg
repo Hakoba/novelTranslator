@@ -1,0 +1,23 @@
+<!--
+  Разобранная страница: все строки нейтральные, гореть нечему — и зелёная
+  галочка, тот же цвет, которым помечены сохранённые слова.
+  Цвета берутся токенами темы; запасные значения оставлены, чтобы файл был
+  осмысленным и сам по себе (в shadow DOM оверлея токенов страницы нет).
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g transform="rotate(-3 84 62)">
+    <rect x="30" y="12" width="108" height="94" rx="12"
+          fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+    <rect x="46" y="32" width="64" height="7" rx="3.5" fill="currentColor" opacity=".2" />
+    <rect x="46" y="47" width="78" height="7" rx="3.5" fill="currentColor" opacity=".2" />
+    <rect x="46" y="62" width="46" height="7" rx="3.5" fill="currentColor" opacity=".2" />
+    <rect x="100" y="62" width="24" height="7" rx="3.5" fill="currentColor" opacity=".2" />
+    <rect x="46" y="77" width="56" height="7" rx="3.5" fill="currentColor" opacity=".2" />
+  </g>
+  <!-- значок держим мелким: сплошная заливка — единственное насыщенное пятно
+       на серой странице, крупным она перетягивает на себя всю картинку -->
+  <circle cx="124" cy="94" r="14" fill="var(--color-mark-saved, #7fb894)"
+          stroke="var(--color-surface, #ffffff)" stroke-width="3" />
+  <path d="M118 94l4.5 4.5 8.5-9" stroke="var(--color-surface, #ffffff)" stroke-width="2.6"
+        stroke-linecap="round" stroke-linejoin="round" />
+</svg>

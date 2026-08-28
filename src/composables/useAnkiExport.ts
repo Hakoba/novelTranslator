@@ -3,17 +3,7 @@ import { ref, type Ref } from 'vue'
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 import type { DictionaryEntry } from '@/types/words'
 import { buildApkg } from '@/utils/anki'
-
-function downloadFile(data: Uint8Array, fileName: string): void {
-  const url = URL.createObjectURL(new Blob([data], { type: 'application/octet-stream' }))
-  const link = document.createElement('a')
-
-  link.href = url
-  link.download = fileName
-  link.click()
-
-  URL.revokeObjectURL(url)
-}
+import { downloadFile } from '@/utils/download'
 
 function fileName(now: number): string {
   const date = new Date(now).toISOString().slice(0, 10)

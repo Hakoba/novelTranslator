@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { LoaderCircle, RefreshCw, SquareDashedMousePointer } from 'lucide-vue-next'
+import { RefreshCw, SquareDashedMousePointer } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
+import AppLoader from '@/components/AppLoader.vue'
 import AppLogo from '@/components/AppLogo.vue'
 
 defineProps<{
@@ -37,13 +38,16 @@ const emit = defineEmits<{
       <AppLogo :size="18" />
     </Button>
 
-    <!-- свёрнутая панель молчит, если не сказать, что разбор идёт -->
-    <LoaderCircle
+    <!-- свёрнутая панель молчит, если не сказать, что разбор идёт; картинка
+         декоративная, поэтому подпись висит на обёртке -->
+    <span
       v-if="isLoading"
-      :size="16"
-      class="animate-spin text-muted"
+      role="status"
+      class="flex text-muted"
       :aria-label="t('overlay.analyzing')"
-    />
+    >
+      <AppLoader :size="18" />
+    </span>
 
     <Badge
       v-else-if="wordsCount"

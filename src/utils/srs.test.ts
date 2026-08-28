@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { DictionaryEntry } from '@/types/words'
-import { countNew, dueEntries, dueInDays, intervalDays, nextDueAt, reviewEntry } from './srs'
+import {
+  countNew,
+  countProgress,
+  dueEntries,
+  dueInDays,
+  intervalDays,
+  nextDueAt,
+  reviewEntry,
+} from './srs'
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = 1_000 * DAY
@@ -96,4 +104,16 @@ test('nextDueAt: ближайшая будущая дата, иначе undefine
 
   assert.equal(nextDueAt(entries, NOW), NOW + 2 * DAY)
   assert.equal(nextDueAt([entry({ dueAt: NOW - DAY })], NOW), undefined)
+})
+
+test('countProgress: стадии словаря — новые, в работе, освоенные', () => {
+  const entries = [
+    entry({ id: 'a' }),
+    entry({ id: 'b', reviews: 1, intervalStep: 0 }),
+    entry({ id: 'c', reviews: 9, intervalStep: 3 }),
+    entry({ id: 'd', reviews: 9, intervalStep: 5 }),
+    entry({ id: 'e', reviews: 4, intervalStep: 4, deletedAt: 1 }),
+  ]
+
+  assert.deepEqual(countProgress(entries), { fresh: 1, learning: 1, learned: 2 })
 })

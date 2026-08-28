@@ -3,8 +3,9 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookOpen, Bot, CircleQuestionMark, ExternalLink, GraduationCap, Languages } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
+import InlineSvg from '@/components/InlineSvg.vue'
+import welcomeArt from '@/assets/illustrations/welcome.svg?raw'
 import { DEMO_URL, useAccessSites } from '@/composables/useAccessSites'
-import { matchesSite } from '@/composables/matchesSite'
 import { useReaderSettings } from '@/composables/useReaderSettings'
 import { PROFILE_LANG } from '@/utils/analyze'
 import { LANGUAGES } from '@/utils/languages'
@@ -13,15 +14,16 @@ import { CEFR_LEVELS } from '@/types/words'
 
 const { t } = useI18n()
 const { settings } = useReaderSettings()
-const { enabledSites } = useAccessSites()
+const { isUrlAllowed } = useAccessSites()
 
 const displayName = __DISPLAY_NAME__
 const faqUrl = browser.runtime.getURL(FAQ_URL)
 
 // computed
-/** Демо-страницу предлагаем, только пока она разрешена: сайт из списка можно убрать */
+/** Демо-страницу предлагаем, только пока она разрешена: сайт из списка можно убрать,
+ * а в режиме «везде, кроме» его туда, наоборот, могли внести */
 const demoUrl = computed<string | undefined>(() =>
-  enabledSites.value.some((site) => matchesSite(DEMO_URL, site.url)) ? DEMO_URL : undefined,
+  isUrlAllowed(DEMO_URL) ? DEMO_URL : undefined,
 )
 
 // разбор без модели держится на профиле CEFR, а он собран только по английскому
@@ -42,6 +44,15 @@ function openOptions(): void {
       {{ t('setup.installedSubtitle') }}
     </template>
     <template #content>
+      <!-- картинка вместо описания: что расширение делает со страницей, видно быстрее,
+           чем читается абзац -->
+      <div class="flex justify-center py-2">
+        <InlineSvg
+          :markup="welcomeArt"
+          class="w-56 text-content"
+        />
+      </div>
+
       <!-- список, а не набор карточек: шагов три и порядок у них важен -->
       <ol class="m-0 flex list-none flex-col gap-6 p-0 pt-2">
         <li class="flex flex-col gap-3">

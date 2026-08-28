@@ -2,6 +2,8 @@
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import { Bot, GraduationCap, Languages, MessageSquareText, Monitor, MousePointerClick, ScanText } from 'lucide-vue-next'
+import InlineSvg from '@/components/InlineSvg.vue'
+import readingArt from '@/assets/illustrations/reading.svg?raw'
 import { PROMPT_EXTRA_LIMIT, SELECTION_MODES, WORD_ENGINES, useReaderSettings } from '@/composables/useReaderSettings'
 import { LANGUAGES, UI_LANGUAGES } from '@/utils/languages'
 import { PROFILE_LANG } from '@/utils/analyze'
@@ -36,8 +38,7 @@ const isProfileUseless = computed<boolean>(
       {{ t('settings.language.subtitle') }}
     </template>
     <template #content>
-      <!-- поля не растягиваем на всю карточку: строка длиннее ~80 символов уже плохо читается -->
-      <div class="flex max-w-2xl flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-4 pt-2">
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-2">
             <label
@@ -108,9 +109,17 @@ const isProfileUseless = computed<boolean>(
           </div>
         </div>
 
-        <small class="text-muted">
-          {{ t('settings.language.hint') }}
-        </small>
+        <!-- картинка объясняет главное в этой подсказке: уровень — это порог,
+             и разбирается всё, что выше него -->
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl border border-line bg-surface-hover p-4">
+          <InlineSvg
+            :markup="readingArt"
+            class="w-28 text-content"
+          />
+          <small class="min-w-56 flex-1 text-muted">
+            {{ t('settings.language.hint') }}
+          </small>
+        </div>
       </div>
     </template>
   </Card>
@@ -126,7 +135,7 @@ const isProfileUseless = computed<boolean>(
       {{ t('settings.analyze.subtitle') }}
     </template>
     <template #content>
-      <div class="flex max-w-2xl flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
           <label
             for="word-engine"

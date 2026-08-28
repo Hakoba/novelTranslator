@@ -1,0 +1,15 @@
+<!--
+  Пустая колода: место под карточку обведено пунктиром, закладка только опускается
+  в него. Закладка — тот же жест, которым слово попадает в словарь на странице.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="24" y="40" width="120" height="68" rx="14"
+        stroke="var(--color-line, #d4d4d8)" stroke-width="2" stroke-dasharray="7 7" />
+  <rect x="44" y="62" width="48" height="7" rx="3.5" fill="currentColor" opacity=".16" />
+  <rect x="44" y="78" width="32" height="7" rx="3.5" fill="currentColor" opacity=".16" />
+
+  <g transform="rotate(10 116 36)">
+    <path d="M106 12h20a4 4 0 014 4v40l-14-9-14 9V16a4 4 0 014-4z"
+          fill="var(--color-mark-new, #eebd4a)" />
+  </g>
+</svg>

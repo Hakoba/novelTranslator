@@ -1,0 +1,23 @@
+<!--
+  Что просят сделать при выборе области: навести курсор на нужный блок
+  и кликнуть — янтарная рамка показывает, что будет взято в разбор.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="14" y="14" width="140" height="96" rx="12"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <g fill="currentColor" opacity=".14">
+    <rect x="30" y="28" width="76" height="6" rx="3" />
+    <rect x="30" y="40" width="52" height="6" rx="3" />
+  </g>
+
+  <rect x="26" y="56" width="116" height="42" rx="8"
+        stroke="var(--color-mark-new, #eebd4a)" stroke-width="2.5" stroke-dasharray="7 6" />
+  <g fill="currentColor" opacity=".28">
+    <rect x="40" y="68" width="72" height="6" rx="3" />
+    <rect x="40" y="80" width="54" height="6" rx="3" />
+  </g>
+
+  <path d="M118 74v26l6-7 5 10 6-3-5-10h9z"
+        fill="currentColor" stroke="var(--color-surface, #ffffff)" stroke-width="2.5"
+        stroke-linejoin="round" />
+</svg>

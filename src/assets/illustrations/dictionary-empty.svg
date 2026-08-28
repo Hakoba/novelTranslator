@@ -1,0 +1,19 @@
+<!--
+  Разворот без единой записи: линейки пустые, закладка ждёт первого слова.
+-->
+<svg viewBox="0 0 168 124" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="18" y="24" width="132" height="80" rx="10"
+        fill="var(--color-surface, #ffffff)" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+  <path d="M84 24v80" stroke="var(--color-line, #d4d4d8)" stroke-width="1.5" />
+
+  <g fill="currentColor" opacity=".12">
+    <rect x="30" y="52" width="42" height="5" rx="2.5" />
+    <rect x="30" y="66" width="42" height="5" rx="2.5" />
+    <rect x="30" y="80" width="30" height="5" rx="2.5" />
+    <rect x="96" y="52" width="42" height="5" rx="2.5" />
+    <rect x="96" y="66" width="42" height="5" rx="2.5" />
+    <rect x="96" y="80" width="30" height="5" rx="2.5" />
+  </g>
+
+  <path d="M74 14h20v46l-10-8-10 8z" fill="var(--color-mark-new, #eebd4a)" />
+</svg>

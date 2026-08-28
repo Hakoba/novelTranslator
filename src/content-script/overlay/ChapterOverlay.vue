@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookmarkCheck, BookmarkPlus, LoaderCircle, RotateCw } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus, RotateCw } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
+import AppLoader from '@/components/AppLoader.vue'
 import OverlayHeader from '@/components/OverlayHeader.vue'
 import OverlayRail from './components/OverlayRail.vue'
 import AppLogo from '@/components/AppLogo.vue'
@@ -441,11 +442,11 @@ async function translateAndSave(): Promise<void> {
       @click="translateAndSave"
     >
       <template #icon>
-        <!-- спиннер PrimeVue — иконочный шрифт, которого в оверлее нет: крутим свою иконку -->
-        <LoaderCircle
+        <!-- спиннер PrimeVue — иконочный шрифт, которого в оверлее нет: рисуем свой -->
+        <AppLoader
           v-if="selectionStage === 'loading'"
-          :size="16"
-          class="animate-spin"
+          variant="swap"
+          :size="18"
         />
         <RotateCw
           v-else-if="selectionStage === 'failed'"
@@ -511,17 +512,18 @@ async function translateAndSave(): Promise<void> {
   <button
     v-if="hasSidePanel && !isPanelOpen"
     type="button"
-    class="fixed! right-0 top-1/2 flex -translate-y-1/2 cursor-pointer flex-col items-center
-           gap-1.5 rounded-l-lg border border-r-0 border-line bg-surface px-1.5 py-2.5
-           text-content shadow-[-6px_0_16px_-8px_rgba(0,0,0,.45)] hover:bg-surface-hover"
+    class="fixed! right-0 top-1/2 flex -translate-y-[calc(50%+20px)] cursor-pointer flex-col
+           items-center gap-1.5 rounded-l-lg border border-r-0 border-line bg-surface px-1.5
+           py-2.5 text-content shadow-[-10px_0_24px_-6px_rgba(0,0,0,.35),-3px_0_8px_-4px_rgba(0,0,0,.3)]
+           hover:bg-surface-hover hover:shadow-[-12px_0_28px_-6px_rgba(0,0,0,.45),-3px_0_10px_-4px_rgba(0,0,0,.35)]"
     :aria-label="t('popup.openPanel')"
     :data-hint="t('popup.openPanel')"
     @click="requestPanelOpen"
   >
-    <LoaderCircle
+    <AppLoader
       v-if="isLoading"
       :size="16"
-      class="animate-spin text-muted"
+      class="text-muted"
     />
     <AppLogo
       v-else
@@ -581,6 +583,7 @@ async function translateAndSave(): Promise<void> {
       class="flex-1 overflow-y-auto p-3"
       :is-started="isStarted"
       :is-loading="isLoading"
+      :is-picking="Boolean(cancelPicking)"
       :is-immersion-active="isImmersionActive"
       :immersion-words="immersionList"
       :error-message="errorMessage"

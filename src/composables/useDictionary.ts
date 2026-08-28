@@ -1,7 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useBrowserLocalStorage } from './useBrowserStorage'
 import type { DictionaryEntry } from '@/types/words'
-import { normalizeTerm } from '@/utils/dictionary'
+import { DICTIONARY_KEY, normalizeTerm } from '@/utils/dictionary'
 
 /**
  * Единственная точка доступа к словарю: компоненты в `storage` не ходят.
@@ -11,14 +11,13 @@ import { normalizeTerm } from '@/utils/dictionary'
  * пара сотен слов с контекстом туда не влезает. Плата — словарь живёт
  * только в этом браузере (см. `deferred.md`).
  */
-const STORAGE_KEY = 'DICTIONARY'
 
 export type NewDictionaryEntry = Omit<
   DictionaryEntry,
   'id' | 'addedAt' | 'updatedAt' | 'deletedAt'
 >
 
-const { data, promise } = useBrowserLocalStorage<DictionaryEntry[]>(STORAGE_KEY, [])
+const { data, promise } = useBrowserLocalStorage<DictionaryEntry[]>(DICTIONARY_KEY, [])
 
 function createId(): string {
   // randomUUID работает только в secure context — на http-странице content script падал бы

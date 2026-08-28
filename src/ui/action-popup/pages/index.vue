@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookMarked, Check, PanelRight, Plus, Settings } from 'lucide-vue-next'
+import {
+  Ban,
+  BookMarked,
+  Check,
+  PanelRight,
+  Plus,
+  RotateCcw,
+  Settings,
+  ShieldCheck,
+} from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
-import { isValidUrl, matchesSite } from '@/composables/matchesSite'
+import { isValidUrl } from '@/composables/matchesSite'
 import { useDictionary } from '@/composables/useDictionary'
 import { openDictionaryTab } from '@/utils/dictionaryTab'
 
 const { t } = useI18n()
-const { sites, enabledSites, addSite } = useAccessSites()
+const { enabledSites, isDenyMode, addSite, removeMatching, isUrlAllowed, isSiteListed } =
+  useAccessSites()
 const { entries } = useDictionary()
 
 // state
@@ -25,13 +35,21 @@ const hasSidePanel = __HAS_SIDE_PANEL__
 const summary = computed<string>(() => {
   const count = enabledSites.value.length
 
+  if (isDenyMode.value) {
+    return count ? t('popup.activeExcept', { count }, count) : t('popup.activeEverywhere')
+  }
+
   return count ? t('popup.active', { count }, count) : t('popup.inactive')
 })
 
 const currentHost = computed<string>(() => (currentUrl.value ? new URL(currentUrl.value).host : ''))
-/** Записи бывают шире домена (*.example.com, путь-префикс) — сверяем по тем же правилам, что и content script */
-const currentAllowed = computed<boolean>(() =>
-  Boolean(currentUrl.value) && sites.value.some((site) => matchesSite(currentUrl.value, site.url)),
+/** Работает ли расширение здесь: в чёрном режиме молчат ещё и чувствительные адреса */
+const currentAllowed = computed<boolean>(
+  () => Boolean(currentUrl.value) && isUrlAllowed(currentUrl.value),
+)
+/** Запись в списке накрывает адрес — значит в чёрном режиме его можно вернуть */
+const currentListed = computed<boolean>(
+  () => Boolean(currentUrl.value) && isSiteListed(currentUrl.value),
 )
 
 // методы
@@ -40,9 +58,14 @@ function openOptions(): void {
 }
 
 
-/** Домен целиком: путь текущей главы в списке разрешённых сайтов только мешал бы */
-function allowCurrent(): void {
+/** Домен целиком: путь текущей главы в списке сайтов только мешал бы */
+function listCurrent(): void {
   if (currentUrl.value) addSite(new URL(currentUrl.value).origin)
+}
+
+/** Убираем все записи, накрывающие адрес: одной кнопкой сайт должен возвращаться целиком */
+function unlistCurrent(): void {
+  if (currentUrl.value) removeMatching(currentUrl.value)
 }
 
 /** Список слов при чтении живёт в боковой панели браузера — сама она не открывается */
@@ -99,19 +122,57 @@ onMounted(async () => {
       </template>
     </Button>
 
+    <!--
+      Кнопка всегда предлагает обратное текущему состоянию: в белом режиме сайт
+      добавляют, чтобы включить, в чёрном — чтобы выключить, и убирают из списка,
+      чтобы вернуть.
+    -->
     <Button
-      v-if="currentHost && !currentAllowed"
+      v-if="currentHost && isDenyMode && currentListed"
+      severity="secondary"
+      outlined
+      size="small"
+      :label="t('popup.unblockCurrent', { host: currentHost })"
+      @click="unlistCurrent"
+    >
+      <template #icon>
+        <RotateCcw :size="16" />
+      </template>
+    </Button>
+    <Button
+      v-else-if="currentHost && isDenyMode && currentAllowed"
+      severity="secondary"
+      outlined
+      size="small"
+      :label="t('popup.blockCurrent', { host: currentHost })"
+      :title="t('popup.blockCurrentHint')"
+      @click="listCurrent"
+    >
+      <template #icon>
+        <Ban :size="16" />
+      </template>
+    </Button>
+    <Button
+      v-else-if="currentHost && !isDenyMode && !currentAllowed"
       severity="secondary"
       outlined
       size="small"
       :label="t('popup.addCurrent', { host: currentHost })"
       :title="t('popup.addCurrentHint')"
-      @click="allowCurrent"
+      @click="listCurrent"
     >
       <template #icon>
         <Plus :size="16" />
       </template>
     </Button>
+    <!-- в чёрном режиме сюда попадают адреса, которые бережёт встроенное правило -->
+    <p
+      v-else-if="currentHost && isDenyMode"
+      class="m-0 flex items-center gap-2 text-muted"
+    >
+      <ShieldCheck :size="16" />
+      {{ t('popup.currentGuarded') }}
+    </p>
     <p
       v-else-if="currentHost"
       class="m-0 flex items-center gap-2 text-muted"

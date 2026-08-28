@@ -2,6 +2,9 @@ import type { DictionaryEntry } from '@/types/words'
 
 // Планировщик повторений. Без браузерных API — тестируется в node.
 
+/** Больше за раз всё равно не удержать, а очередь может накопиться в сотни слов */
+export const SESSION_SIZE = 20
+
 /** Лестница интервалов в днях: угадал — шаг вверх, ошибся — в начало */
 const INTERVALS_DAYS = [1, 3, 7, 16, 35, 90] as const
 
@@ -48,6 +51,30 @@ export function dueEntries(entries: DictionaryEntry[], now: number): DictionaryE
 
 export function countNew(entries: DictionaryEntry[]): number {
   return entries.filter((entry) => !entry.deletedAt && !entry.reviews).length
+}
+
+/** С этого шага лестницы слово возвращается не раньше чем через 16 дней — считаем освоенным */
+const LEARNED_STEP = 3
+
+export interface DictionaryProgress {
+  fresh: number
+  learning: number
+  learned: number
+}
+
+/** Состав словаря по стадиям — для кольца на экране тренировки */
+export function countProgress(entries: DictionaryEntry[]): DictionaryProgress {
+  const progress: DictionaryProgress = { fresh: 0, learning: 0, learned: 0 }
+
+  for (const entry of entries) {
+    if (entry.deletedAt) continue
+
+    if (!entry.reviews) progress.fresh += 1
+    else if ((entry.intervalStep ?? 0) >= LEARNED_STEP) progress.learned += 1
+    else progress.learning += 1
+  }
+
+  return progress
 }
 
 /**

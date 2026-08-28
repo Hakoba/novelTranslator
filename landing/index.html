@@ -46,6 +46,9 @@
         --on-amber: #22282a;
         --hl-new: #fae9bd;
         --hl-saved: #cfe3d7;
+        /* Насыщенные пары к подсветкам: подсветка — фон под текстом, эти двое красят
+           иллюстрации, где заливке нужен свой контраст. Взяты из темы расширения */
+        --sage: #71ab8c;
         --shadow: 0 1px 2px rgba(34, 40, 42, 0.05), 0 12px 32px rgba(34, 40, 42, 0.07);
         --r-card: 14px;
         --r-btn: 10px;
@@ -66,6 +69,7 @@
           --on-amber: #191d1e;
           --hl-new: #4a3b14;
           --hl-saved: #23392e;
+          --sage: #7fb894;
           --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.34);
         }
       }
@@ -653,6 +657,27 @@
         background: var(--hl-saved);
       }
 
+      /* ---------- Иллюстрации. Тот же плоский стиль, что внутри расширения, и та же
+           механика: цвета берутся токенами страницы, поэтому тёмную тему картинка
+           отрабатывает сама, без второго файла. Инлайном, а не <img>: у внешней
+           картинки var(--…) считается в её собственном документе и до неё не дойдёт. ---------- */
+      .art {
+        display: block;
+        width: 100%;
+        max-width: 21rem;
+        height: auto;
+        margin-top: auto;
+        padding-top: 1rem;
+      }
+
+      /* .cell svg ужимает иконки до 20px — иллюстрации живут по своим размерам */
+      .cell .art {
+        width: 100%;
+        max-width: 21rem;
+        height: auto;
+        color: var(--ink);
+      }
+
       /* ---------- Бенто ---------- */
       .bento {
         display: grid;
@@ -721,6 +746,12 @@
         padding: 0.2rem 0.55rem;
         border-radius: 999px;
         background: color-mix(in srgb, var(--amber) 30%, transparent);
+      }
+
+      /* подпись формата стоит над картинкой и уводит её вниз сама */
+      .file + .art {
+        margin-top: 0;
+        padding-top: 0.6rem;
       }
 
       .file {
@@ -1484,6 +1515,20 @@
                 Карточка со словом и контекстом, самооценка «знал» или «не знал». Ошибка сбрасывает
                 лестницу интервалов целиком. В сессии 20 слов.
               </p>
+              <!-- Карточка тренировки: слово, контекст и две оценки — «знал» и «не знал» -->
+              <svg class="art" viewBox="0 0 340 176" fill="none" aria-hidden="true">
+                <g transform="rotate(-5 156 66)">
+                  <rect x="60" y="14" width="192" height="98" rx="18" fill="var(--bg-2)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                </g>
+                <rect x="60" y="22" width="192" height="98" rx="18" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <rect x="88" y="48" width="72" height="8" rx="4" fill="var(--amber)" />
+                <rect x="88" y="76" width="136" height="5" rx="2.5" fill="currentColor" opacity=".16" />
+                <rect x="88" y="92" width="96" height="5" rx="2.5" fill="currentColor" opacity=".12" />
+                <circle cx="128" cy="148" r="18" fill="var(--hl-saved)" />
+                <path d="M120 148l6 6 11-12" stroke="var(--sage)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="184" cy="148" r="18" stroke="currentColor" stroke-opacity=".16" stroke-width="1.5" />
+                <path d="M177 141l14 14m0-14l-14 14" stroke="currentColor" opacity=".3" stroke-width="2.6" stroke-linecap="round" />
+              </svg>
               <p class="days">
                 <b>1</b><b>3</b><b>7</b><b>16</b><b>35</b><b>90</b>
                 <span class="lvl" style="border: 0">дней</span>
@@ -1510,6 +1555,24 @@
                 тегах. Повторный экспорт обновляет заметку, а не плодит дубли.
               </p>
               <p class="file">.apkg</p>
+              <!-- Колода уезжает в файл: слово, перевод и контекст переносятся как есть,
+                   короткая янтарная строка внизу — уровень, он уходит в теги -->
+              <svg class="art" viewBox="0 0 340 176" fill="none" aria-hidden="true">
+                <g transform="rotate(-6 84 90)">
+                  <rect x="34" y="38" width="108" height="104" rx="16" fill="var(--bg-2)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                </g>
+                <rect x="44" y="38" width="108" height="104" rx="16" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <rect x="64" y="62" width="52" height="8" rx="4" fill="var(--amber)" />
+                <rect x="64" y="86" width="68" height="5" rx="2.5" fill="currentColor" opacity=".16" />
+                <rect x="64" y="102" width="44" height="5" rx="2.5" fill="currentColor" opacity=".12" />
+                <path d="M168 90h20" stroke="var(--amber-strong)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 6" />
+                <path d="M190 84l7 6-7 6" stroke="var(--amber-strong)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M228 38h44l32 32v60a12 12 0 0 1-12 12h-52a12 12 0 0 1-12-12V50a12 12 0 0 1 12-12z" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <path d="M272 38v32h32" stroke="currentColor" stroke-opacity=".2" stroke-width="1.5" stroke-linejoin="round" />
+                <rect x="240" y="86" width="44" height="5" rx="2.5" fill="currentColor" opacity=".16" />
+                <rect x="240" y="102" width="30" height="5" rx="2.5" fill="currentColor" opacity=".12" />
+                <rect x="240" y="118" width="24" height="6" rx="3" fill="var(--amber)" opacity=".6" />
+              </svg>
             </article>
 
             <article class="cell">
@@ -1536,6 +1599,19 @@
                 Имена, термины и давно знакомое убираются из списка и из подсветки навсегда. Список
                 отдельный от словаря, так что в тренировку и в экспорт они не попадут.
               </p>
+              <!-- Подсвеченное слово гаснет до пустого контура и больше не всплывает -->
+              <svg class="art" viewBox="0 0 340 176" fill="none" aria-hidden="true">
+                <rect x="20" y="18" width="232" height="140" rx="22" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <rect x="48" y="44" width="176" height="6" rx="3" fill="currentColor" opacity=".18" />
+                <rect x="48" y="72" width="68" height="6" rx="3" fill="var(--amber)" />
+                <rect x="132" y="72" width="92" height="6" rx="3" fill="currentColor" opacity=".18" />
+                <rect x="48.75" y="96.75" width="76.5" height="12.5" rx="6.25" stroke="currentColor" opacity=".3" stroke-width="1.5" stroke-dasharray="5 5" />
+                <rect x="140" y="100" width="84" height="6" rx="3" fill="currentColor" opacity=".18" />
+                <rect x="48" y="128" width="120" height="6" rx="3" fill="currentColor" opacity=".18" />
+                <circle cx="278" cy="120" r="26" fill="var(--bg-2)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <circle cx="278" cy="120" r="13" stroke="currentColor" opacity=".4" stroke-width="2.2" />
+                <path d="M269 129l18-18" stroke="currentColor" opacity=".4" stroke-width="2.2" stroke-linecap="round" />
+              </svg>
             </article>
 
             <article class="cell">
@@ -1558,6 +1634,22 @@
                 <span class="inline-code">reddit.com</span>. Добавить сайт можно из попапа, одной
                 кнопкой для открытой вкладки.
               </p>
+              <!-- Список сайтов: один адрес разрешён и помечен зелёным, второй выключен -->
+              <svg class="art" viewBox="0 0 340 176" fill="none" aria-hidden="true">
+                <rect x="20" y="20" width="300" height="136" rx="22" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <path d="M20 62h300" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                <g fill="currentColor" opacity=".22">
+                <circle cx="50" cy="41" r="6" />
+                <circle cx="74" cy="41" r="6" />
+                <circle cx="98" cy="41" r="6" />
+                </g>
+                <rect x="48" y="86" width="144" height="8" rx="4" fill="currentColor" opacity=".22" />
+                <circle cx="274" cy="90" r="16" fill="var(--hl-saved)" />
+                <path d="M267 90l5 5 10-11" stroke="var(--sage)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                <rect x="48" y="126" width="108" height="8" rx="4" fill="currentColor" opacity=".12" />
+                <circle cx="274" cy="130" r="16" stroke="currentColor" stroke-opacity=".16" stroke-width="1.5" />
+                <path d="M267 130h14" stroke="currentColor" opacity=".3" stroke-width="2.2" stroke-linecap="round" />
+              </svg>
             </article>
 
             <article class="cell cell-full">
@@ -1616,6 +1708,20 @@
                   <span>ключ</span>
                   <b>не нужен</b>
                 </div>
+
+                <!-- Страница и модель внутри одного пунктирного контура — вашей машины:
+                     наружу из него не ведёт ни одной линии -->
+                <svg class="art" viewBox="0 0 340 176" fill="none" aria-hidden="true">
+                  <rect x="20" y="26" width="300" height="124" rx="24" fill="var(--bg-2)" stroke="currentColor" stroke-opacity=".18" stroke-width="1.5" stroke-dasharray="8 8" />
+                  <rect x="46" y="48" width="116" height="80" rx="16" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                  <rect x="66" y="68" width="76" height="6" rx="3" fill="currentColor" opacity=".18" />
+                  <rect x="66" y="86" width="54" height="6" rx="3" fill="currentColor" opacity=".18" />
+                  <rect x="66" y="104" width="44" height="6" rx="3" fill="var(--amber)" />
+                  <path d="M170 88h30" stroke="currentColor" opacity=".25" stroke-width="2" stroke-dasharray="2 6" />
+                  <rect x="208" y="48" width="86" height="80" rx="16" fill="var(--card)" stroke="currentColor" stroke-opacity=".14" stroke-width="1.5" />
+                  <circle cx="251" cy="80" r="16" stroke="var(--amber)" stroke-width="5" />
+                  <rect x="231" y="108" width="40" height="5" rx="2.5" fill="currentColor" opacity=".18" />
+                </svg>
               </div>
 
               <div class="panel">

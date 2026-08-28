@@ -1,6 +1,6 @@
 import { createApp, type App as VueApp, type Component } from "vue"
 import PrimeVue from "primevue/config"
-import Aura from "@primeuix/themes/aura"
+import { eruditTheme } from "@/utils/theme"
 import { pinia } from "@/utils/pinia"
 import { appRouter } from "@/utils/router"
 import { i18n } from "@/utils/i18n"
@@ -19,7 +19,7 @@ export function createPage(root: Component, defaultRoute: string): VueApp {
   const app = createApp(root)
     .use(PrimeVue, {
       theme: {
-        preset: Aura,
+        preset: eruditTheme,
         options: { darkModeSelector: ".dark" },
       },
     })

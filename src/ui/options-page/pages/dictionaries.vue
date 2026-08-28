@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookA, ExternalLink, KeyRound, Languages, Link } from 'lucide-vue-next'
+import InlineSvg from '@/components/InlineSvg.vue'
+import dictionariesArt from '@/assets/illustrations/dictionaries.svg?raw'
 import { HAS_BUNDLED_DICT_KEY, YANDEX_DICT_KEY_URL, useDictSettings } from '@/composables/useDictSettings'
 import { TRANSLATOR_LIST } from '@/utils/mt/translators'
 
@@ -18,16 +20,23 @@ const translatorOptions = computed<{ id: string; title: string }[]>(() => [
 <template>
   <Card>
     <template #title>
-      <span class="flex items-center gap-2">
-        <BookA :size="20" />
-        {{ t('settings.dictionaries.title') }}
-      </span>
+      <div class="flex items-center justify-between gap-4">
+        <span class="flex items-center gap-2">
+          <BookA :size="20" />
+          {{ t('settings.dictionaries.title') }}
+        </span>
+        <!-- эмблема раздела: словарная статья, которую собирают эти настройки -->
+        <InlineSvg
+          :markup="dictionariesArt"
+          class="w-20 text-content"
+        />
+      </div>
     </template>
     <template #subtitle>
       {{ t('settings.dictionaries.subtitle') }}
     </template>
     <template #content>
-      <div class="flex max-w-2xl flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
           <label
             for="dict-yandex-key"
@@ -93,7 +102,7 @@ const translatorOptions = computed<{ id: string; title: string }[]>(() => [
       {{ t('settings.dictionaries.mtSubtitle') }}
     </template>
     <template #content>
-      <div class="flex max-w-2xl flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-4 pt-2">
         <div class="flex flex-col gap-2">
           <label
             for="translator"
