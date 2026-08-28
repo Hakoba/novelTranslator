@@ -132,7 +132,9 @@ through DeepL or LibreTranslate before the model is involved.
 4. Saved words live in `storage.local`, settings in `storage.sync`. Requests leave through the
    background worker — a content script on an HTTPS page cannot reach a local model over HTTP.
 
-More detail in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md); the current state of every feature
+Every feature, setting and gotcha is covered question by question in
+[docs/FAQ.md](docs/FAQ.md) (in Russian). More detail on the code is in
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md); the current state of every feature
 is in [docs/projectInfo.md](docs/projectInfo.md).
 
 ## Development

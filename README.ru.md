@@ -136,8 +136,9 @@ npm run build
 4. Словарь лежит в `storage.local`, настройки — в `storage.sync`. Запросы наружу идут через
    background: со https-страницы content script не достучится до локальной модели по http.
 
-Подробнее — [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md); что именно готово и как устроено
-каждое умение — [docs/projectInfo.md](docs/projectInfo.md).
+Все умения, настройки и подводные камни разобраны по вопросам в [docs/FAQ.md](docs/FAQ.md).
+Как устроен код — [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md); что именно готово —
+[docs/projectInfo.md](docs/projectInfo.md).
 
 ## Разработка
 
