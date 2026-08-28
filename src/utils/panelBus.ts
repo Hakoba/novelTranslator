@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import type { WordWithExplanation } from '@/types/words'
+import type { ImmersionWord, WordWithExplanation } from '@/types/words'
 
 /**
  * Протокол боковой панели Chrome. Живое состояние разбора есть только у оверлея
@@ -26,7 +26,8 @@ export interface PanelState {
   isPicking: boolean
   hasArea: boolean
   isImmersionActive: boolean
-  immersionCount: number
+  /** Слова словаря, вкраплённые в страницу: панель показывает их списком, а не числом */
+  immersionWords: ImmersionWord[]
   errorMessage: string
   /** Разобранный текст: из него панель берёт предложение-контекст и материал для пояснений */
   sourceText: string

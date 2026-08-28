@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookOpen, Bot, ExternalLink, GraduationCap, Languages } from 'lucide-vue-next'
+import { BookOpen, Bot, CircleQuestionMark, ExternalLink, GraduationCap, Languages } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { DEMO_URL, useAccessSites } from '@/composables/useAccessSites'
 import { matchesSite } from '@/composables/matchesSite'
 import { useReaderSettings } from '@/composables/useReaderSettings'
 import { PROFILE_LANG } from '@/utils/analyze'
 import { LANGUAGES } from '@/utils/languages'
+import { FAQ_URL } from '@/utils/dictionaryTab'
 import { CEFR_LEVELS } from '@/types/words'
 
 const { t } = useI18n()
@@ -15,6 +16,7 @@ const { settings } = useReaderSettings()
 const { enabledSites } = useAccessSites()
 
 const displayName = __DISPLAY_NAME__
+const faqUrl = browser.runtime.getURL(FAQ_URL)
 
 // computed
 /** Демо-страницу предлагаем, только пока она разрешена: сайт из списка можно убрать */
@@ -151,6 +153,24 @@ function openOptions(): void {
                 />
               </template>
             </Button>
+
+            <!-- справка рядом с первым запуском: вопросы про уровень и список сайтов
+                 возникают именно здесь, а не когда пользователь дойдёт до настроек -->
+            <a
+              :href="faqUrl"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <Button
+                severity="secondary"
+                text
+                :label="t('nav.faq')"
+              >
+                <template #icon>
+                  <CircleQuestionMark :size="16" />
+                </template>
+              </Button>
+            </a>
           </div>
         </li>
       </ol>

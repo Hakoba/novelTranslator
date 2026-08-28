@@ -22,6 +22,7 @@ declare global {
   const DOCK_WIDTH: typeof import('../composables/useOverlayDock').DOCK_WIDTH
   const EMPTY_FILTERS: typeof import('../utils/dictionary').EMPTY_FILTERS
   const EffectScope: typeof import('vue').EffectScope
+  const FAQ_URL: typeof import('../utils/dictionaryTab').FAQ_URL
   const FIELD_NAMES: typeof import('../utils/ankiSchema').FIELD_NAMES
   const HARD_WORDS_LIMIT: typeof import('../utils/cefr/hardWords').HARD_WORDS_LIMIT
   const HAS_BUNDLED_DICT_KEY: typeof import('../composables/useDictSettings').HAS_BUNDLED_DICT_KEY
@@ -135,6 +136,7 @@ declare global {
   const h: typeof import('vue').h
   const hasOccurrence: typeof import('../utils/highlight').hasOccurrence
   const highlightTerms: typeof import('../utils/highlight').highlightTerms
+  const hintAttrs: typeof import('../utils/hint').hintAttrs
   const i18n: typeof import('../utils/i18n').i18n
   const ignorableWatch: typeof import('@vueuse/core').ignorableWatch
   const inject: typeof import('vue').inject
@@ -576,6 +578,7 @@ declare module 'vue' {
     readonly DOCK_WIDTH: UnwrapRef<typeof import('../composables/useOverlayDock')['DOCK_WIDTH']>
     readonly EMPTY_FILTERS: UnwrapRef<typeof import('../utils/dictionary')['EMPTY_FILTERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly FAQ_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['FAQ_URL']>
     readonly FIELD_NAMES: UnwrapRef<typeof import('../utils/ankiSchema')['FIELD_NAMES']>
     readonly HARD_WORDS_LIMIT: UnwrapRef<typeof import('../utils/cefr/hardWords')['HARD_WORDS_LIMIT']>
     readonly HAS_BUNDLED_DICT_KEY: UnwrapRef<typeof import('../composables/useDictSettings')['HAS_BUNDLED_DICT_KEY']>
@@ -688,6 +691,7 @@ declare module 'vue' {
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hasOccurrence: UnwrapRef<typeof import('../utils/highlight')['hasOccurrence']>
     readonly highlightTerms: UnwrapRef<typeof import('../utils/highlight')['highlightTerms']>
+    readonly hintAttrs: UnwrapRef<typeof import('../utils/hint')['hintAttrs']>
     readonly i18n: UnwrapRef<typeof import('../utils/i18n')['i18n']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>

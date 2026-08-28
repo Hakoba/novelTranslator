@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { BookMarked, BookOpenText, Bot, Dumbbell, Globe, Library, Settings } from 'lucide-vue-next'
+import { BookMarked, BookOpenText, Bot, CircleQuestionMark, Dumbbell, Github, Globe, Library, Settings } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import AppLogo from '@/components/AppLogo.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
@@ -9,6 +9,9 @@ import { needsApiKey } from '@/utils/settingsStatus'
 
 const { t } = useI18n()
 const { settings } = useLlmSettings()
+
+const githubUrl = __GITHUB_URL__
+const version = __VERSION__
 
 const LINK_CLASS =
   'flex items-center gap-2 rounded-md px-3 py-2 text-content no-underline hover:bg-surface-hover'
@@ -24,11 +27,29 @@ const modelNeedsKey = computed<boolean>(() =>
 <template>
   <div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
     <header class="flex items-center justify-between gap-2">
-      <h1 class="m-0 flex items-center gap-2 text-xl font-semibold">
-        <AppLogo :size="26" />
+      <h1 class="m-0 flex items-baseline gap-2 text-xl font-semibold">
+        <AppLogo
+          :size="26"
+          class="self-center"
+        />
         Erudit
+        <!-- версия моноширинным и вполголоса: она нужна в баг-репорте, а не в заголовке -->
+        <span class="font-mono text-xs font-normal text-muted">{{ version }}</span>
       </h1>
-      <ThemeSwitch />
+
+      <div class="flex items-center gap-1">
+        <a
+          :href="githubUrl"
+          target="_blank"
+          rel="noreferrer noopener"
+          class="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted no-underline
+                 hover:bg-surface-hover hover:text-content"
+        >
+          <Github :size="16" />
+          GitHub
+        </a>
+        <ThemeSwitch />
+      </div>
     </header>
 
     <div class="flex flex-col gap-6 sm:flex-row">
@@ -94,6 +115,15 @@ const modelNeedsKey = computed<boolean>(() =>
         >
           <Dumbbell :size="18" />
           {{ t('nav.training') }}
+        </RouterLink>
+
+        <RouterLink
+          to="/options-page/faq"
+          :class="`${LINK_CLASS} mt-2`"
+          :exact-active-class="ACTIVE_LINK_CLASS"
+        >
+          <CircleQuestionMark :size="18" />
+          {{ t('nav.faq') }}
         </RouterLink>
       </nav>
 

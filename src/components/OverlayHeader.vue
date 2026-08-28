@@ -5,6 +5,7 @@ import Button from 'primevue/button'
 import { useI18n } from 'vue-i18n'
 import AppLogo from '@/components/AppLogo.vue'
 import { openDictionaryTab, openOptionsTab } from '@/utils/dictionaryTab'
+import { hintAttrs } from '@/utils/hint'
 
 defineProps<{
   wordsCount: number
@@ -62,7 +63,7 @@ const emit = defineEmits<{
       severity="secondary"
       size="small"
       :aria-label="t('overlay.reread')"
-      :data-hint="t('overlay.rereadHint')"
+      v-bind="hintAttrs(t('overlay.rereadHint'))"
       @click="emit('reread')"
     >
       <RefreshCw :size="16" />
@@ -74,7 +75,7 @@ const emit = defineEmits<{
       severity="secondary"
       size="small"
       :aria-label="t('overlay.dictionary')"
-      :data-hint="t('overlay.dictionaryHint')"
+      v-bind="hintAttrs(t('overlay.dictionaryHint'))"
       @click="openDictionaryTab"
     >
       <BookMarked :size="16" />
@@ -86,7 +87,7 @@ const emit = defineEmits<{
       :severity="isImmersion ? 'primary' : 'secondary'"
       size="small"
       :aria-label="t('overlay.immersion')"
-      :data-hint="t('overlay.immersionHint')"
+      v-bind="hintAttrs(t('overlay.immersionHint'))"
       @click="emit('toggleImmersion')"
     >
       <Replace :size="16" />
@@ -99,7 +100,7 @@ const emit = defineEmits<{
       severity="secondary"
       size="small"
       :aria-label="t('overlay.resetArea')"
-      :data-hint="t('overlay.resetAreaHint')"
+      v-bind="hintAttrs(t('overlay.resetAreaHint'))"
       @click="emit('resetArea')"
     >
       <Eraser :size="16" />
@@ -111,7 +112,7 @@ const emit = defineEmits<{
       :severity="isPicking ? 'primary' : 'secondary'"
       size="small"
       :aria-label="t(isPicking ? 'overlay.pickAreaCancel' : 'overlay.pickArea')"
-      :data-hint="t(isPicking ? 'overlay.pickAreaCancelHint' : 'overlay.pickAreaHint')"
+      v-bind="hintAttrs(t(isPicking ? 'overlay.pickAreaCancelHint' : 'overlay.pickAreaHint'))"
       @click="emit('pickArea')"
     >
       <SquareDashedMousePointer :size="16" />
@@ -123,7 +124,7 @@ const emit = defineEmits<{
       severity="secondary"
       size="small"
       :aria-label="t('nav.settings')"
-      :data-hint="t('overlay.settingsHint')"
+      v-bind="hintAttrs(t('overlay.settingsHint'))"
       @click="openOptionsTab"
     >
       <Settings :size="16" />
@@ -136,7 +137,7 @@ const emit = defineEmits<{
       severity="secondary"
       size="small"
       :aria-label="t('overlay.collapse')"
-      :data-hint="t('overlay.collapseHint')"
+      v-bind="hintAttrs(t('overlay.collapseHint'))"
       @click="emit('collapse')"
     >
       <PanelRightClose :size="16" />
@@ -149,7 +150,7 @@ const emit = defineEmits<{
       severity="secondary"
       size="small"
       :aria-label="t('overlay.close')"
-      :data-hint="t('overlay.closeHint')"
+      v-bind="hintAttrs(t('overlay.closeHint'))"
       @click="emit('close')"
     >
       <X :size="16" />

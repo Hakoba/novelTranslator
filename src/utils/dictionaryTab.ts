@@ -3,6 +3,9 @@ import browser from 'webextension-polyfill'
 /** Словарь живёт разделом страницы настроек — открывается по её адресу с маршрутом */
 export const DICTIONARY_URL = 'src/ui/options-page/index.html?route=/options-page/dictionary'
 
+/** Там же живёт справка: со страниц расширения на неё ведёт обычная ссылка */
+export const FAQ_URL = 'src/ui/options-page/index.html?route=/options-page/faq'
+
 /**
  * Открыть словарь новой вкладкой. Просим об этом background: в content script
  * `browser.tabs` нет, а адрес не передаём — страница сайта не должна уметь

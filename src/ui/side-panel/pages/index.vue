@@ -10,7 +10,7 @@ import { isValidUrl, matchesSite } from '@/composables/matchesSite'
 import { useDictionary } from '@/composables/useDictionary'
 import { useIgnoredWords } from '@/composables/useIgnoredWords'
 import { useReaderSettings } from '@/composables/useReaderSettings'
-import { openOptionsTab } from '@/utils/dictionaryTab'
+import { FAQ_URL, openOptionsTab } from '@/utils/dictionaryTab'
 import {
   PANEL_PORT,
   panelStateFromMessage,
@@ -39,6 +39,8 @@ const state = ref<PanelState | null>(null)
 const tabId = ref<number | undefined>(undefined)
 /** Адрес открытой вкладки: из него берётся домен для кнопки «разрешить» */
 const currentUrl = ref<string>('')
+
+const faqUrl = browser.runtime.getURL(FAQ_URL)
 
 // computed
 /**
@@ -154,6 +156,14 @@ onMounted(async (): Promise<void> => {
     void connect()
   })
 
+  // Esc во время выбора области: подсказка на странице обещает отмену, но слушает её
+  // страница, а фокус после клика по кнопке остался здесь — без этого Esc молчит
+  window.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Escape' || !state.value?.isPicking) return
+
+    command({ command: 'pickArea' })
+  })
+
   // оверлей шлёт снимки сам: и по ходу разбора, и при переходах внутри SPA
   browser.runtime.onMessage.addListener((message: unknown, sender: Runtime.MessageSender) => {
     const next = panelStateFromMessage(message)
@@ -189,7 +199,7 @@ onMounted(async (): Promise<void> => {
       :is-started="state.isStarted"
       :is-loading="state.isLoading"
       :is-immersion-active="state.isImmersionActive"
-      :immersion-count="state.immersionCount"
+      :immersion-words="state.immersionWords"
       :error-message="state.errorMessage"
       :words="state.words"
       :on-page="state.onPage"
@@ -207,46 +217,141 @@ onMounted(async (): Promise<void> => {
        и открываются настройки, чтобы не идти за этим в значок расширения -->
   <div
     v-else
-    class="flex flex-col items-start gap-3 p-4"
+    class="flex h-dvh flex-col items-center justify-center gap-6 p-6 text-center"
   >
-    <p class="m-0 text-muted">
-      {{ t('overlay.panelUnavailable') }}
-    </p>
-
-    <Button
-      v-if="canAllow"
-      size="small"
-      :label="t('popup.addCurrent', { host: currentHost })"
-      @click="allowCurrent"
+    <!-- страница текста, где горят два слова: янтарное новое и зелёное сохранённое.
+         Ровно то, что расширение делает с текстом, — и ровно те же два цвета -->
+    <svg
+      viewBox="0 0 168 124"
+      class="w-40 shrink-0 text-content"
+      fill="none"
+      aria-hidden="true"
     >
-      <template #icon>
-        <Plus :size="16" />
-      </template>
-    </Button>
+      <rect
+        x="44"
+        y="8"
+        width="102"
+        height="88"
+        rx="12"
+        transform="rotate(6 95 52)"
+        class="fill-surface-hover stroke-line"
+        stroke-width="1.5"
+      />
+      <g transform="rotate(-4 76 64)">
+        <rect
+          x="22"
+          y="20"
+          width="102"
+          height="88"
+          rx="12"
+          class="fill-surface stroke-line"
+          stroke-width="1.5"
+        />
+        <rect
+          x="36"
+          y="38"
+          width="60"
+          height="7"
+          rx="3.5"
+          class="fill-current opacity-20"
+        />
+        <rect
+          x="36"
+          y="53"
+          width="74"
+          height="7"
+          rx="3.5"
+          class="fill-current opacity-20"
+        />
+        <rect
+          x="36"
+          y="68"
+          width="26"
+          height="7"
+          rx="3.5"
+          class="fill-mark-new"
+        />
+        <rect
+          x="68"
+          y="68"
+          width="42"
+          height="7"
+          rx="3.5"
+          class="fill-current opacity-20"
+        />
+        <rect
+          x="36"
+          y="83"
+          width="32"
+          height="7"
+          rx="3.5"
+          class="fill-mark-saved"
+        />
+        <rect
+          x="74"
+          y="83"
+          width="22"
+          height="7"
+          rx="3.5"
+          class="fill-current opacity-20"
+        />
+      </g>
+    </svg>
 
-    <Button
-      v-else-if="tabId !== undefined"
-      size="small"
-      severity="secondary"
-      outlined
-      :label="t('overlay.panelReload')"
-      @click="reloadTab"
-    >
-      <template #icon>
-        <RotateCw :size="16" />
-      </template>
-    </Button>
+    <div class="flex flex-col gap-1.5">
+      <p class="m-0 font-semibold">
+        {{ t('overlay.panelUnavailable') }}
+      </p>
+      <p class="m-0 text-sm text-muted">
+        {{ t('overlay.panelUnavailableHint') }}
+      </p>
+    </div>
 
-    <Button
-      size="small"
-      severity="secondary"
-      text
-      :label="t('nav.settings')"
-      @click="openOptionsTab"
+    <div class="flex w-full max-w-64 flex-col gap-2">
+      <Button
+        v-if="canAllow"
+        class="w-full"
+        :label="t('popup.addCurrent', { host: currentHost })"
+        @click="allowCurrent"
+      >
+        <template #icon>
+          <Plus :size="16" />
+        </template>
+      </Button>
+
+      <Button
+        v-else-if="tabId !== undefined"
+        class="w-full"
+        severity="secondary"
+        outlined
+        :label="t('overlay.panelReload')"
+        @click="reloadTab"
+      >
+        <template #icon>
+          <RotateCw :size="16" />
+        </template>
+      </Button>
+
+      <Button
+        class="w-full"
+        severity="secondary"
+        text
+        :label="t('nav.settings')"
+        @click="openOptionsTab"
+      >
+        <template #icon>
+          <Settings :size="16" />
+        </template>
+      </Button>
+    </div>
+
+    <a
+      :href="faqUrl"
+      target="_blank"
+      rel="noreferrer noopener"
+      class="text-sm text-muted underline decoration-dotted underline-offset-4 hover:text-content"
     >
-      <template #icon>
-        <Settings :size="16" />
-      </template>
-    </Button>
+      {{ t('nav.faq') }}
+    </a>
   </div>
 </template>

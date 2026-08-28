@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookmarkPlus } from 'lucide-vue-next'
+import { BookmarkPlus, Crosshair } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import WordItem from '@/components/WordItem.vue'
-import type { WordWithExplanation } from '@/types/words'
+import type { ImmersionWord, WordWithExplanation } from '@/types/words'
 import { normalizeTerm } from '@/utils/dictionary'
+import { hintAttrs } from '@/utils/hint'
 
 /** Содержимое панели слов — одно на док в оверлее и боковую панель браузера */
 const props = defineProps<{
   isStarted: boolean
   isLoading: boolean
   isImmersionActive: boolean
-  immersionCount: number
+  /** Вкраплённые в страницу слова словаря — списком, чтобы каждое можно было найти в тексте */
+  immersionWords: ImmersionWord[]
   errorMessage: string
   /** Найденные слова уже без сохранённых и скрытых */
   words: WordWithExplanation[]
@@ -78,12 +80,60 @@ function isOnPage(word: WordWithExplanation): boolean {
       <div class="nt-bar w-40" />
     </div>
 
-    <p
+    <!-- вкрапления: слово подменило собой текст, и найти его глазами трудно —
+         поэтому список с переходом к каждому, как у обычных найденных слов -->
+    <div
       v-else-if="isImmersionActive"
-      class="m-0 text-muted"
+      class="flex flex-col gap-2"
     >
-      {{ t('overlay.immersionActive', { count: immersionCount }) }}
-    </p>
+      <p class="m-0 text-muted">
+        {{ t('overlay.immersionActive', { count: immersionWords.length }) }}
+      </p>
+
+      <ul
+        v-if="immersionWords.length"
+        class="m-0 flex list-none flex-col gap-1.5 p-0"
+      >
+        <li
+          v-for="word in immersionWords"
+          :key="word.original"
+          class="flex items-start gap-2 rounded-lg border border-line bg-surface-hover px-3 py-2.5"
+        >
+          <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <p class="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <!-- зелёный кружок — тот же цвет, которым слово помечено в тексте -->
+              <span
+                class="size-2 shrink-0 rounded-full bg-mark-saved"
+                aria-hidden="true"
+              />
+              <span class="font-semibold">{{ word.original }}</span>
+              <span class="text-muted">{{ word.translate }}</span>
+              <span
+                v-if="word.level"
+                class="rounded bg-surface px-1.5 py-0.5 text-[11px] font-medium text-muted"
+              >
+                {{ word.level }}
+              </span>
+            </p>
+            <p class="m-0 text-sm text-muted">
+              {{ t('overlay.immersionOriginal', { form: word.form }) }}
+            </p>
+          </div>
+
+          <Button
+            size="small"
+            severity="secondary"
+            text
+            rounded
+            v-bind="hintAttrs(t('overlay.revealHint'))"
+            :aria-label="t('overlay.reveal')"
+            @click="emit('reveal', word.original)"
+          >
+            <Crosshair :size="16" />
+          </Button>
+        </li>
+      </ul>
+    </div>
 
     <div
       v-else-if="errorMessage"

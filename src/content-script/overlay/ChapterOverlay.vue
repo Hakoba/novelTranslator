@@ -27,7 +27,7 @@ import { normalizeTerm } from '@/utils/dictionary'
 import { extractReadableText } from '@/utils/pageText'
 import { findSentence } from '@/utils/sentence'
 import { dueInDays, reviewEntry } from '@/utils/srs'
-import type { WordWithExplanation } from '@/types/words'
+import type { ImmersionWord, WordWithExplanation } from '@/types/words'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
@@ -108,6 +108,16 @@ const hoverWord = computed<WordWithExplanation | undefined>(() => {
   }
 })
 
+/** Плоский вид вкраплений для списка: панели запись словаря целиком не нужна */
+const immersionList = computed<ImmersionWord[]>(() =>
+  immersionWords.value.map((match) => ({
+    original: match.entry.original,
+    translate: match.entry.translate,
+    form: match.form,
+    level: match.entry.level,
+  })),
+)
+
 /** Вкрапление под курсором: текст метки — изучаемое слово, по нему и ищем запись */
 const hoverImmersion = computed<ImmersionMatch | undefined>(() => {
   const term = hint.value?.term
@@ -154,7 +164,7 @@ watchEffect(() => publishPanelState({
   isPicking: Boolean(cancelPicking.value),
   hasArea: hasArea.value,
   isImmersionActive: isImmersionActive.value,
-  immersionCount: immersionWords.value.length,
+  immersionWords: immersionList.value.map((word) => ({ ...word })),
   errorMessage: errorMessage.value,
   sourceText: sourceText.value,
   words: newWords.value.map((word) => ({ ...word })),
@@ -166,8 +176,15 @@ watchEffect(() => publishPanelState({
 function handlePanelCommand(command: PanelCommand): void {
   if (command.command === 'analyze') void analyze(command.full)
   if (command.command === 'reveal') revealTerm(command.term)
-  if (command.command === 'pickArea') togglePicking()
   if (command.command === 'resetArea') resetArea()
+
+  if (command.command === 'pickArea') {
+    // выбор запустили из панели — фокус остался в её документе, и Esc до страницы
+    // не дойдёт. Просим фокус себе; браузер вправе отказать, поэтому Esc панель
+    // слушает и у себя тоже
+    window.focus()
+    togglePicking()
+  }
 }
 
 setPanelCommandHandler(handlePanelCommand)
@@ -565,7 +582,7 @@ async function translateAndSave(): Promise<void> {
       :is-started="isStarted"
       :is-loading="isLoading"
       :is-immersion-active="isImmersionActive"
-      :immersion-count="immersionWords.length"
+      :immersion-words="immersionList"
       :error-message="errorMessage"
       :words="newWords"
       :on-page="onPageTerms"

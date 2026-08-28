@@ -7,6 +7,7 @@ import LookupPanel from '@/components/LookupPanel.vue'
 import type { WordWithExplanation } from '@/types/words'
 import { useDictionary } from '@/composables/useDictionary'
 import { requestExplanation } from '@/utils/llmClient'
+import { hintAttrs } from '@/utils/hint'
 
 const props = defineProps<{
   word: WordWithExplanation
@@ -73,7 +74,7 @@ function addToDictionary(): void {
           type="button"
           class="cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-[length:inherit]
                  font-semibold text-content underline decoration-dotted underline-offset-4"
-          :data-hint="t('overlay.revealHint')"
+          v-bind="hintAttrs(t('overlay.revealHint'))"
           @click="emit('reveal')"
         >
           {{ word.original }}
@@ -142,7 +143,7 @@ function addToDictionary(): void {
         severity="secondary"
         text
         rounded
-        :data-hint="t('overlay.revealHint')"
+        v-bind="hintAttrs(t('overlay.revealHint'))"
         :aria-label="t('overlay.reveal')"
         @click="emit('reveal')"
       >
@@ -154,7 +155,7 @@ function addToDictionary(): void {
         severity="secondary"
         text
         rounded
-        :data-hint="t('overlay.ignoreHint')"
+        v-bind="hintAttrs(t('overlay.ignoreHint'))"
         :aria-label="t('overlay.ignore')"
         @click="emit('ignore')"
       >
