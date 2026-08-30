@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Settings,
   ShieldCheck,
+  ShieldOff,
 } from 'lucide-vue-next'
 import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
@@ -18,8 +19,17 @@ import { useDictionary } from '@/composables/useDictionary'
 import { openDictionaryTab } from '@/utils/dictionaryTab'
 
 const { t } = useI18n()
-const { enabledSites, isDenyMode, addSite, removeMatching, isUrlAllowed, isSiteListed } =
-  useAccessSites()
+const {
+  enabledSites,
+  isDenyMode,
+  addSite,
+  removeMatching,
+  trustSite,
+  untrustSite,
+  isSiteTrusted,
+  isUrlAllowed,
+  isSiteListed,
+} = useAccessSites()
 const { entries } = useDictionary()
 
 // state
@@ -51,6 +61,10 @@ const currentAllowed = computed<boolean>(
 const currentListed = computed<boolean>(
   () => Boolean(currentUrl.value) && isSiteListed(currentUrl.value),
 )
+/** Защиту с этого адреса уже сняли вручную — предлагаем вернуть, а не снять ещё раз */
+const currentTrusted = computed<boolean>(
+  () => Boolean(currentUrl.value) && isSiteTrusted(currentUrl.value),
+)
 
 // методы
 function openOptions(): void {
@@ -66,6 +80,18 @@ function listCurrent(): void {
 /** Убираем все записи, накрывающие адрес: одной кнопкой сайт должен возвращаться целиком */
 function unlistCurrent(): void {
   if (currentUrl.value) removeMatching(currentUrl.value)
+}
+
+/**
+ * Снять встроенную защиту с этого сайта. Правило грубое — под «почту, банки
+ * и госуслуги» попадают и обычные сайты, читать на которых никто не мешает.
+ */
+function trustCurrent(): void {
+  if (currentUrl.value) trustSite(new URL(currentUrl.value).origin)
+}
+
+function untrustCurrent(): void {
+  if (currentUrl.value) untrustSite(new URL(currentUrl.value).origin)
 }
 
 /** Список слов при чтении живёт в боковой панели браузера — сама она не открывается */
@@ -140,6 +166,19 @@ onMounted(async () => {
       </template>
     </Button>
     <Button
+      v-else-if="currentHost && isDenyMode && currentTrusted"
+      severity="secondary"
+      outlined
+      size="small"
+      :label="t('popup.guardCurrent', { host: currentHost })"
+      :title="t('popup.guardCurrentHint')"
+      @click="untrustCurrent"
+    >
+      <template #icon>
+        <ShieldCheck :size="16" />
+      </template>
+    </Button>
+    <Button
       v-else-if="currentHost && isDenyMode && currentAllowed"
       severity="secondary"
       outlined
@@ -166,13 +205,27 @@ onMounted(async () => {
       </template>
     </Button>
     <!-- в чёрном режиме сюда попадают адреса, которые бережёт встроенное правило -->
-    <p
+    <div
       v-else-if="currentHost && isDenyMode"
-      class="m-0 flex items-center gap-2 text-muted"
+      class="flex flex-col gap-2"
     >
-      <ShieldCheck :size="16" />
-      {{ t('popup.currentGuarded') }}
-    </p>
+      <p class="m-0 flex items-center gap-2 text-muted">
+        <ShieldCheck :size="16" />
+        {{ t('popup.currentGuarded') }}
+      </p>
+      <Button
+        severity="secondary"
+        outlined
+        size="small"
+        :label="t('popup.trustCurrent', { host: currentHost })"
+        :title="t('popup.trustCurrentHint')"
+        @click="trustCurrent"
+      >
+        <template #icon>
+          <ShieldOff :size="16" />
+        </template>
+      </Button>
+    </div>
     <p
       v-else-if="currentHost"
       class="m-0 flex items-center gap-2 text-muted"

@@ -201,13 +201,38 @@ watch(() => readerSettings.value.immersion, (): void => {
   if (isStarted.value) void analyze()
 })
 
+/**
+ * Авторазбор в скрытой вкладке — запросы впустую: словарь жжёт общую суточную
+ * квоту ключа, модель — токены. Ждём первого показа вкладки — к чтению разбор
+ * уже идёт. Заодно накрывает prerender: у него visibilityState тоже `hidden`.
+ */
+let stopVisibilityWait: (() => void) | null = null
+
 // lifecycle
 onMounted(async (): Promise<void> => {
   await readerSettingsLoaded
-  if (readerSettings.value.autoAnalyze) void analyze()
+  if (!readerSettings.value.autoAnalyze) return
+
+  if (document.visibilityState === 'visible') {
+    void analyze()
+    return
+  }
+
+  const onVisible = (): void => {
+    if (document.visibilityState !== 'visible') return
+    stopVisibilityWait?.()
+    void analyze()
+  }
+  stopVisibilityWait = (): void => {
+    document.removeEventListener('visibilitychange', onVisible)
+    stopVisibilityWait = null
+  }
+  document.addEventListener('visibilitychange', onVisible)
 })
 
 onUnmounted((): void => {
+  // SPA сменила адрес в фоне — прежний оверлей не должен разбирать из могилы
+  stopVisibilityWait?.()
   clearHighlights()
   cancelPicking.value?.()
   releasePanelCommandHandler(handlePanelCommand)

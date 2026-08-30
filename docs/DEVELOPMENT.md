@@ -15,7 +15,7 @@
 - `src/assets/` — глобальные стили страниц расширения (`base.css`) и логотип
 - `src/background/` — service worker: install/update, прокси fetch к LLM
 - `src/components/` — общие Vue-компоненты (список сайтов, переключатель темы)
-- `src/composables/` — storage, список сайтов, настройки LLM, тема, разбор главы
+- `src/composables/` — storage, список сайтов, настройки LLM, тема, разбор страницы
 - `src/content-script/` — оверлей на странице: Shadow DOM, стили, компоненты оверлея
 - `src/ui/<context>/` — точки входа страниц (`index.ts`, `app.vue`, `pages/`)
 - `src/utils/` — LLM-клиент и парсер ответов, мост в background, подсветка, роутер, pinia

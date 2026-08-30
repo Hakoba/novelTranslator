@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { Plus, ShieldOff, Trash2 } from 'lucide-vue-next'
 import InlineSvg from '@/components/InlineSvg.vue'
 import sitesEmptyArt from '@/assets/illustrations/sites-empty.svg?raw'
 import { useAccessSites } from '@/composables/useAccessSites'
@@ -13,7 +13,7 @@ import type { AccessMode } from '@/composables/matchesSite'
  * и приезжает заодно на экран после установки.
  */
 const { t } = useI18n()
-const { options, sites, isDenyMode, addSite, removeSite, toggleSite } = useAccessSites()
+const { options, sites, trusted, isDenyMode, addSite, removeSite, toggleSite, untrustSite } = useAccessSites()
 
 // computed
 const modes = computed<{ label: string; value: AccessMode }[]>(() => [
@@ -76,6 +76,39 @@ function handleAddSite(): void {
         </label>
       </div>
       <small class="text-muted">{{ t('sites.guardHint') }}</small>
+
+      <!-- что читатель уже вывел из-под правила: снимается на самом сайте, здесь возвращается -->
+      <template v-if="options.guarded">
+        <ul
+          v-if="trusted.length"
+          class="m-0 mt-2 flex list-none flex-col gap-2 p-0"
+        >
+          <li
+            v-for="url in trusted"
+            :key="url"
+            class="flex items-center gap-3 rounded-md border border-line px-3 py-2"
+          >
+            <ShieldOff
+              :size="16"
+              class="shrink-0 text-muted"
+            />
+            <span class="flex-1 truncate">{{ url }}</span>
+            <Button
+              severity="secondary"
+              text
+              rounded
+              class="hover:!text-red-500"
+              :aria-label="t('sites.guardRestore', { url })"
+              @click="untrustSite(url)"
+            >
+              <Trash2 :size="16" />
+            </Button>
+          </li>
+        </ul>
+        <small class="mt-1 text-muted">
+          {{ t(trusted.length ? 'sites.guardExceptionsHint' : 'sites.guardExceptionsEmpty') }}
+        </small>
+      </template>
     </div>
 
     <div class="flex gap-2 pt-1">

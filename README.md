@@ -19,10 +19,10 @@ Erudit is a browser extension (Manifest V3, Chrome and Firefox) that reads the p
 picks out the words and phrases above your CEFR level, translates them, highlights them in place
 and files them into a dictionary with spaced repetition and Anki export.
 
-Any page with text will do — an article, a Reddit thread, a web novel — and only on the sites
-you explicitly allow.
+Any page with text will do — an article, a docs page, a Reddit thread, a chapter of a book — and
+only on the sites you explicitly allow.
 
-> **Status: 0.0.1.** Not in the extension stores yet, so it is installed from source.
+> **Status: 0.0.3.** Not in the extension stores yet, so it is installed from source.
 > Everything described below works; what is missing is listed under [Roadmap](#roadmap).
 
 <p align="center">
@@ -125,7 +125,7 @@ through DeepL or LibreTranslate before the model is involved.
 1. The content script mounts only on an allowed address and renders its overlay inside a
    Shadow DOM, so the site's own layout is never touched.
 2. The readable text is located by one of three sources, in order of confidence: an area you
-   picked by hand, a built-in rule for the site (Reddit, WebNovel, RoyalRoad and others), or a
+   picked by hand, a built-in rule for the site (there are three: Reddit, WebNovel, RoyalRoad), or a
    text-density score that penalises link-heavy blocks and so skips menus and "read also".
 3. That text goes either to the offline profile or to your model. The reply is parsed, words
    below your level are dropped, and the rest are highlighted in place.

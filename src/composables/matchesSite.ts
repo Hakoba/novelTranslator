@@ -132,13 +132,16 @@ export function isSensitiveHost(host: string): boolean {
 
 /**
  * Работает ли расширение на этом адресе. `allow` — только перечисленное,
- * `deny` — всё, кроме перечисленного; чувствительные адреса отсекает `guarded`.
+ * `deny` — всё, кроме перечисленного; чувствительные адреса отсекает `guarded`,
+ * а `trusted` возвращает из-под защиты то, что читатель разрешил сам: правило
+ * грубое, и под него попадают сайты, где читать никто не запрещал.
  */
 export function isSiteAllowed(
   url: string,
   mode: AccessMode,
   patterns: string[],
   guarded = true,
+  trusted: string[] = [],
 ): boolean {
   const listed = patterns.some((pattern) => matchesSite(url, pattern))
 
@@ -147,7 +150,9 @@ export function isSiteAllowed(
   if (!guarded) return isValidUrl(url)
 
   try {
-    return !isSensitiveHost(new URL(url).host)
+    if (!isSensitiveHost(new URL(url).host)) return true
+
+    return trusted.some((pattern) => matchesSite(url, pattern))
   } catch {
     return false
   }

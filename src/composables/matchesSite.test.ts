@@ -98,3 +98,24 @@ test('isSensitiveHost: банк узнаётся в любой стране, н�
   // поэтому у защиты есть выключатель в настройках
   assert.equal(isSensitiveHost('bankofmemes.com'), true)
 })
+
+test('isSiteAllowed: снятый с защиты адрес работает, соседний под правилом — нет', () => {
+  const trusted = ['https://mail.example.com/']
+
+  assert.equal(isSiteAllowed('https://mail.example.com/inbox', 'deny', [], true, trusted), true)
+  // защита снята с одного адреса, а не со всех, кто попал под то же правило
+  assert.equal(isSiteAllowed('https://mail.other.com/inbox', 'deny', [], true, trusted), false)
+})
+
+test('isSiteAllowed: снятая защита не отменяет чёрный список', () => {
+  assert.equal(
+    isSiteAllowed('https://mail.example.com/', 'deny', ['https://mail.example.com/'], true, ['https://mail.example.com/']),
+    false,
+  )
+})
+
+test('isSiteAllowed: поддомены и путь в исключении работают как в списке сайтов', () => {
+  assert.equal(isSiteAllowed('https://a.gov.uk/news', 'deny', [], true, ['https://*.gov.uk/']), true)
+  assert.equal(isSiteAllowed('https://sberbank.ru/news', 'deny', [], true, ['https://sberbank.ru/news']), true)
+  assert.equal(isSiteAllowed('https://sberbank.ru/private', 'deny', [], true, ['https://sberbank.ru/news']), false)
+})

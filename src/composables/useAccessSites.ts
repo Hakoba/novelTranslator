@@ -14,6 +14,7 @@ export interface AccessOptions {
 }
 
 const SITES_KEY = 'ACCESS_SITES'
+const TRUSTED_KEY = 'TRUSTED_SITES'
 const BLOCKED_KEY = 'BLOCKED_SITES'
 const OPTIONS_KEY = 'ACCESS_OPTIONS'
 
@@ -43,11 +44,15 @@ export function useAccessSites(): {
   isDenyMode: ComputedRef<boolean>
   sites: ComputedRef<AccessSite[]>
   enabledSites: ComputedRef<AccessSite[]>
+  trusted: Ref<string[]>
   promise: Promise<unknown>
   addSite: (url: string) => boolean
   removeSite: (url: string) => void
   removeMatching: (url: string) => void
   toggleSite: (url: string) => void
+  trustSite: (url: string) => void
+  untrustSite: (url: string) => void
+  isSiteTrusted: (url: string) => boolean
   isCurrentSiteAllowed: () => boolean
   isUrlAllowed: (url: string) => boolean
   isSiteListed: (url: string) => boolean
@@ -65,8 +70,13 @@ export function useAccessSites(): {
     OPTIONS_KEY,
     DEFAULT_OPTIONS,
   )
+  /**
+   * Адреса, снятые с защиты вручную. Голые строки, а не записи: тумблер тут нечего
+   * выключать — исключение либо есть, либо его убрали.
+   */
+  const { data: trusted, promise: trustedLoaded } = useBrowserSyncStorage<string[]>(TRUSTED_KEY, [])
 
-  const promise = Promise.all([allowedLoaded, blockedLoaded, optionsLoaded])
+  const promise = Promise.all([allowedLoaded, blockedLoaded, optionsLoaded, trustedLoaded])
 
   // computed
   const isDenyMode = computed<boolean>(() => options.value.mode === 'deny')
@@ -109,9 +119,27 @@ export function useAccessSites(): {
     sites.value.splice(0, sites.value.length, ...rest)
   }
 
-  /** Работает ли расширение на этом адресе — с учётом режима и защиты */
+  /** Снять защиту с адреса: домен целиком, путь конкретной страницы тут только мешал бы */
+  function trustSite(url: string): void {
+    if (!isValidUrl(url)) return
+
+    const normalizedUrl = normalizeUrl(url)
+    if (!trusted.value.includes(normalizedUrl)) trusted.value.push(normalizedUrl)
+  }
+
+  /** Вернуть адрес под защиту: убираем все записи, которые его накрывают */
+  function untrustSite(url: string): void {
+    const rest = trusted.value.filter((entry) => entry !== url && !matchesSite(url, entry))
+    trusted.value.splice(0, trusted.value.length, ...rest)
+  }
+
+  function isSiteTrusted(url: string): boolean {
+    return trusted.value.some((entry) => matchesSite(url, entry))
+  }
+
+  /** Работает ли расширение на этом адресе — с учётом режима, защиты и снятых с неё адресов */
   function isUrlAllowed(url: string): boolean {
-    return isSiteAllowed(url, options.value.mode, patterns.value, options.value.guarded)
+    return isSiteAllowed(url, options.value.mode, patterns.value, options.value.guarded, trusted.value)
   }
 
   function isCurrentSiteAllowed(): boolean {
@@ -128,11 +156,15 @@ export function useAccessSites(): {
     isDenyMode,
     sites,
     enabledSites,
+    trusted,
     promise,
     addSite,
     removeSite,
     removeMatching,
     toggleSite,
+    trustSite,
+    untrustSite,
+    isSiteTrusted,
     isCurrentSiteAllowed,
     isUrlAllowed,
     isSiteListed,
