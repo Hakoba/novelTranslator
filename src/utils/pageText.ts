@@ -36,6 +36,31 @@ function isHidden(element: Element): boolean {
   return styles.display === 'none' || styles.visibility === 'hidden'
 }
 
+/** Не текст страницы: у SPA в body лежат JSON гидрации и стили компонентов */
+const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'SVG'])
+
+/**
+ * `textContent` напрямую брать нельзя: он отдаёт и содержимое script/style —
+ * разбор находил «сложные слова» padding и margin в коде страницы.
+ */
+function visibleText(root: Element): string {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+    acceptNode: (node: Node): number => {
+      if (node instanceof Element) {
+        return SKIP_TAGS.has(node.tagName.toUpperCase())
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_SKIP
+      }
+
+      return NodeFilter.FILTER_ACCEPT
+    },
+  })
+
+  let text = ''
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) text += node.textContent
+  return text
+}
+
 /**
  * Берём только листовые текстовые элементы: вложенный абзац отдаёт свой текст сам,
  * иначе родитель продублирует его целиком.
@@ -49,7 +74,7 @@ function collectBlocks(root: Element): string[] {
 
   return elements
     .filter((element) => !isHidden(element))
-    .map((element) => normalizeWhitespace(element.textContent ?? ''))
+    .map((element) => normalizeWhitespace(visibleText(element)))
 }
 
 function statsOf(element: Element): CandidateStats {
