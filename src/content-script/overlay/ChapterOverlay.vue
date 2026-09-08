@@ -459,17 +459,18 @@ async function translateAndSave(): Promise<void> {
       :note="savedNote(hoverWord.original) ?? t('overlay.foundHere')"
     >
       <!-- у сохранённого слова кнопок нет: про него всё сказано в `note`.
-           «Скрыть» — тихая, текстом: это второе действие, и его не должно быть
-           видно раньше, чем «В словарь» -->
+           «Скрыть» — иконкой с подсказкой, как в строке панели: карточка узкая,
+           и подпись рядом с «Добавить в словарь» переносится по слогам -->
       <div
         v-if="!hasEntry(hoverWord.original)"
-        class="flex justify-end gap-1"
+        class="flex items-center justify-end gap-1"
       >
         <Button
           size="small"
           severity="secondary"
           text
-          :label="t('overlay.ignore')"
+          rounded
+          :aria-label="t('overlay.ignore')"
           v-bind="hintAttrs(t('overlay.ignoreHint'))"
           @click="ignoreWord(hoverWord.original)"
         >

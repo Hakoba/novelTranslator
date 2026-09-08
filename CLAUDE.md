@@ -34,7 +34,7 @@ npm version patch      # бамп версии + закрытие раздела
 ## Architecture
 
 - Контексты: `src/background` (service worker), `src/content-script` (оверлей),
-  `src/ui/*` (popup, options, setup), `src/devtools`, `src/offscreen`.
+  `src/ui/*` (popup, options, setup, side-panel).
 - File-based routing по `src/ui/*/pages`; общая инициализация страниц — `src/utils/createPage.ts`.
 - UI — **только PrimeVue** + Tailwind 4, компоненты автоимпортируются (`PrimeVueResolver`),
   тема Aura с янтарным primary и шалфейным зелёным (`utils/theme.ts` — один пресет

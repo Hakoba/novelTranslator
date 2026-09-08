@@ -34,7 +34,6 @@ export default {
       run_at: "document_end",
     },
   ],
-  devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
   // экспорт в Anki собирает базу SQLite через sql.js, а это WebAssembly:
@@ -43,7 +42,8 @@ export default {
     extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
   },
   host_permissions: ["<all_urls>"],
-  permissions: ["storage", "tabs", "background"],
+  // `tabs` — адрес активной вкладки для попапа и боковой панели, больше ничего
+  permissions: ["storage", "tabs"],
   web_accessible_resources: [
     {
       resources: ["src/ui/setup/index.html"],

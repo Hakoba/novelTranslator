@@ -3,7 +3,7 @@
 ## Архитектура
 
 - **Контексты расширения**: background (service worker), content script, popup, options, setup,
-  side-panel (боковая панель Chrome), devtools, offscreen.
+  side-panel (боковая панель Chrome).
 - **File-based routing**: маршруты страниц автоматически собираются из `src/ui/*/pages`.
 - **UI**: PrimeVue (единственная UI-библиотека) + Tailwind CSS 4. Компоненты PrimeVue
   автоимпортируются через `PrimeVueResolver`, тема — Aura, переключение по классу `.dark`.
