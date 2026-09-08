@@ -76,7 +76,7 @@
     "version": "node scripts/release.mjs && git add CHANGELOG.md"
   },
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "dependencies": {
     "@primeuix/themes": "^2.0.2",
     "fflate": "^0.8.3",
