@@ -56,6 +56,14 @@ export interface Translator {
   unofficial: boolean
   buildRequest: (text: string, source: string, target: string, credentials: TranslatorCredentials) => TranslateRequest
   extractText: (data: unknown) => string
+  /**
+   * Пачка слов одним запросом — там, где API это умеет. Ответ строго по позициям
+   * запроса; расхождение по длине — пустой массив, и клиент идёт по слову.
+   */
+  batch?: {
+    build: (texts: string[], source: string, target: string, credentials: TranslatorCredentials) => TranslateRequest
+    extract: (data: unknown, count: number) => string[]
+  }
 }
 
 const JSON_HEADERS: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -86,17 +94,66 @@ export function deeplTarget(code: string): string {
   return DEEPL_TARGETS[code] ?? code.toUpperCase()
 }
 
+function deeplRequest(texts: string[], source: string, target: string, { apiKey }: TranslatorCredentials): TranslateRequest {
+  return {
+    url: `${deeplBaseUrl(apiKey)}/v2/translate`,
+    method: 'POST',
+    headers: { ...JSON_HEADERS, Authorization: `DeepL-Auth-Key ${apiKey}` },
+    body: JSON.stringify({
+      text: texts,
+      source_lang: source.toUpperCase(),
+      target_lang: deeplTarget(target),
+    }),
+  }
+}
+
+function extractDeepl(data: unknown, count: number): string[] {
+  if (!isObject(data) || !Array.isArray(data.translations) || data.translations.length !== count) return []
+
+  return data.translations.map((item: unknown) => (isObject(item) && typeof item.text === 'string' ? item.text : ''))
+}
+
 /** Edge и Azure — один API Microsoft: тело и ответ общие, разные только адрес и авторизация */
 function microsoftBody(text: string): string {
   return JSON.stringify([{ Text: text }])
 }
 
-function extractMicrosoft(data: unknown): string {
-  const first = Array.isArray(data) ? data[0] : undefined
-  if (!isObject(first) || !Array.isArray(first.translations)) return ''
-  const translation = first.translations[0]
+/** Microsoft отвечает массивом по позициям запроса, до 100 текстов за раз */
+function microsoftBatchBody(texts: string[]): string {
+  return JSON.stringify(texts.map((Text) => ({ Text })))
+}
 
-  return isObject(translation) && typeof translation.text === 'string' ? translation.text : ''
+function extractMicrosoftMany(data: unknown, count: number): string[] {
+  if (!Array.isArray(data) || data.length !== count) return []
+
+  return data.map((item) => {
+    const translation = isObject(item) && Array.isArray(item.translations) ? item.translations[0] : undefined
+
+    return isObject(translation) && typeof translation.text === 'string' ? translation.text : ''
+  })
+}
+
+function extractMicrosoft(data: unknown): string {
+  return extractMicrosoftMany(data, 1)[0] ?? ''
+}
+
+/**
+ * У Google пакета нет: слова уходят построчно в одном `q`, а ответ склеивается
+ * из кусков с переводами строк внутри. Куски он режет по-своему, поэтому
+ * сверяем число строк — иначе переводы съедут на соседние слова.
+ */
+function extractGoogle(data: unknown): string {
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return ''
+
+  return data[0]
+    .map((chunk: unknown) => (Array.isArray(chunk) && typeof chunk[0] === 'string' ? chunk[0] : ''))
+    .join('')
+}
+
+function googleUrl(text: string, source: string, target: string): string {
+  const query = new URLSearchParams({ client: 'gtx', sl: source, tl: target, dt: 't', q: text })
+
+  return `https://translate.googleapis.com/translate_a/single?${query.toString()}`
 }
 
 export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
@@ -136,23 +193,25 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: false,
     requiresUrl: false,
     unofficial: true,
-    buildRequest: (text, source, target) => {
-      const query = new URLSearchParams({ client: 'gtx', sl: source, tl: target, dt: 't', q: text })
-
-      return {
-        url: `https://translate.googleapis.com/translate_a/single?${query.toString()}`,
-        method: 'GET',
-        headers: {},
-      }
-    },
+    buildRequest: (text, source, target) => ({
+      url: googleUrl(text, source, target),
+      method: 'GET',
+      headers: {},
+    }),
     // ответ — вложенные массивы без имён полей; переводы лежат первыми элементами
     // кусков в data[0] и склеиваются в одну строку: длинную фразу сервис делит сам
-    extractText: (data) => {
-      if (!Array.isArray(data) || !Array.isArray(data[0])) return ''
+    extractText: extractGoogle,
+    batch: {
+      build: (texts, source, target) => ({
+        url: googleUrl(texts.join('\n'), source, target),
+        method: 'GET',
+        headers: {},
+      }),
+      extract: (data, count) => {
+        const lines = extractGoogle(data).split('\n').map((line) => line.trim())
 
-      return data[0]
-        .map((chunk: unknown) => (Array.isArray(chunk) && typeof chunk[0] === 'string' ? chunk[0] : ''))
-        .join('')
+        return lines.length === count ? lines : []
+      },
     },
   },
 
@@ -171,6 +230,15 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
       body: microsoftBody(text),
     }),
     extractText: extractMicrosoft,
+    batch: {
+      build: (texts, source, target, { apiKey }) => ({
+        url: `https://api-edge.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${source}&to=${target}`,
+        method: 'POST',
+        headers: { ...JSON_HEADERS, Authorization: `Bearer ${apiKey}` },
+        body: microsoftBatchBody(texts),
+      }),
+      extract: extractMicrosoftMany,
+    },
   },
 
   lingva: {
@@ -197,22 +265,10 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: true,
     requiresUrl: false,
     unofficial: false,
-    buildRequest: (text, source, target, { apiKey }) => ({
-      url: `${deeplBaseUrl(apiKey)}/v2/translate`,
-      method: 'POST',
-      headers: { ...JSON_HEADERS, Authorization: `DeepL-Auth-Key ${apiKey}` },
-      body: JSON.stringify({
-        text: [text],
-        source_lang: source.toUpperCase(),
-        target_lang: deeplTarget(target),
-      }),
-    }),
-    extractText: (data) => {
-      if (!isObject(data) || !Array.isArray(data.translations)) return ''
-      const first = data.translations[0]
-
-      return isObject(first) && typeof first.text === 'string' ? first.text : ''
-    },
+    buildRequest: (text, source, target, credentials) => deeplRequest([text], source, target, credentials),
+    extractText: (data) => extractDeepl(data, 1)[0] ?? '',
+    // DeepL берёт до 50 текстов за раз, отвечает по позициям
+    batch: { build: deeplRequest, extract: extractDeepl },
   },
 
   azure: {
@@ -232,6 +288,13 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
       body: microsoftBody(text),
     }),
     extractText: extractMicrosoft,
+    batch: {
+      build: (texts, source, target, credentials) => ({
+        ...TRANSLATORS.azure.buildRequest('', source, target, credentials),
+        body: microsoftBatchBody(texts),
+      }),
+      extract: extractMicrosoftMany,
+    },
   },
 
   libre: {

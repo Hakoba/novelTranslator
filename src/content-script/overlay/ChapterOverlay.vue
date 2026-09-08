@@ -145,6 +145,19 @@ watch(anchor, (selected): void => {
   if (selected && selectionMode.value === 'translate') void translateSelection()
 })
 
+// Слово сохранили раньше, чем переводчик ответил, — запись лежит с пустым переводом.
+// Пришёл перевод в список — дописываем в запись; заполненный не трогаем: его мог
+// править пользователь. Ключ по `normalizeTerm`, как везде в словаре
+watch(words, (list): void => {
+  for (const word of list) {
+    if (!word.translate) continue
+
+    const key = normalizeTerm(word.original)
+    const entry = entries.value.find((item) => !item.translate && normalizeTerm(item.original) === key)
+    if (entry) updateEntry(entry.id, { translate: word.translate })
+  }
+})
+
 // immediate: без разбора страницы ничего не меняется, а сохранённые слова подсветить надо сразу
 watch([newWords, savedTerms, isLoading], (): void => {
   // при активных вкраплениях clearHighlights стёр бы их после первого же ответа

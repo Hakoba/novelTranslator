@@ -234,7 +234,9 @@ export default {
     editTranslate: '번역 수정',
     saveTranslate: '번역 저장',
     remove: '단어장에서 삭제',
-    ignoredTitle: '숨긴 단어 — 모델은 여전히 찾아내지만 오버레이에는 나오지 않습니다. 누르면 되돌립니다.',
+    ignoredTitle: '숨긴 단어: {count}',
+    ignoredHint: '모델은 여전히 찾아내지만 오버레이에는 나오지 않습니다. 단어를 누르면 되돌립니다.',
+    ignoredSearch: '숨긴 단어 찾기',
     ignoredRestore: '{term} 되돌리기',
     deletedTitle: '최근 삭제: {count}개. 학습 진도와 함께 되돌릴 수 있습니다.',
     deletedRestore: '{term} 되돌리기',
@@ -301,6 +303,7 @@ export default {
     title: '자주 묻는 질문',
     subtitle: '핵심만 정리했습니다. 전체 내용은 GitHub에 있습니다',
     full: 'GitHub에서 전체 FAQ 보기',
+    setupGuide: '설정 가이드: 무료 또는 모델 사용',
     group: {
       start: '시작하기',
       words: '단어와 레벨',

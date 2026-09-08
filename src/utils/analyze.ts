@@ -2,8 +2,7 @@ import type { CefrLevel, WordWithExplanation } from '@/types/words'
 import { getReaderSettings } from '@/composables/useReaderSettings'
 import { findHardWords } from '@/utils/cefr/hardWords'
 import { requestDifficultWords } from '@/utils/llmClient'
-import { unwrapSettled } from '@/utils/settled'
-import { dictTranslate } from '@/utils/translateTerm'
+import { dictTranslateMany } from '@/utils/translateTerm'
 import { t } from '@/utils/i18n'
 
 export interface AnalyzeOutcome {
@@ -16,23 +15,22 @@ export interface AnalyzeOutcome {
 export const PROFILE_LANG = 'en'
 
 /**
- * Разбор без модели: слова отбирает офлайн-профиль CEFR, перевод к каждому даёт
- * словарь. Запросов ровно столько, сколько строк увидит читатель, — список уже
- * обрезан по лимиту. Слово, которого словарь не знает, остаётся без перевода:
+ * Разбор без модели: слова отбирает офлайн-профиль CEFR, перевод к ним даёт
+ * словарь — одним запросом, где переводчик это умеет. Список уже обрезан
+ * по лимиту. Слово, которого словарь не знает, остаётся без перевода:
  * уровень и подсветка от этого не пропадают.
  */
 async function findByProfile(text: string, level: CefrLevel): Promise<AnalyzeOutcome> {
   const found = await findHardWords(text, level)
+  const { values, error } = await dictTranslateMany(found.map((word) => word.original))
 
-  const settled = await Promise.allSettled(found.map(async (word): Promise<WordWithExplanation> => {
-    const translated = await dictTranslate(word.original)
+  const words = found.map((word, index): WordWithExplanation => {
+    const translate = values[index]
 
-    return translated ? { ...word, translate: translated.translate } : word
-  }))
+    return translate ? { ...word, translate } : word
+  })
 
-  const { values, error } = unwrapSettled(settled, found)
-
-  return { words: values, error }
+  return { words, error }
 }
 
 /**

@@ -234,7 +234,9 @@ export default {
     editTranslate: 'Edit translation',
     saveTranslate: 'Save translation',
     remove: 'Remove from dictionary',
-    ignoredTitle: 'Hidden words — the model still finds them, but the overlay does not show them. Click to bring one back.',
+    ignoredTitle: 'Hidden words: {count}',
+    ignoredHint: 'The model still finds them, but the overlay does not show them. Click a word to bring it back.',
+    ignoredSearch: 'Find a hidden word',
     ignoredRestore: 'Bring back {term}',
     deletedTitle: 'Recently deleted: {count}. A word can be brought back together with its practice progress.',
     deletedRestore: 'Bring back {term}',
@@ -301,6 +303,7 @@ export default {
     title: 'Questions and answers',
     subtitle: 'The short version. The full one lives on GitHub',
     full: 'Full FAQ on GitHub',
+    setupGuide: 'Setup guide: free or with a model',
     group: {
       start: 'Getting started',
       words: 'Words and level',

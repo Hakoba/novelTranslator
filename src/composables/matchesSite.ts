@@ -37,15 +37,21 @@ export function matchesSite(currentUrl: string, pattern: string): boolean {
   }
 }
 
-/** Сегмент с цифрой — идентификатор поста или главы: дальше путь уникален для страницы */
-function isVolatile(segment: string): boolean {
-  return /\d/.test(segment)
+/**
+ * Сегмент-идентификатор страницы: с цифрой — номер поста или главы, дальше путь
+ * уникален. Последний сегмент вложенного пути тоже считаем идентификатором:
+ * у статьи `/news/some-title/` цифр нет, а область одна на все статьи раздела.
+ * ponytail: эвристика по форме пути; `/about/` сольётся с корнем сайта —
+ * для чтения это редкость, точнее только правило на сайт
+ */
+function isVolatile(segment: string, index: number, segments: string[]): boolean {
+  return /\d/.test(segment) || (segments.length > 1 && index === segments.length - 1)
 }
 
 /**
  * Ключ для ручного выбора области: путь до первого сегмента-идентификатора.
  * Выбранная на странице поста область должна работать на всех постах, но не на ленте
- * того же сайта: у reddit это `/r/sub/comments/` против `/r/sub/`.
+ * того же сайта: у reddit это `/r/sub/comments/` против `/r/`.
  */
 export function areaPattern(url: string): string {
   try {
@@ -63,6 +69,26 @@ export function areaPattern(url: string): string {
 /** www.example.com и example.com — один сайт: иначе запись из адресной строки не совпадает с введённой руками */
 function stripWww(host: string): string {
   return host.startsWith('www.') ? host.slice(4) : host
+}
+
+/**
+ * Тот же вид страницы, что и у сохранённого паттерна — ровно, а не по префиксу:
+ * иначе паттерн главной `https://site/` подходил бы каждой странице сайта
+ * и область, выбранная на главной, накрывала бы статьи.
+ */
+export function matchesArea(currentUrl: string, pattern: string): boolean {
+  try {
+    const current = new URL(areaPattern(currentUrl))
+    const wanted = new URL(pattern)
+
+    return (
+      current.protocol === wanted.protocol &&
+      stripWww(current.host) === stripWww(wanted.host) &&
+      current.pathname === wanted.pathname
+    )
+  } catch {
+    return false
+  }
 }
 
 function matchesHost(currentHost: string, patternHost: string): boolean {

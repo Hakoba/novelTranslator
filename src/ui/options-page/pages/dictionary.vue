@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookA, Check, Download, Languages, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
+import { BookA, Check, ChevronDown, Download, Languages, Pencil, Plus, RotateCcw, Trash2, Upload, X } from 'lucide-vue-next'
 import AppLoader from '@/components/AppLoader.vue'
 import InlineSvg from '@/components/InlineSvg.vue'
 import dictionaryArt from '@/assets/illustrations/dictionary.svg?raw'
@@ -13,8 +13,7 @@ import { parseApkg } from '@/utils/anki'
 import LookupPanel from '@/components/LookupPanel.vue'
 import { firstTranslation } from '@/utils/dict/parse'
 import { lookupTerm } from '@/utils/dictClient'
-import { unwrapSettled } from '@/utils/settled'
-import { dictTranslate } from '@/utils/translateTerm'
+import { dictTranslate, dictTranslateMany } from '@/utils/translateTerm'
 import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
 import { useIgnoredWords } from '@/composables/useIgnoredWords'
@@ -47,6 +46,23 @@ const {
   purgeDeleted,
 } = useDictionary()
 const { ignored, restoreWord } = useIgnoredWords()
+
+/**
+ * Скрытые слова — под нативным `details`: список растёт годами, и на экране словаря
+ * он не нужен, пока слово не понадобилось вернуть. Пока свёрнут, список не рендерится
+ * вовсе — `v-if` по событию `toggle`, а не по CSS.
+ */
+const isIgnoredOpen = ref<boolean>(false)
+const ignoredSearch = ref<string>('')
+const ignoredShown = computed<string[]>(() => {
+  const query = ignoredSearch.value.trim().toLowerCase()
+
+  return query ? ignored.value.filter((term) => term.toLowerCase().includes(query)) : ignored.value
+})
+
+function toggleIgnored(event: Event): void {
+  isIgnoredOpen.value = event.target instanceof HTMLDetailsElement && event.target.open
+}
 const { isExporting, exportError, exportToAnki } = useAnkiExport()
 
 // state
@@ -136,7 +152,7 @@ async function suggestTranslation(force = false): Promise<void> {
 /**
  * Дозаполнить пустые переводы выбранным источником. Пачками, а не залпом; отказ
  * на одном слове остальных не отменяет, а общий отказ — например, кончившаяся
- * квота — приходит сообщением из `unwrapSettled`.
+ * квота — приходит сообщением в `error`.
  */
 async function fillTranslations(): Promise<void> {
   const list = missing.value
@@ -147,17 +163,15 @@ async function fillTranslations(): Promise<void> {
   let error = ''
 
   for (const batch of chunk(list, FILL_BATCH)) {
-    const settled = await Promise.allSettled(batch.map(async (item): Promise<boolean> => {
-      const found = await dictTranslate(item.original)
-      if (!found?.translate) return false
+    const outcome = await dictTranslateMany(batch.map((item) => item.original))
 
-      updateEntry(item.id, { translate: found.translate })
+    batch.forEach((item, index) => {
+      const translate = outcome.values[index]
+      if (!translate) return
 
-      return true
-    }))
-
-    const outcome = unwrapSettled(settled, batch.map(() => false))
-    filled += outcome.values.filter(Boolean).length
+      updateEntry(item.id, { translate })
+      filled += 1
+    })
     fillState.value.done += batch.length
     if (outcome.error) {
       error = outcome.error
@@ -720,33 +734,56 @@ function submitDraft(): void {
           </ul>
         </div>
 
-        <div
+        <details
           v-if="ignored.length"
-          class="flex flex-col gap-2 border-t border-line pt-4"
+          class="group border-t border-line pt-4"
+          @toggle="toggleIgnored"
         >
-          <p class="m-0 text-muted">
-            {{ t('dictionary.ignoredTitle') }}
-          </p>
-          <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-            <li
-              v-for="term in ignored"
-              :key="term"
-            >
-              <Button
-                size="small"
-                severity="secondary"
-                outlined
-                :label="term"
-                :aria-label="t('dictionary.ignoredRestore', { term })"
-                @click="restoreWord(term)"
+          <summary
+            class="flex cursor-pointer list-none items-center gap-2 text-muted
+                   [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronDown
+              :size="16"
+              class="shrink-0 transition-transform group-open:rotate-180"
+            />
+            {{ t('dictionary.ignoredTitle', { count: ignored.length }) }}
+          </summary>
+
+          <div
+            v-if="isIgnoredOpen"
+            class="flex flex-col gap-3 pt-3"
+          >
+            <small class="text-muted">
+              {{ t('dictionary.ignoredHint') }}
+            </small>
+            <InputText
+              v-model="ignoredSearch"
+              class="w-full sm:w-80"
+              :placeholder="t('dictionary.ignoredSearch')"
+              :aria-label="t('dictionary.ignoredSearch')"
+            />
+            <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+              <li
+                v-for="term in ignoredShown"
+                :key="term"
               >
-                <template #icon>
-                  <RotateCcw :size="14" />
-                </template>
-              </Button>
-            </li>
-          </ul>
-        </div>
+                <Button
+                  size="small"
+                  severity="secondary"
+                  outlined
+                  :label="term"
+                  :aria-label="t('dictionary.ignoredRestore', { term })"
+                  @click="restoreWord(term)"
+                >
+                  <template #icon>
+                    <RotateCcw :size="14" />
+                  </template>
+                </Button>
+              </li>
+            </ul>
+          </div>
+        </details>
       </div>
     </template>
   </Card>

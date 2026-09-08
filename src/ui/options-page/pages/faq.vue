@@ -15,6 +15,7 @@ import faqArt from '@/assets/illustrations/faq.svg?raw'
 const { t } = useI18n()
 
 const FAQ_DOC_URL = `${__GITHUB_URL__}/blob/master/docs/FAQ.md`
+const SETUP_DOC_URL = `${__GITHUB_URL__}/blob/master/docs/SETUP.md`
 
 /** Ключ вопроса даёт пару ключей локали: `<id>Q` и `<id>A` */
 const GROUPS: { label: string; items: string[] }[] = [
@@ -48,22 +49,38 @@ const GROUPS: { label: string; items: string[] }[] = [
             <p class="m-0 text-muted">
               {{ t('faq.subtitle') }}
             </p>
-            <a
-              :href="FAQ_DOC_URL"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              <Button
-                severity="secondary"
-                outlined
-                size="small"
-                :label="t('faq.full')"
+            <div class="flex flex-wrap gap-2">
+              <a
+                :href="SETUP_DOC_URL"
+                target="_blank"
+                rel="noreferrer noopener"
               >
-                <template #icon>
-                  <ExternalLink :size="16" />
-                </template>
-              </Button>
-            </a>
+                <Button
+                  size="small"
+                  :label="t('faq.setupGuide')"
+                >
+                  <template #icon>
+                    <ExternalLink :size="16" />
+                  </template>
+                </Button>
+              </a>
+              <a
+                :href="FAQ_DOC_URL"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <Button
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  :label="t('faq.full')"
+                >
+                  <template #icon>
+                    <ExternalLink :size="16" />
+                  </template>
+                </Button>
+              </a>
+            </div>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { areaPattern, isSensitiveHost, isSiteAllowed, matchesSite } from './matchesSite'
+import { areaPattern, isSensitiveHost, isSiteAllowed, matchesArea, matchesSite } from './matchesSite'
 
 test('matchesSite: точное совпадение хоста', () => {
   assert.equal(matchesSite('https://novelbin.com/book/1', 'https://novelbin.com/'), true)
@@ -32,23 +32,33 @@ test('matchesSite: мусор не матчится', () => {
   assert.equal(matchesSite('not a url', 'https://novelbin.com/'), false)
 })
 
-test('areaPattern: пост и лента одного сайта дают разные паттерны', () => {
+test('areaPattern: главная, лента и пост одного сайта дают разные паттерны', () => {
   const post = areaPattern('https://reddit.com/r/nosleep/comments/1abcdef/some-title/')
   const feed = areaPattern('https://reddit.com/r/nosleep/')
+  const home = areaPattern('https://reddit.com/')
 
   assert.equal(post, 'https://reddit.com/r/nosleep/comments/')
-  assert.equal(feed, 'https://reddit.com/r/nosleep/')
-  // паттерн поста подходит любому посту саба, но не ленте
-  assert.equal(matchesSite('https://reddit.com/r/nosleep/comments/9zzz/other/', post), true)
-  assert.equal(matchesSite('https://reddit.com/r/nosleep/', post), false)
-  // паттерн ленты шире и покрывает пост — при выборе побеждает более длинный
-  assert.equal(matchesSite('https://reddit.com/r/nosleep/comments/9zzz/other/', feed), true)
+  assert.equal(feed, 'https://reddit.com/r/')
+  assert.equal(home, 'https://reddit.com/')
 })
 
-test('areaPattern: путь без идентификаторов остаётся целиком', () => {
+test('areaPattern: статья без цифр в адресе — одна на раздел, а не на страницу', () => {
+  assert.equal(areaPattern('https://site.com/news/some-title/'), 'https://site.com/news/')
+  assert.equal(areaPattern('https://site.com/news/other-title'), 'https://site.com/news/')
   assert.equal(areaPattern('https://royalroad.com/fiction/12345/name/chapter/678'), 'https://royalroad.com/fiction/')
-  assert.equal(areaPattern('https://example.com/'), 'https://example.com/')
+  assert.equal(areaPattern('https://example.com/blog/'), 'https://example.com/blog/')
   assert.equal(areaPattern('not a url'), 'not a url')
+})
+
+test('matchesArea: тот же вид страницы, а не префикс — главная не накрывает статьи', () => {
+  const home = 'https://reddit.com/'
+  const post = 'https://reddit.com/r/nosleep/comments/'
+
+  assert.equal(matchesArea('https://www.reddit.com/?feed=home', home), true)
+  assert.equal(matchesArea('https://reddit.com/r/nosleep/comments/9zzz/other/', home), false)
+  assert.equal(matchesArea('https://reddit.com/r/nosleep/comments/9zzz/other/', post), true)
+  assert.equal(matchesArea('https://reddit.com/r/nosleep/', post), false)
+  assert.equal(matchesArea('not a url', home), false)
 })
 
 test('isSiteAllowed: белый список пропускает только перечисленное', () => {

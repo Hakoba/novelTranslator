@@ -5,7 +5,9 @@ import { cefrLevel } from '@/utils/cefr/levels'
 import { firstTranslation } from '@/utils/dict/parse'
 import { lookupTranslation } from '@/utils/dictClient'
 import { requestTranslation } from '@/utils/llmClient'
-import { machineTranslate } from '@/utils/mtClient'
+import { machineTranslate, machineTranslateMany } from '@/utils/mtClient'
+import { getTranslator } from '@/utils/mt/translators'
+import { unwrapSettled, type SettledOutcome } from '@/utils/settled'
 
 function isSingleWord(term: string): boolean {
   return !/\s/.test(term.trim())
@@ -45,6 +47,31 @@ export async function dictTranslate(term: string): Promise<WordWithExplanation |
   const machine = await machineTranslate(term)
 
   return machine ? withLevel({ original: term, translate: machine }, sourceLang) : undefined
+}
+
+/**
+ * Переводы к пачке слов разбора. Машинный переводчик получает их одним запросом
+ * (или по слову, если пакет не умеет), Яндекс.Словарь — только по слову. Позиции
+ * совпадают с `terms`; `undefined` — перевода нет. Отказ источника целиком —
+ * в `error`, как у `unwrapSettled`.
+ */
+export async function dictTranslateMany(terms: string[]): Promise<SettledOutcome<string | undefined>> {
+  const { translator } = await getDictSettings()
+
+  // по слову — как раньше: отказ одного запроса не должен стирать остальные переводы
+  if (!getTranslator(translator)?.batch) {
+    const settled = await Promise.allSettled(terms.map(async (term) => (await dictTranslate(term))?.translate))
+
+    return unwrapSettled(settled, terms.map(() => undefined))
+  }
+
+  try {
+    const values = await machineTranslateMany(terms)
+
+    return { values: values.map((text) => text || undefined) }
+  } catch (error) {
+    return { values: terms.map(() => undefined), error: error instanceof Error ? error.message : String(error) }
+  }
 }
 
 /**

@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { useBrowserLocalStorage } from './useBrowserStorage'
-import { areaPattern, matchesSite } from './matchesSite'
+import { areaPattern, matchesArea } from './matchesSite'
 
 export interface AreaSelector {
   /** Адрес-паттерн страниц одного вида: `https://reddit.com/r/nosleep/comments/` */
@@ -14,11 +14,9 @@ export interface AreaSelector {
 // дефолта и у пустого объекта вычистил бы всё сохранённое
 const { data, promise } = useBrowserLocalStorage<AreaSelector[]>('AREA_SELECTORS', [])
 
-/** Из нескольких подходящих записей берём самую длинную: у поста путь длиннее, чем у ленты */
+/** Запись того же вида страницы: у главной, ленты и статьи они разные */
 function findMatch(url: string): AreaSelector | undefined {
-  return data.value
-    .filter((item) => matchesSite(url, item.pattern))
-    .sort((first, second) => second.pattern.length - first.pattern.length)[0]
+  return data.value.find((item) => matchesArea(url, item.pattern))
 }
 
 export function useAreaSelectors(): {
@@ -35,7 +33,7 @@ export function useAreaSelectors(): {
 
   function setSelector(url: string, selector: string): void {
     const pattern = areaPattern(url)
-    const existing = data.value.find((item) => item.pattern === pattern)
+    const existing = findMatch(url)
 
     if (existing) {
       existing.selector = selector
@@ -46,9 +44,9 @@ export function useAreaSelectors(): {
     data.value.push({ pattern, selector, addedAt: Date.now() })
   }
 
-  /** Убираем все подходящие записи, а не только точную: кнопка сброса должна снять область с концами */
+  /** Снимаем область только с этого вида страниц: выбор на главной и на статьях — разные записи */
   function clearSelector(url: string): void {
-    data.value = data.value.filter((item) => !matchesSite(url, item.pattern))
+    data.value = data.value.filter((item) => !matchesArea(url, item.pattern))
   }
 
   return { selectors: data, promise, hasSelector, setSelector, clearSelector }

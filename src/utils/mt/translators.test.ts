@@ -137,3 +137,38 @@ test('переводчики без ключа не требуют ни ключ
     ['google', 'edge', 'lingva'],
   )
 })
+
+test('пакет: google строками, microsoft и deepl массивами, ответ по позициям', () => {
+  const google = TRANSLATORS.google.batch
+  const edge = TRANSLATORS.edge.batch
+  const deepl = TRANSLATORS.deepl.batch
+  assert.ok(google && edge && deepl)
+
+  const googleRequest = google.build(['flash', 'light'], 'en', 'ru', CREDENTIALS)
+  assert.equal(new URL(googleRequest.url).searchParams.get('q'), 'flash\nlight')
+  assert.deepEqual(
+    google.extract([[['вспышка\n', 'flash\n'], ['свет', 'light']], null, 'en'], 2),
+    ['вспышка', 'свет'],
+  )
+  // Google склеил строки по-своему — переводы съехали бы, пакет отвергается
+  assert.deepEqual(google.extract([[['вспышка свет', 'flash\nlight']], null, 'en'], 2), [])
+
+  const edgeRequest = edge.build(['flash', 'light'], 'en', 'ru', { ...CREDENTIALS, apiKey: 'jwt' })
+  assert.deepEqual(JSON.parse(edgeRequest.body ?? ''), [{ Text: 'flash' }, { Text: 'light' }])
+  assert.deepEqual(
+    edge.extract([{ translations: [{ text: 'вспышка' }] }, { translations: [] }], 2),
+    ['вспышка', ''],
+  )
+  assert.deepEqual(edge.extract([{ translations: [{ text: 'вспышка' }] }], 2), [])
+
+  const deeplRequest = deepl.build(['flash', 'light'], 'en', 'ru', CREDENTIALS)
+  assert.deepEqual(JSON.parse(deeplRequest.body ?? '').text, ['flash', 'light'])
+  assert.deepEqual(deepl.extract({ translations: [{ text: 'вспышка' }, { text: 'свет' }] }, 2), ['вспышка', 'свет'])
+  assert.deepEqual(deepl.extract({ translations: [{ text: 'вспышка' }] }, 2), [])
+})
+
+test('пакет: у mymemory, lingva и libre его нет — слова уходят по одному', () => {
+  assert.equal(TRANSLATORS.mymemory.batch, undefined)
+  assert.equal(TRANSLATORS.lingva.batch, undefined)
+  assert.equal(TRANSLATORS.libre.batch, undefined)
+})

@@ -234,7 +234,9 @@ export default {
     editTranslate: 'Editar a tradução',
     saveTranslate: 'Guardar a tradução',
     remove: 'Remover do dicionário',
-    ignoredTitle: 'Palavras ocultas — o modelo continua a encontrá-las, mas o painel não as mostra. Clica para trazer uma de volta.',
+    ignoredTitle: 'Palavras ocultas: {count}',
+    ignoredHint: 'O modelo continua a encontrá-las, mas o painel não as mostra. Clica numa palavra para a trazer de volta.',
+    ignoredSearch: 'Procurar uma palavra oculta',
     ignoredRestore: 'Trazer de volta {term}',
     deletedTitle: 'Eliminadas há pouco: {count}. A palavra pode voltar junto com o progresso da prática.',
     deletedRestore: 'Repor {term}',
@@ -301,6 +303,7 @@ export default {
     title: 'Perguntas e respostas',
     subtitle: 'O essencial. A versão completa está no GitHub',
     full: 'FAQ completo no GitHub',
+    setupGuide: 'Guia de configuração: grátis ou com modelo',
     group: {
       start: 'Primeiros passos',
       words: 'Palavras e nível',

@@ -120,6 +120,7 @@ declare global {
   const defineStore: typeof import('pinia').defineStore
   const dictKey: typeof import('../composables/useDictSettings').dictKey
   const dictTranslate: typeof import('../utils/translateTerm').dictTranslate
+  const dictTranslateMany: typeof import('../utils/translateTerm').dictTranslateMany
   const dictionaryLinks: typeof import('../utils/dict/links').dictionaryLinks
   const downloadFile: typeof import('../utils/download').downloadFile
   const dueEntries: typeof import('../utils/srs').dueEntries
@@ -180,6 +181,7 @@ declare global {
   const lookupTranslation: typeof import('../utils/dictClient').lookupTranslation
   const lookupYandex: typeof import('../utils/dictClient').lookupYandex
   const machineTranslate: typeof import('../utils/mtClient').machineTranslate
+  const machineTranslateMany: typeof import('../utils/mtClient').machineTranslateMany
   const makeDestructurable: typeof import('@vueuse/core').makeDestructurable
   const mapActions: typeof import('pinia').mapActions
   const mapGetters: typeof import('pinia').mapGetters
@@ -188,6 +190,7 @@ declare global {
   const mapWritableState: typeof import('pinia').mapWritableState
   const markRaw: typeof import('vue').markRaw
   const matchedGroupIndex: typeof import('../utils/terms').matchedGroupIndex
+  const matchesArea: typeof import('../composables/matchesSite').matchesArea
   const matchesSite: typeof import('../composables/matchesSite').matchesSite
   const matchesTranslate: typeof import('../utils/immersion').matchesTranslate
   const needsApiKey: typeof import('../utils/settingsStatus').needsApiKey
@@ -716,6 +719,7 @@ declare module 'vue' {
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
     readonly dictKey: UnwrapRef<typeof import('../composables/useDictSettings')['dictKey']>
     readonly dictTranslate: UnwrapRef<typeof import('../utils/translateTerm')['dictTranslate']>
+    readonly dictTranslateMany: UnwrapRef<typeof import('../utils/translateTerm')['dictTranslateMany']>
     readonly dictionaryLinks: UnwrapRef<typeof import('../utils/dict/links')['dictionaryLinks']>
     readonly downloadFile: UnwrapRef<typeof import('../utils/download')['downloadFile']>
     readonly dueEntries: UnwrapRef<typeof import('../utils/srs')['dueEntries']>
@@ -776,6 +780,7 @@ declare module 'vue' {
     readonly lookupTranslation: UnwrapRef<typeof import('../utils/dictClient')['lookupTranslation']>
     readonly lookupYandex: UnwrapRef<typeof import('../utils/dictClient')['lookupYandex']>
     readonly machineTranslate: UnwrapRef<typeof import('../utils/mtClient')['machineTranslate']>
+    readonly machineTranslateMany: UnwrapRef<typeof import('../utils/mtClient')['machineTranslateMany']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -784,6 +789,7 @@ declare module 'vue' {
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly matchedGroupIndex: UnwrapRef<typeof import('../utils/terms')['matchedGroupIndex']>
+    readonly matchesArea: UnwrapRef<typeof import('../composables/matchesSite')['matchesArea']>
     readonly matchesSite: UnwrapRef<typeof import('../composables/matchesSite')['matchesSite']>
     readonly matchesTranslate: UnwrapRef<typeof import('../utils/immersion')['matchesTranslate']>
     readonly needsApiKey: UnwrapRef<typeof import('../utils/settingsStatus')['needsApiKey']>

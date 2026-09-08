@@ -88,7 +88,8 @@ sites, and open any allowed page.
 ## Configuration
 
 Everything lives in the extension options, split into four sections. Nothing is hardcoded and
-no key ever leaves your browser.
+no key ever leaves your browser. A step-by-step guide for the two setups — fully free, and
+with a model — is in [docs/SETUP.md](docs/SETUP.md) (Russian).
 
 ### Who finds the words
 
