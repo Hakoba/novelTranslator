@@ -1,0 +1,50 @@
+<!--
+  Ожидание разбора: скелет абзаца, и «маркер» один за другим подсвечивает слова —
+  то же, что расширение делает со страницей. Префикс `nt-ld-` обязателен, см. underline.svg.
+-->
+<svg viewBox="0 0 140 62" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <style>
+    .nt-ld-a-mark {
+      transform-box: fill-box;
+      transform-origin: left center;
+      opacity: 0;
+      animation: nt-ld-a-mark 3.6s ease-in-out infinite;
+    }
+    @keyframes nt-ld-a-mark {
+      0% { transform: scaleX(0); opacity: 0 }
+      6% { opacity: .5 }
+      16% { transform: scaleX(1) }
+      78% { transform: scaleX(1); opacity: .5 }
+      92%, 100% { transform: scaleX(1); opacity: 0 }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .nt-ld-a-mark { animation: none; opacity: .5; transform: none }
+    }
+  </style>
+  <!-- подсветка лежит под словами, как на странице -->
+  <g fill="var(--color-mark-new, #eebd4a)">
+    <rect class="nt-ld-a-mark" x="49" y="1" width="34" height="12" rx="4" />
+    <rect class="nt-ld-a-mark" x="75" y="17" width="36" height="12" rx="4" style="animation-delay: 1.2s" />
+    <rect class="nt-ld-a-mark" x="23" y="49" width="28" height="12" rx="4" style="animation-delay: 2.4s" />
+  </g>
+  <g fill="currentColor" opacity=".18">
+    <rect x="0" y="4" width="24" height="6" rx="3" />
+    <rect x="30" y="4" width="16" height="6" rx="3" />
+    <rect x="52" y="4" width="28" height="6" rx="3" />
+    <rect x="86" y="4" width="20" height="6" rx="3" />
+    <rect x="112" y="4" width="24" height="6" rx="3" />
+    <rect x="0" y="20" width="18" height="6" rx="3" />
+    <rect x="24" y="20" width="26" height="6" rx="3" />
+    <rect x="56" y="20" width="16" height="6" rx="3" />
+    <rect x="78" y="20" width="30" height="6" rx="3" />
+    <rect x="114" y="20" width="22" height="6" rx="3" />
+    <rect x="0" y="36" width="28" height="6" rx="3" />
+    <rect x="34" y="36" width="20" height="6" rx="3" />
+    <rect x="60" y="36" width="24" height="6" rx="3" />
+    <rect x="90" y="36" width="18" height="6" rx="3" />
+    <rect x="114" y="36" width="22" height="6" rx="3" />
+    <rect x="0" y="52" width="20" height="6" rx="3" />
+    <rect x="26" y="52" width="22" height="6" rx="3" />
+    <rect x="54" y="52" width="18" height="6" rx="3" />
+  </g>
+</svg>

@@ -179,19 +179,6 @@ const isProfileUseless = computed<boolean>(
           {{ t('settings.analyze.autoAnalyzeHint') }}
         </small>
 
-        <div class="flex items-center gap-2 border-t border-line pt-4">
-          <ToggleSwitch
-            v-model="settings.immersion"
-            input-id="immersion"
-          />
-          <label for="immersion">
-            {{ t('settings.analyze.immersion') }}
-          </label>
-        </div>
-        <small class="-mt-2 text-muted">
-          {{ t('settings.analyze.immersionHint') }}
-        </small>
-
         <div class="flex flex-col gap-2 border-t border-line pt-4">
           <label
             for="selection-mode"

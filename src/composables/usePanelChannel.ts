@@ -16,6 +16,8 @@ export interface PanelChannel {
   tabId: Ref<number | undefined>
   /** Адрес открытой вкладки: из него берётся домен для кнопки «разрешить» */
   currentUrl: Ref<string>
+  /** Вкладка — страница самого расширения (настройки, словарь): разбирать там нечего */
+  isOwnPage: Ref<boolean>
   command: (panelCommand: PanelCommand) => void
   reloadTab: () => void
 }
@@ -29,6 +31,7 @@ export function usePanelChannel(): PanelChannel {
   const state = ref<PanelState | null>(null)
   const tabId = ref<number | undefined>(undefined)
   const currentUrl = ref<string>('')
+  const isOwnPage = ref<boolean>(false)
 
   /** Панель существует в одном окне: активации вкладок чужих окон — не про неё */
   let windowId: number | undefined
@@ -65,6 +68,7 @@ export function usePanelChannel(): PanelChannel {
     tabId.value = tab?.id
     // у страниц chrome:// и about: адрес либо не отдают, либо он не http — там предлагать нечего
     currentUrl.value = tab?.url && isValidUrl(tab.url) ? tab.url : ''
+    isOwnPage.value = Boolean(tab?.url?.startsWith(browser.runtime.getURL('')))
 
     attachToTab()
     state.value = tabId.value === undefined ? null : await requestPanelState(tabId.value)
@@ -114,5 +118,5 @@ export function usePanelChannel(): PanelChannel {
     })
   })
 
-  return { state, tabId, currentUrl, command, reloadTab }
+  return { state, tabId, currentUrl, isOwnPage, command, reloadTab }
 }

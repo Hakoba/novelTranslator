@@ -5,6 +5,7 @@ import { Plus, RotateCcw, RotateCw, Settings } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import InlineSvg from '@/components/InlineSvg.vue'
 import emptyPanel from '@/assets/illustrations/empty-panel.svg?raw'
+import welcomeArt from '@/assets/illustrations/welcome.svg?raw'
 import { useAccessSites } from '@/composables/useAccessSites'
 import { FAQ_URL, openOptionsTab } from '@/utils/dictionaryTab'
 
@@ -16,6 +17,8 @@ import { FAQ_URL, openOptionsTab } from '@/utils/dictionaryTab'
 const props = defineProps<{
   /** Пусто, если вкладка не на http-странице: разрешать там нечего */
   currentUrl: string
+  /** Вкладка — страница самого расширения: тут не «не работает», а нечего разбирать */
+  isOwnPage: boolean
   /** Есть вкладка, которую можно перезагрузить */
   canReload: boolean
 }>()
@@ -40,8 +43,12 @@ const canAllow = computed<boolean>(
 const canUnblock = computed<boolean>(
   () => isDenyMode.value && Boolean(props.currentUrl) && isSiteListed(props.currentUrl),
 )
-/** Причина молчания: свой запрет, встроенное правило или короткий белый список */
+/**
+ * Причина молчания: служебная страница браузера, свой запрет, встроенное правило
+ * или короткий белый список. Без адреса правило про банки и почту ни при чём
+ */
 const reasonKey = computed<string>(() => {
+  if (!props.currentUrl) return 'overlay.panelBrowserPage'
   if (!isDenyMode.value) return 'overlay.panelUnavailableHint'
 
   return canUnblock.value ? 'popup.currentBlocked' : 'popup.currentGuarded'
@@ -67,21 +74,26 @@ async function allowCurrent(): Promise<void> {
 
 <template>
   <div class="flex h-dvh flex-col items-center justify-center gap-6 p-6 text-center">
+    <!-- на своей странице расширение не «не работает» — тут просто нет текста,
+         и кнопки «разрешить» и «настройки» вели бы туда, где читатель уже стоит -->
     <InlineSvg
-      :markup="emptyPanel"
+      :markup="isOwnPage ? welcomeArt : emptyPanel"
       class="w-40 text-content"
     />
 
     <div class="flex flex-col gap-1.5">
       <p class="m-0 font-semibold">
-        {{ t('overlay.panelUnavailable') }}
+        {{ t(isOwnPage ? 'overlay.panelOwnPage' : 'overlay.panelUnavailable') }}
       </p>
       <p class="m-0 text-sm text-muted">
-        {{ t(reasonKey) }}
+        {{ t(isOwnPage ? 'overlay.panelOwnPageHint' : reasonKey) }}
       </p>
     </div>
 
-    <div class="flex w-full max-w-72 flex-col gap-2">
+    <div
+      v-if="!isOwnPage"
+      class="flex w-full max-w-72 flex-col gap-2"
+    >
       <!--
         Домен в подписи длинный, а панель узкая: у PrimeVue подпись растянута на всю
         кнопку (`flex: 1 1 auto`), и на переносе иконка отъезжает от неё к самому краю.
@@ -110,7 +122,7 @@ async function allowCurrent(): Promise<void> {
       </Button>
 
       <Button
-        v-else-if="canReload"
+        v-else-if="canReload && currentUrl"
         class="w-full"
         severity="secondary"
         outlined

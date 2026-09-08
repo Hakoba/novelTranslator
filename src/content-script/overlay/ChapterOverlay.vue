@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BookmarkCheck, BookmarkPlus, RotateCw } from 'lucide-vue-next'
+import { BookmarkCheck, BookmarkPlus, EyeOff, RotateCw } from 'lucide-vue-next'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import AppLoader from '@/components/AppLoader.vue'
@@ -40,6 +40,7 @@ const {
   isLoading,
   errorMessage,
   fetchDifficultWords,
+  cancelFetch,
 } = useDifficultWords()
 const { entries, addEntry, hasEntry, updateEntry } = useDictionary()
 const { hasSelector, setSelector, clearSelector } = useAreaSelectors()
@@ -180,6 +181,7 @@ function handlePanelCommand(command: PanelCommand): void {
   if (command.command === 'analyze') void analyze(command.full)
   if (command.command === 'reveal') revealTerm(command.term)
   if (command.command === 'resetArea') resetArea()
+  if (command.command === 'cancel') cancelAnalysis()
 
   if (command.command === 'pickArea') {
     // выбор запустили из панели — фокус остался в её документе, и Esc до страницы
@@ -264,6 +266,12 @@ async function analyze(full = false): Promise<void> {
   }
 
   return fetchDifficultWords(full)
+}
+
+/** Затянувшийся разбор отменили: возвращаемся к состоянию «разобрать руками» */
+function cancelAnalysis(): void {
+  cancelFetch()
+  isStarted.value = false
 }
 
 /** Режим вкраплений работает офлайн: только словарь, без модели и внешних словарей */
@@ -437,11 +445,25 @@ async function translateAndSave(): Promise<void> {
       :level="hoverWord.level"
       :note="savedNote(hoverWord.original) ?? t('overlay.foundHere')"
     >
-      <!-- у сохранённого слова кнопки нет: про него всё сказано в `note` -->
+      <!-- у сохранённого слова кнопок нет: про него всё сказано в `note`.
+           «Скрыть» — тихая, текстом: это второе действие, и его не должно быть
+           видно раньше, чем «В словарь» -->
       <div
         v-if="!hasEntry(hoverWord.original)"
-        class="flex justify-end"
+        class="flex justify-end gap-1"
       >
+        <Button
+          size="small"
+          severity="secondary"
+          text
+          :label="t('overlay.ignore')"
+          v-bind="hintAttrs(t('overlay.ignoreHint'))"
+          @click="ignoreWord(hoverWord.original)"
+        >
+          <template #icon>
+            <EyeOff :size="16" />
+          </template>
+        </Button>
         <Button
           size="small"
           severity="success"
@@ -637,6 +659,7 @@ async function translateAndSave(): Promise<void> {
       :total-words="words.length"
       :source-text="sourceText"
       @analyze="analyze()"
+      @cancel="cancelAnalysis"
       @add="addToDictionary"
       @add-all="addAll"
       @ignore="ignoreWord"

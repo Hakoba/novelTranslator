@@ -7,6 +7,7 @@
     "ApkgOptions": true,
     "AreaSelector": true,
     "BACKUP_VERSION": true,
+    "BG_FETCH_TIMEOUT_MS": true,
     "BackupFile": true,
     "BgFetchInit": true,
     "BgFetchResponse": true,

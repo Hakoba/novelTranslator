@@ -21,6 +21,7 @@ export default {
     modelNeedsKey: '未填写 API 密钥，模型不会响应',
     dictionary: '生词本',
     training: '练习',
+    immersion: '嵌入',
     backup: '备份',
     faq: '帮助',
     lightTheme: '浅色主题',
@@ -77,10 +78,8 @@ export default {
       engineOnlyEnglish: '离线词表只覆盖英语。这个语言请改用模型。',
       autoAnalyze: '打开页面后立即分析',
       autoAnalyzeHint: '关闭后，浮层会等你点击“分析页面”。已保存词语的高亮和悬停翻译不依赖模型。',
-      immersion: '在母语页面中嵌入正在学习的单词',
-      immersionHint: '在翻译语言的页面上，部分词语会被替换为你词典里的单词，待复习的优先。悬停查看：卡片会显示原词，并询问你是否记得释义。',
       promptExtra: '提示词补充',
-      promptExtraPlaceholder: '例如：这是黑暗奇幻，人名地名不必解析，翻译请偏口语',
+      promptExtraPlaceholder: '例如：人名和专名不必解析，翻译偏口语，术语解释得更详细',
       promptExtraHint: '它会和我们的规则一起进入系统消息。响应格式由我们决定——补充内容不会破坏分析。剩余字符：{left}。',
       selectionMode: '选中文本时',
       selectionModes: {
@@ -269,6 +268,21 @@ export default {
     keysShow: '空格 — 显示翻译',
   },
 
+  immersion: {
+    title: '嵌入',
+    subtitle: '词典里的单词出现在母语文章中，复习自然发生',
+    toggle: '在翻译语言的页面中嵌入词典单词',
+    toggleHint: '离线工作：只用词典，不调用模型，不发请求。页面上 overlay 的标题栏里有同样的开关。',
+    howTitle: '工作原理',
+    detect: '你打开一个翻译语言的页面，且该网站已启用扩展。overlay 通过文字系统识别语言，并运行嵌入而不是解析。',
+    swap: '在正文中查找词典里作为释义存在的词，并换成你正在学的单词：词典里有“window — 窗户”，页面上的“窗户”就变成“window”。每页最多 15 个，每句最多一个，待复习的优先。',
+    answer: '悬停查看：卡片显示原文里的词，并询问你是否记得。回答会按与练习相同的间隔阶梯推进该词，原词随即恢复。',
+    panel: '页面上所有嵌入都列在单词面板中，与解析后的生词在同一位置。',
+    limitsTitle: '限制',
+    limitScript: '页面语言按字母系统判断，因此文字系统相同的语言对（例如英语 → 西班牙语）无法区分，在这类页面上此模式不会工作。',
+    limitForms: '词形按共同词干匹配，没有形态分析：“窗户们”能找到，释义为“人”时“人们”找不到。',
+  },
+
   backup: {
     title: '备份',
     subtitle: '词库和设置存成一个文件：搬到另一台电脑，或者留作备用',
@@ -345,6 +359,8 @@ export default {
     closeHint: '关闭至下次刷新',
     analyze: '分析页面',
     analyzing: '正在分析页面',
+    analyzingSlow: '有点久了。翻译服务器可能卡住了——不必继续等待',
+    cancelAnalyze: '取消分析',
     immersion: '嵌入模式',
     immersionHint: '在页面中嵌入词典单词',
     immersionActive: '已嵌入单词：{count}',
@@ -378,6 +394,9 @@ export default {
     panelUnavailable: 'Erudit 未在此页面运行。',
     panelUnavailableHint: '扩展只在你列表中的网站上启用。',
     panelReload: '刷新页面',
+    panelOwnPage: '这是 Erudit 自己的页面。',
+    panelOwnPageHint: '面板显示当前标签页的单词。打开一个有文字的标签页，面板会自动切换过去。',
+    panelBrowserPage: '这是浏览器的内部页面，这里没有可解析的文字。',
   },
 
   lookup: {
@@ -396,6 +415,7 @@ export default {
     httpStatus: '{host} 返回错误 {status}',
     httpStatusWith: '{host} 返回错误 {status}：{error}',
     timeout: '模型在 {seconds} 秒内没有响应',
+    requestTimeout: '服务器在 {seconds} 秒内没有响应',
     llmUnknown: '未能获取模型的响应',
     dictKeyRejected: 'Yandex 词典拒绝了密钥——请在设置中检查',
     dictSharedKeyOut: '公共的 Yandex.Dictionary 密钥已用尽或被撤销。请在设置中填写自己的密钥，它是免费的。',

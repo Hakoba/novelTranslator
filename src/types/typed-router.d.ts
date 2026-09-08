@@ -24,6 +24,7 @@ declare module 'vue-router/auto-routes' {
     '/options-page/dictionaries': RouteRecordInfo<'/options-page/dictionaries', '/options-page/dictionaries', Record<never, never>, Record<never, never>>,
     '/options-page/dictionary': RouteRecordInfo<'/options-page/dictionary', '/options-page/dictionary', Record<never, never>, Record<never, never>>,
     '/options-page/faq': RouteRecordInfo<'/options-page/faq', '/options-page/faq', Record<never, never>, Record<never, never>>,
+    '/options-page/immersion': RouteRecordInfo<'/options-page/immersion', '/options-page/immersion', Record<never, never>, Record<never, never>>,
     '/options-page/model': RouteRecordInfo<'/options-page/model', '/options-page/model', Record<never, never>, Record<never, never>>,
     '/options-page/sites': RouteRecordInfo<'/options-page/sites', '/options-page/sites', Record<never, never>, Record<never, never>>,
     '/options-page/training': RouteRecordInfo<'/options-page/training', '/options-page/training', Record<never, never>, Record<never, never>>,

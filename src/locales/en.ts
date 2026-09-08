@@ -21,6 +21,7 @@ export default {
     modelNeedsKey: 'No API key set — the model will not answer',
     dictionary: 'Dictionary',
     training: 'Practice',
+    immersion: 'Immersion',
     backup: 'Backup',
     faq: 'Help',
     lightTheme: 'Light theme',
@@ -77,10 +78,8 @@ export default {
       engineOnlyEnglish: 'The offline profile only covers English. For this language, switch to a model.',
       autoAnalyze: 'Analyse the page as soon as it opens',
       autoAnalyzeHint: 'When off, the overlay waits for the “Analyse page” button. Highlighting of saved words and hover translations work without the model.',
-      immersion: 'Weave the words you study into pages in your language',
-      immersionHint: 'On a page in your translation language, some words are replaced with words from your dictionary — the ones due for review come first. Hover over one: the card shows the original and asks whether you remembered the translation.',
       promptExtra: 'Prompt addition',
-      promptExtraPlaceholder: 'For example: this is dark fantasy, skip names and place names, keep the translation colloquial',
+      promptExtraPlaceholder: 'For example: skip names and titles, keep the translation colloquial, explain technical terms in more detail',
       promptExtraHint: 'Goes into the system message together with our rules. The response format is ours — an addition cannot break the analysis. Characters left: {left}.',
       selectionMode: 'When you select text',
       selectionModes: {
@@ -269,6 +268,21 @@ export default {
     keysShow: 'Space — show the translation',
   },
 
+  immersion: {
+    title: 'Immersion',
+    subtitle: 'Dictionary words show up in texts in your own language — and get reviewed on their own',
+    toggle: 'Weave dictionary words into pages in your translation language',
+    toggleHint: 'Works offline: dictionary only, no model and no requests. The same switch sits in the overlay header on the page.',
+    howTitle: 'How it works',
+    detect: 'You open a page in your translation language — on a site where the extension is on. The overlay tells the language by its script and runs immersion instead of the analysis.',
+    swap: 'The text is searched for words that your dictionary holds as translations, and the word you study takes their place: with “Fenster — window” in the dictionary, “window” on the page becomes “Fenster”. At most 15 per page, one per sentence, the ones due for review first.',
+    answer: 'Hover over one — the card shows which word stood in the text and asks whether you remembered it. The answer moves the word along the same interval ladder as practice, and the original word returns.',
+    panel: 'Every swap on the page is listed in the word panel — the same place the hard words go after an analysis.',
+    limitsTitle: 'Limits',
+    limitScript: 'The page language is told by its alphabet, so a pair with a shared script (say, English → Spanish) cannot be told apart — the mode stays silent on such pages.',
+    limitForms: 'Word forms are matched by a shared stem, with no morphology: “windows” is found, “people” for the translation “person” is not.',
+  },
+
   backup: {
     title: 'Backup',
     subtitle: 'Your dictionary and settings in one file — move them to another computer or keep them just in case',
@@ -345,6 +359,8 @@ export default {
     closeHint: 'Close until reload',
     analyze: 'Analyse page',
     analyzing: 'Analysing the page',
+    analyzingSlow: 'Taking a while. The translation server may be stuck — no need to wait',
+    cancelAnalyze: 'Cancel analysis',
     immersion: 'Immersion mode',
     immersionHint: 'Weave dictionary words into the page',
     immersionActive: 'Words woven in: {count}',
@@ -378,6 +394,9 @@ export default {
     panelUnavailable: 'Erudit is not active on this page.',
     panelUnavailableHint: 'The extension only turns on for sites from your list.',
     panelReload: 'Reload the page',
+    panelOwnPage: 'This is a page of Erudit itself.',
+    panelOwnPageHint: 'The panel shows the words of the active tab. Open a tab with text — the panel will switch to it on its own.',
+    panelBrowserPage: 'A browser service page — there is no text to analyse here.',
   },
 
   lookup: {
@@ -396,6 +415,7 @@ export default {
     httpStatus: '{host} replied with error {status}',
     httpStatusWith: '{host} replied with error {status}: {error}',
     timeout: 'The model did not answer within {seconds} seconds',
+    requestTimeout: 'The server did not answer within {seconds} seconds',
     llmUnknown: 'Could not get an answer from the model',
     dictKeyRejected: 'Yandex Dictionary rejected the key — check it in the settings',
     dictSharedKeyOut: 'The shared Yandex Dictionary key is out of quota or has been revoked. Add your own in the settings — it is free.',

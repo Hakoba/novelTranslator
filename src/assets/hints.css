@@ -1,46 +1,4 @@
-/* Общие виджеты оверлея и боковой панели: анимация ожидания и CSS-подсказки к кнопкам */
-
-/* Ожидание разбора: буквы идут волной, под ними бежит полоса */
-@keyframes nt-wave {
-  0%, 65%, 100% { transform: translateY(0); opacity: .45; }
-  30% { transform: translateY(-5px); opacity: 1; }
-}
-
-.nt-wave > span {
-  display: inline-block;
-  animation: nt-wave 1.5s ease-in-out infinite;
-}
-
-@keyframes nt-bar {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(350%); }
-}
-
-.nt-bar {
-  position: relative;
-  overflow: hidden;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--p-content-hover-background);
-}
-
-.nt-bar::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 30%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, transparent, var(--p-primary-color), transparent);
-  animation: nt-bar 1.3s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nt-wave > span,
-  .nt-bar::after {
-    animation: none;
-  }
-}
-
+/* Общие виджеты оверлея и боковой панели: CSS-подсказки к кнопкам */
 /*
  * Подсказка к кнопке — на CSS: Tooltip у PrimeVue рендерится в document.body,
  * то есть вне shadow root оверлея, и остаётся без стилей. Появляется сразу,

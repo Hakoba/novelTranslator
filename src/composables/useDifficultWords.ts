@@ -19,6 +19,7 @@ export function useDifficultWords(): {
   isLoading: Ref<boolean>
   errorMessage: Ref<string>
   fetchDifficultWords: (full?: boolean) => Promise<void>
+  cancelFetch: () => void
 } {
   // state
   const words = ref<WordWithExplanation[]>([])
@@ -94,11 +95,18 @@ export function useDifficultWords(): {
     }
   }
 
+  /** Разбор отменили руками: поздний ответ сравнение с номером запроса отбросит само */
+  function cancelFetch(): void {
+    currentRequest += 1
+    isLoading.value = false
+  }
+
   return {
     words,
     sourceText,
     isLoading,
     errorMessage,
     fetchDifficultWords,
+    cancelFetch,
   }
 }

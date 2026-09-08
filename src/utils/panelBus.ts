@@ -45,6 +45,7 @@ export type PanelCommand =
   | { command: 'reveal'; term: string }
   | { command: 'pickArea' }
   | { command: 'resetArea' }
+  | { command: 'cancel' }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -55,7 +56,7 @@ export function isPanelCommand(value: unknown): value is PanelCommand {
   if (value.command === 'analyze') return typeof value.full === 'boolean'
   if (value.command === 'reveal') return typeof value.term === 'string'
 
-  return value.command === 'pickArea' || value.command === 'resetArea'
+  return value.command === 'pickArea' || value.command === 'resetArea' || value.command === 'cancel'
 }
 
 /** Снимку хватает поверхностной проверки: обе стороны сообщения — наш же код */

@@ -21,6 +21,7 @@ export default {
     modelNeedsKey: 'Falta a chave de API: o modelo não vai responder',
     dictionary: 'Dicionário',
     training: 'Treino',
+    immersion: 'Imersão',
     backup: 'Cópia',
     faq: 'Ajuda',
     lightTheme: 'Tema claro',
@@ -77,10 +78,8 @@ export default {
       engineOnlyEnglish: 'O perfil offline só cobre o inglês. Para este idioma muda para o modelo.',
       autoAnalyze: 'Analisar a página assim que abrir',
       autoAnalyzeHint: 'Se estiver desligado, o painel espera pelo botão “Analisar a página”. O destaque das palavras guardadas e as traduções ao passar o rato funcionam sem o modelo.',
-      immersion: 'Intercalar as palavras que estuda em páginas no seu idioma',
-      immersionHint: 'Numa página no idioma de tradução, algumas palavras são substituídas por palavras do seu dicionário — primeiro as que estão para rever. Passe o cursor: o cartão mostra o original e pergunta se lembrou a tradução.',
       promptExtra: 'Acrescento ao prompt',
-      promptExtraPlaceholder: 'Por exemplo: isto é fantasia sombria, ignora nomes e topónimos, traduz em tom coloquial',
+      promptExtraPlaceholder: 'Por exemplo: ignora nomes próprios, traduz em tom coloquial, explica os termos técnicos com mais detalhe',
       promptExtraHint: 'Vai para a mensagem de sistema junto com as nossas regras. O formato da resposta é nosso — um acrescento não consegue partir a análise. Caracteres restantes: {left}.',
       selectionMode: 'Ao selecionar texto',
       selectionModes: {
@@ -269,6 +268,21 @@ export default {
     keysShow: 'Espaço — mostrar a tradução',
   },
 
+  immersion: {
+    title: 'Imersão',
+    subtitle: 'As palavras do dicionário aparecem em textos no seu idioma — e revêem-se sozinhas',
+    toggle: 'Intercalar palavras do dicionário em páginas no idioma de tradução',
+    toggleHint: 'Funciona offline: só o dicionário, sem modelo e sem pedidos. O mesmo interruptor está no cabeçalho do overlay na página.',
+    howTitle: 'Como funciona',
+    detect: 'Abre uma página no idioma de tradução — num site onde a extensão está ativa. O overlay reconhece o idioma pela escrita e lança a imersão em vez da análise.',
+    swap: 'No texto procuram-se palavras que o seu dicionário guarda como tradução, e no lugar delas entra a palavra que estuda: com «window — janela» no dicionário, «janela» na página passa a «window». No máximo 15 por página, uma por frase, primeiro as que estão para rever.',
+    answer: 'Passe o cursor: o cartão mostra que palavra estava no texto e pergunta se a lembrou. A resposta move a palavra pela mesma escada de intervalos que o treino, e a palavra original volta ao lugar.',
+    panel: 'Todas as substituições da página estão listadas no painel de palavras — o mesmo lugar para onde vão as palavras difíceis após a análise.',
+    limitsTitle: 'Limites',
+    limitScript: 'O idioma da página é reconhecido pelo alfabeto, por isso um par com a mesma escrita (por exemplo, inglês → espanhol) não se distingue — nessas páginas o modo fica em silêncio.',
+    limitForms: 'As formas emparelham-se pela raiz comum, sem morfologia: «janelas» encontra-se, «gente» para a tradução «pessoa» não.',
+  },
+
   backup: {
     title: 'Cópia de segurança',
     subtitle: 'O dicionário e as configurações num arquivo — leve para outro computador ou guarde por precaução',
@@ -345,6 +359,8 @@ export default {
     closeHint: 'Fechar até recarregar',
     analyze: 'Analisar a página',
     analyzing: 'A analisar a página',
+    analyzingSlow: 'Está a demorar. O servidor de tradução pode ter travado — não é preciso esperar',
+    cancelAnalyze: 'Cancelar a análise',
     immersion: 'Modo de imersão',
     immersionHint: 'Intercalar palavras do dicionário na página',
     immersionActive: 'Palavras intercaladas: {count}',
@@ -378,6 +394,9 @@ export default {
     panelUnavailable: 'O Erudit não está ativo nesta página.',
     panelUnavailableHint: 'A extensão só liga nos sites da sua lista.',
     panelReload: 'Recarregar a página',
+    panelOwnPage: 'Esta é uma página do próprio Erudit.',
+    panelOwnPageHint: 'O painel mostra as palavras do separador ativo. Abra um separador com texto — o painel muda para ele sozinho.',
+    panelBrowserPage: 'É uma página interna do navegador — aqui não há texto para analisar.',
   },
 
   lookup: {
@@ -396,6 +415,7 @@ export default {
     httpStatus: '{host} respondeu com o erro {status}',
     httpStatusWith: '{host} respondeu com o erro {status}: {error}',
     timeout: 'O modelo não respondeu em {seconds} segundos',
+    requestTimeout: 'O servidor não respondeu em {seconds} segundos',
     llmUnknown: 'Não foi possível obter resposta do modelo',
     dictKeyRejected: 'O Yandex Dictionary rejeitou a chave — verifica-a nas definições',
     dictSharedKeyOut: 'A chave partilhada do Yandex.Dictionary esgotou ou foi revogada. Escreve a tua nas definições: é gratuita.',

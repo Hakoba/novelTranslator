@@ -17,7 +17,7 @@ import type { WordWithExplanation } from '@/types/words'
 const { addEntry } = useDictionary()
 const { ignoreWord } = useIgnoredWords()
 const { settings: readerSettings } = useReaderSettings()
-const { state, tabId, currentUrl, command, reloadTab } = usePanelChannel()
+const { state, tabId, currentUrl, isOwnPage, command, reloadTab } = usePanelChannel()
 
 function addToDictionary(word: WordWithExplanation): void {
   addEntry({
@@ -68,6 +68,7 @@ function addAll(): void {
       :total-words="state.totalWords"
       :source-text="state.sourceText"
       @analyze="command({ command: 'analyze', full: false })"
+      @cancel="command({ command: 'cancel' })"
       @add="addToDictionary"
       @add-all="addAll"
       @ignore="ignoreWord"
@@ -78,6 +79,7 @@ function addAll(): void {
   <PanelEmptyState
     v-else
     :current-url="currentUrl"
+    :is-own-page="isOwnPage"
     :can-reload="tabId !== undefined"
     @reload="reloadTab"
   />

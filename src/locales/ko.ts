@@ -21,6 +21,7 @@ export default {
     modelNeedsKey: 'API 키가 없어 모델이 응답하지 않습니다',
     dictionary: '단어장',
     training: '연습',
+    immersion: '끼워 넣기',
     backup: '백업',
     faq: '도움말',
     lightTheme: '밝은 테마',
@@ -77,10 +78,8 @@ export default {
       engineOnlyEnglish: '오프라인 목록은 영어만 다룹니다. 이 언어에는 모델을 사용하세요.',
       autoAnalyze: '페이지를 열면 바로 분석하기',
       autoAnalyzeHint: '꺼두면 오버레이가 “페이지 분석” 버튼을 기다립니다. 저장한 단어의 강조 표시와 마우스를 올렸을 때의 번역은 모델 없이도 동작합니다.',
-      immersion: '학습 중인 단어를 모국어 페이지에 끼워 넣기',
-      immersionHint: '번역 언어 페이지에서 일부 단어가 사전의 단어로 바뀝니다. 복습할 단어가 먼저 나옵니다. 마우스를 올리면 카드가 원래 단어를 보여 주고 번역을 기억했는지 묻습니다.',
       promptExtra: '프롬프트 추가 지시',
-      promptExtraPlaceholder: '예: 다크 판타지입니다. 인명과 지명은 다루지 말고, 번역은 구어체로 해주세요',
+      promptExtraPlaceholder: '예: 이름과 고유명사는 다루지 말고, 번역은 구어체로, 전문 용어는 더 자세히 설명해주세요',
       promptExtraHint: '우리 규칙과 함께 시스템 메시지로 들어갑니다. 응답 형식은 우리가 정하므로 추가 지시로 분석이 깨지지는 않습니다. 남은 글자 수: {left}.',
       selectionMode: '텍스트를 선택했을 때',
       selectionModes: {
@@ -269,6 +268,21 @@ export default {
     keysShow: '스페이스 — 번역 보기',
   },
 
+  immersion: {
+    title: '끼워 넣기',
+    subtitle: '사전의 단어가 모국어 글 속에 나타나고, 복습은 저절로 이루어집니다',
+    toggle: '번역 언어 페이지에 사전 단어 끼워 넣기',
+    toggleHint: '오프라인으로 동작합니다: 사전만 사용하고 모델도 요청도 없습니다. 페이지의 오버레이 헤더에 같은 스위치가 있습니다.',
+    howTitle: '동작 방식',
+    detect: '확장이 켜진 사이트에서 번역 언어로 된 페이지를 엽니다. 오버레이는 문자 체계로 언어를 알아채고 분석 대신 끼워 넣기를 실행합니다.',
+    swap: '본문에서 사전에 번역으로 저장된 단어를 찾아 학습 중인 단어로 바꿉니다: 사전에 “window — 창문”이 있으면 페이지의 “창문”이 “window”가 됩니다. 페이지당 최대 15개, 문장당 하나, 복습할 단어가 먼저입니다.',
+    answer: '마우스를 올리면 카드가 본문에 있던 단어를 보여 주고 기억했는지 묻습니다. 답은 연습과 같은 간격 사다리로 단어를 옮기고, 원래 단어가 제자리로 돌아옵니다.',
+    panel: '페이지의 모든 끼워 넣기는 단어 패널에 나열됩니다. 분석 후 어려운 단어가 가는 곳과 같습니다.',
+    limitsTitle: '제한',
+    limitScript: '페이지 언어는 문자 체계로 판단하므로 같은 문자를 쓰는 쌍(예: 영어 → 스페인어)은 구분되지 않으며, 그런 페이지에서는 이 모드가 동작하지 않습니다.',
+    limitForms: '단어 형태는 공통 어간으로 맞추며 형태소 분석은 없습니다: “창문을”은 찾지만 번역이 “사람”일 때 “사람들”은 찾지 못합니다.',
+  },
+
   backup: {
     title: '백업',
     subtitle: '사전과 설정을 파일 하나로 — 다른 컴퓨터로 옮기거나 만일을 위해 보관하세요',
@@ -345,6 +359,8 @@ export default {
     closeHint: '새로 고칠 때까지 닫기',
     analyze: '페이지 분석',
     analyzing: '페이지를 분석하는 중',
+    analyzingSlow: '시간이 오래 걸리네요. 번역 서버가 멈췄을 수 있으니 기다리지 않아도 됩니다',
+    cancelAnalyze: '분석 취소',
     immersion: '끼워 넣기 모드',
     immersionHint: '사전 단어를 페이지에 끼워 넣기',
     immersionActive: '끼워 넣은 단어: {count}',
@@ -378,6 +394,9 @@ export default {
     panelUnavailable: 'Erudit이 이 페이지에서 꺼져 있습니다.',
     panelUnavailableHint: '확장 프로그램은 목록에 있는 사이트에서만 켜집니다.',
     panelReload: '페이지 새로고침',
+    panelOwnPage: '이곳은 Erudit 자체 페이지입니다.',
+    panelOwnPageHint: '패널은 활성 탭의 단어를 보여 줍니다. 텍스트가 있는 탭을 열면 패널이 자동으로 전환됩니다.',
+    panelBrowserPage: '브라우저 내부 페이지입니다. 여기에는 분석할 텍스트가 없습니다.',
   },
 
   lookup: {
@@ -396,6 +415,7 @@ export default {
     httpStatus: '{host}이(가) 오류 {status}(으)로 응답했습니다',
     httpStatusWith: '{host}이(가) 오류 {status}(으)로 응답했습니다: {error}',
     timeout: '모델이 {seconds}초 안에 응답하지 않았습니다',
+    requestTimeout: '서버가 {seconds}초 안에 응답하지 않았습니다',
     llmUnknown: '모델의 응답을 받지 못했습니다',
     dictKeyRejected: 'Yandex 사전이 키를 거부했습니다 — 설정에서 확인하세요',
     dictSharedKeyOut: '공용 Yandex.Dictionary 키가 소진되었거나 회수되었습니다. 설정에서 직접 발급받은 키를 입력하세요. 무료입니다.',

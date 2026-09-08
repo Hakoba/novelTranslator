@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BookmarkPlus, Crosshair } from 'lucide-vue-next'
 import Button from 'primevue/button'
+import Message from 'primevue/message'
 import WordItem from '@/components/WordItem.vue'
 import InlineSvg from '@/components/InlineSvg.vue'
 import allKnownArt from '@/assets/illustrations/all-known.svg?raw'
 import analyzeOffArt from '@/assets/illustrations/analyze-off.svg?raw'
 import errorArt from '@/assets/illustrations/error.svg?raw'
 import pickingArt from '@/assets/illustrations/picking.svg?raw'
+import analyzingArt from '@/assets/loaders/analyze.svg?raw'
 import type { ImmersionWord, WordWithExplanation } from '@/types/words'
 import { normalizeTerm } from '@/utils/dictionary'
 import { hintAttrs } from '@/utils/hint'
@@ -34,6 +36,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'analyze'): void
+  (e: 'cancel'): void
   (e: 'add', word: WordWithExplanation): void
   (e: 'addAll'): void
   (e: 'ignore', term: string): void
@@ -42,10 +45,22 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// по букве в span — иначе волну не сдвинуть по фазе; пробел неразрывный, обычный схлопнется
-const loadingChars = computed<string[]>(() =>
-  [...t('overlay.analyzing')].map((char) => char === ' ' ? '\u00a0' : char),
-)
+/**
+ * Обычный разбор укладывается в пару секунд; дольше — что-то застряло,
+ * и рядом с ожиданием появляется отмена. Не сразу: мигать кнопкой
+ * на каждый быстрый разбор незачем.
+ */
+const SLOW_AFTER_MS = 10000
+const isSlow = ref<boolean>(false)
+let slowTimer: ReturnType<typeof setTimeout> | undefined
+
+watch(() => props.isLoading, (loading): void => {
+  clearTimeout(slowTimer)
+  isSlow.value = false
+  if (loading) slowTimer = setTimeout(() => { isSlow.value = true }, SLOW_AFTER_MS)
+}, { immediate: true })
+
+onUnmounted((): void => clearTimeout(slowTimer))
 
 function isOnPage(word: WordWithExplanation): boolean {
   return props.onPage.includes(normalizeTerm(word.original))
@@ -88,21 +103,28 @@ function isOnPage(word: WordWithExplanation): boolean {
 
     <div
       v-else-if="isLoading"
-      class="flex flex-col items-center gap-3 py-10"
-      :aria-label="t('overlay.analyzing')"
+      class="flex flex-col items-center gap-3 py-6 text-center"
       aria-busy="true"
     >
-      <p
-        class="nt-wave m-0 text-lg font-medium"
-        aria-hidden="true"
-      >
-        <span
-          v-for="(char, index) in loadingChars"
-          :key="index"
-          :style="{ animationDelay: `${index * 55}ms` }"
-        >{{ char }}</span>
+      <InlineSvg
+        :markup="analyzingArt"
+        class="w-36 text-content"
+      />
+      <p class="m-0 text-muted">
+        {{ t('overlay.analyzing') }}
       </p>
-      <div class="nt-bar w-40" />
+      <template v-if="isSlow">
+        <p class="m-0 text-sm text-muted">
+          {{ t('overlay.analyzingSlow') }}
+        </p>
+        <Button
+          size="small"
+          severity="secondary"
+          outlined
+          :label="t('overlay.cancelAnalyze')"
+          @click="emit('cancel')"
+        />
+      </template>
     </div>
 
     <!-- вкрапления: слово подменило собой текст, и найти его глазами трудно —
@@ -160,8 +182,10 @@ function isOnPage(word: WordWithExplanation): boolean {
       </ul>
     </div>
 
+    <!-- экран ошибки — только когда показывать больше нечего: слова, найденные
+         офлайн-профилем, при отказе переводчика остаются, а причина идёт над списком -->
     <div
-      v-else-if="errorMessage"
+      v-else-if="errorMessage && !words.length"
       class="flex flex-col items-center gap-3 py-4 text-center"
     >
       <InlineSvg
@@ -182,6 +206,24 @@ function isOnPage(word: WordWithExplanation): boolean {
       v-else-if="words.length"
       class="flex flex-col gap-2"
     >
+      <Message
+        v-if="errorMessage"
+        severity="warn"
+        size="small"
+        variant="simple"
+      >
+        <span class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {{ errorMessage }}
+          <Button
+            size="small"
+            severity="warn"
+            text
+            :label="t('common.retry')"
+            @click="emit('analyze')"
+          />
+        </span>
+      </Message>
+
       <!-- на одно слово кнопка не нужна: рядом с ним и так есть своя закладка -->
       <div v-if="words.length > 1">
         <Button

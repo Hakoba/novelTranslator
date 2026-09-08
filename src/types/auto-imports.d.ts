@@ -9,6 +9,7 @@
 export {}
 declare global {
   const BACKUP_VERSION: typeof import('../utils/backup').BACKUP_VERSION
+  const BG_FETCH_TIMEOUT_MS: typeof import('../utils/bgFetch').BG_FETCH_TIMEOUT_MS
   const CEFR_WORDS: typeof import('../utils/cefr/wordLevels.data').CEFR_WORDS
   const CONTRACT_PROMPT_WORDS: typeof import('../utils/llmClient').CONTRACT_PROMPT_WORDS
   const CREATE_TABLES: typeof import('../utils/ankiSchema').CREATE_TABLES
@@ -606,6 +607,7 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly BACKUP_VERSION: UnwrapRef<typeof import('../utils/backup')['BACKUP_VERSION']>
+    readonly BG_FETCH_TIMEOUT_MS: UnwrapRef<typeof import('../utils/bgFetch')['BG_FETCH_TIMEOUT_MS']>
     readonly CEFR_WORDS: UnwrapRef<typeof import('../utils/cefr/wordLevels.data')['CEFR_WORDS']>
     readonly CREATE_TABLES: UnwrapRef<typeof import('../utils/ankiSchema')['CREATE_TABLES']>
     readonly DECK_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['DECK_NAME']>
