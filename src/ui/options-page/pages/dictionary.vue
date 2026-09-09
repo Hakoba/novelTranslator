@@ -11,8 +11,6 @@ import noResultsArt from '@/assets/illustrations/no-results.svg?raw'
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 import { parseApkg } from '@/utils/anki'
 import LookupPanel from '@/components/LookupPanel.vue'
-import { firstTranslation } from '@/utils/dict/parse'
-import { lookupTerm } from '@/utils/dictClient'
 import { dictTranslate, dictTranslateMany } from '@/utils/translateTerm'
 import { useAnkiExport } from '@/composables/useAnkiExport'
 import { useDictionary } from '@/composables/useDictionary'
@@ -141,8 +139,7 @@ async function suggestTranslation(force = false): Promise<void> {
   isSuggesting.value = true
 
   try {
-    const { results } = await lookupTerm(original)
-    const translate = firstTranslation(results.find((result) => result.source === 'yandex'))
+    const translate = (await dictTranslate(original))?.translate
     if (translate) draft.value.translate = translate
   } finally {
     isSuggesting.value = false

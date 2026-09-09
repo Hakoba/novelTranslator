@@ -49,8 +49,11 @@ function schedule(term: string): void {
     // слово под курсором успело смениться, пока ходили в словарь
     if (term !== props.term) return
 
-    // толкование информативнее второго списка переводов: перевод уже показан выше
-    lookup.value = results.find((result) => result.source === 'free') ?? results[0]
+    // толкование информативнее второго списка переводов: перевод уже показан выше,
+    // а машинный перевод его бы просто повторил — он нужен, только когда перевода нет
+    lookup.value =
+      results.find((result) => result.source === 'free') ??
+      results.find((result) => result.source !== 'machine' || !props.translate)
   }, LOOKUP_DELAY_MS)
 }
 

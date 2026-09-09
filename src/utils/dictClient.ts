@@ -1,12 +1,15 @@
 import type { LookupResult } from '@/types/lookup'
-import { dictKey, getDictSettings, isBundledKey } from '@/composables/useDictSettings'
+import { dictKey, getDictSettings } from '@/composables/useDictSettings'
+import { machineTranslate } from '@/utils/mtClient'
 import { getReaderSettings } from '@/composables/useReaderSettings'
 import { sendBgFetch } from '@/utils/bgFetch'
 import { normalizeTerm } from '@/utils/dictionary'
 import { parseFreeDictionary, parseYandexLookup } from '@/utils/dict/parse'
 import { t } from '@/utils/i18n'
 
-const YANDEX_URL = 'https://dictionary.yandex.net/api/v1/dicservice.json/lookup'
+/** Хост словаря: доступ к нему просит страница настроек при выборе Яндекса */
+export const YANDEX_LOOKUP_ORIGIN = 'https://dictionary.yandex.net'
+const YANDEX_URL = `${YANDEX_LOOKUP_ORIGIN}/api/v1/dicservice.json/lookup`
 
 /** Куда ведёт атрибуция: активная ссылка на сервис — требование условий использования */
 export const YANDEX_DICT_URL = 'https://yandex.ru/dev/dictionary/'
@@ -47,11 +50,7 @@ export async function lookupYandex(term: string): Promise<LookupResult | undefin
   const query = `key=${encodeURIComponent(key)}&lang=${pair}&text=${encodeURIComponent(term)}`
   const res = await sendBgFetch(`${YANDEX_URL}?${query}`, { method: 'GET' })
 
-  // 403 общий ключ отдаёт и когда кончилась суточная квота, и когда его отозвали:
-  // исход для читателя один — нужен свой
-  if (res.status === 401 || res.status === 403) {
-    throw new Error(t(isBundledKey(settings) ? 'errors.dictSharedKeyOut' : 'errors.dictKeyRejected'))
-  }
+  if (res.status === 401 || res.status === 403) throw new Error(t('errors.dictKeyRejected'))
   if (!res.ok) return undefined
 
   return parseYandexLookup(res.data, term)
@@ -67,15 +66,30 @@ export async function lookupFreeDictionary(term: string): Promise<LookupResult |
   return parseFreeDictionary(res.data, term)
 }
 
+/**
+ * Перевод выбранным машинным переводчиком в виде словарной статьи: один смысл,
+ * без транскрипции и частей речи. Яндекс новые ключи не выдаёт, и это то, что
+ * остаётся карточке из коробки.
+ */
+async function lookupMachine(term: string): Promise<LookupResult | undefined> {
+  const translation = await machineTranslate(term)
+
+  return translation ? { source: 'machine', term, senses: [{ translations: [translation] }] } : undefined
+}
+
 async function runLookup(term: string, withDefinitions: boolean): Promise<LookupOutcome> {
   const normalized = normalizeTerm(term)
   if (!normalized) return { results: [] }
 
-  // языки в ключе: сменил пару в настройках — старые ответы больше не подходят
+  // языки и источник в ключе: сменил их в настройках — старые ответы больше не подходят
   const { sourceLang, targetLang } = await getReaderSettings()
-  const key = `${sourceLang}-${targetLang}:${normalized}`
+  const { translator } = await getDictSettings()
+  const key = `${translator}:${sourceLang}-${targetLang}:${normalized}`
 
-  const sources = [cachedLookup(`yandex:${key}`, () => lookupYandex(term))]
+  // перевод — от источника из настроек; «не переводить» оставляет одни толкования
+  const sources: Promise<LookupResult | undefined>[] = []
+  if (translator === 'yandex') sources.push(cachedLookup(`yandex:${key}`, () => lookupYandex(term)))
+  else if (translator !== 'none') sources.push(cachedLookup(`machine:${key}`, () => lookupMachine(term)))
   if (withDefinitions) sources.push(cachedLookup(`free:${key}`, () => lookupFreeDictionary(term)))
 
   const settled = await Promise.allSettled(sources)
@@ -91,8 +105,8 @@ async function runLookup(term: string, withDefinitions: boolean): Promise<Lookup
 }
 
 /**
- * Оба словаря разом: англо-русский даёт перевод, англо-английский — толкование.
- * Отказ одного не отменяет ответ другого.
+ * Перевод и толкование разом: перевод от выбранного источника, толкование
+ * от англо-английского словаря. Отказ одного не отменяет ответ другого.
  */
 export function lookupTerm(term: string): Promise<LookupOutcome> {
   return runLookup(term, true)

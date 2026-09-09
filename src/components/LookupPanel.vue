@@ -2,12 +2,18 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppLoader from '@/components/AppLoader.vue'
-import { type LookupResult } from '@/types/lookup'
+import type { LookupResult, LookupSource } from '@/types/lookup'
 import { useReaderSettings } from '@/composables/useReaderSettings'
 import { YANDEX_DICT_URL, lookupTerm } from '@/utils/dictClient'
 import { dictionaryLinks, type DictLink } from '@/utils/dict/links'
 
 const props = defineProps<{ term: string }>()
+
+const SOURCE_LABEL: Record<LookupSource, string> = {
+  yandex: 'lookup.sourceYandex',
+  free: 'lookup.sourceFree',
+  machine: 'lookup.sourceMachine',
+}
 
 // composables
 const { t } = useI18n()
@@ -56,7 +62,7 @@ onMounted(async (): Promise<void> => {
         class="flex flex-col gap-1"
       >
         <p class="m-0 flex flex-wrap items-baseline gap-2 text-xs text-muted">
-          <span>{{ t(`lookup.source${result.source === 'yandex' ? 'Yandex' : 'Free'}`) }}</span>
+          <span>{{ t(SOURCE_LABEL[result.source]) }}</span>
           <span v-if="result.transcription">[{{ result.transcription }}]</span>
         </p>
 

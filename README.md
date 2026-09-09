@@ -122,9 +122,10 @@ time or the exact error the overlay would have shown.
 ### Dictionaries and translators
 
 Single words are translated by a dictionary rather than a model — it is faster and costs
-nothing. [Yandex Dictionary](https://yandex.ru/dev/dictionary/) needs a free key;
-[dictionaryapi.dev](https://dictionaryapi.dev/) gives definitions without one. Phrases can go
-through DeepL or LibreTranslate before the model is involved.
+nothing. Out of the box that is the Microsoft Edge translator; [Yandex Dictionary](https://yandex.ru/dev/dictionary/)
+gives full entries with transcription if you already have its key (Yandex no longer issues
+new ones); [dictionaryapi.dev](https://dictionaryapi.dev/) gives definitions without one.
+Phrases can go through DeepL or LibreTranslate before the model is involved.
 
 ## How it works
 

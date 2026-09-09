@@ -3,7 +3,10 @@ import { useBrowserSyncStorage } from './useBrowserStorage'
 import type { TranslatorId } from '@/utils/mt/translators'
 
 export interface DictSettings {
-  /** Ключ Яндекс.Словаря (dictionary.yandex.net), бесплатный, выдаётся в кабинете разработчика */
+  /**
+   * Ключ Яндекс.Словаря (dictionary.yandex.net). Новые ключи Яндекс не выдаёт —
+   * форма выдачи редиректит на обратную связь; поле для тех, у кого ключ уже есть
+   */
   yandexKey: string
   /**
    * Кто переводит слова и фразы до модели: Яндекс.Словарь или машинный переводчик.
@@ -39,26 +42,9 @@ export const DEFAULT_DICT_SETTINGS: DictSettings = {
   libreKey: '',
 }
 
-export const YANDEX_DICT_KEY_URL = 'https://yandex.ru/dev/dictionary/'
-
-/**
- * Общий ключ из сборки. Ключи модели платные и остаются в dev-сборке, а этот
- * бесплатный и с суточной квотой — им расширение переводит слова сразу после
- * установки, без похода за ключом. Квота одна на всех, поэтому свой ключ
- * в настройках его перебивает, а не дополняет.
- */
-const bundledKey = __YANDEX_DICT_KEY__
-
-export const HAS_BUNDLED_DICT_KEY = Boolean(bundledKey)
-
-/** Чей ключ пойдёт в запрос. Пустая строка — словарь Яндекса просто промолчит */
+/** Ключ для запроса. Пустая строка — словарь Яндекса просто промолчит */
 export function dictKey(settings: DictSettings): string {
-  return settings.yandexKey.trim() || bundledKey
-}
-
-/** Общая квота кончается на всех сразу — про это надо говорить не так, как про чужой ключ */
-export function isBundledKey(settings: DictSettings): boolean {
-  return !settings.yandexKey.trim() && HAS_BUNDLED_DICT_KEY
+  return settings.yandexKey.trim()
 }
 
 const { data, promise } = useBrowserSyncStorage<DictSettings>('dict-settings', DEFAULT_DICT_SETTINGS)

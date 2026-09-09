@@ -16,8 +16,5 @@ declare const __GITHUB_URL__: string
 declare const __YANDEX_API_KEY__: string
 declare const __YANDEX_FOLDER_ID__: string
 
-// Общий ключ Яндекс.Словаря: бесплатный, попадает и в прод-сборку
-declare const __YANDEX_DICT_KEY__: string
-
 // Chrome рисует список слов в боковой панели браузера, Firefox докует его в страницу
 declare const __HAS_SIDE_PANEL__: boolean

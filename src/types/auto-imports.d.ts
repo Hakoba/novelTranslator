@@ -62,6 +62,7 @@ declare global {
   const YANDEX_BASE_URL: typeof import('../composables/useLlmSettings').YANDEX_BASE_URL
   const YANDEX_DICT_KEY_URL: typeof import('../composables/useDictSettings').YANDEX_DICT_KEY_URL
   const YANDEX_DICT_URL: typeof import('../utils/dictClient').YANDEX_DICT_URL
+  const YANDEX_LOOKUP_ORIGIN: typeof import('../utils/dictClient').YANDEX_LOOKUP_ORIGIN
   const YANDEX_PRESET: typeof import('../composables/useLlmSettings').YANDEX_PRESET
   const YANDEX_SOURCE: typeof import('../utils/mt/translators').YANDEX_SOURCE
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
@@ -637,7 +638,6 @@ declare module 'vue' {
     readonly FAQ_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['FAQ_URL']>
     readonly FIELD_NAMES: UnwrapRef<typeof import('../utils/ankiSchema')['FIELD_NAMES']>
     readonly HARD_WORDS_LIMIT: UnwrapRef<typeof import('../utils/cefr/hardWords')['HARD_WORDS_LIMIT']>
-    readonly HAS_BUNDLED_DICT_KEY: UnwrapRef<typeof import('../composables/useDictSettings')['HAS_BUNDLED_DICT_KEY']>
     readonly HAS_DEV_YANDEX_CREDENTIALS: UnwrapRef<typeof import('../composables/useLlmSettings')['HAS_DEV_YANDEX_CREDENTIALS']>
     readonly LANGUAGES: UnwrapRef<typeof import('../utils/languages')['LANGUAGES']>
     readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
@@ -667,8 +667,8 @@ declare module 'vue' {
     readonly UI_LANGUAGE_CODES: UnwrapRef<typeof import('../utils/languages')['UI_LANGUAGE_CODES']>
     readonly WORD_ENGINES: UnwrapRef<typeof import('../composables/useReaderSettings')['WORD_ENGINES']>
     readonly YANDEX_BASE_URL: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_BASE_URL']>
-    readonly YANDEX_DICT_KEY_URL: UnwrapRef<typeof import('../composables/useDictSettings')['YANDEX_DICT_KEY_URL']>
     readonly YANDEX_DICT_URL: UnwrapRef<typeof import('../utils/dictClient')['YANDEX_DICT_URL']>
+    readonly YANDEX_LOOKUP_ORIGIN: UnwrapRef<typeof import('../utils/dictClient')['YANDEX_LOOKUP_ORIGIN']>
     readonly YANDEX_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['YANDEX_PRESET']>
     readonly YANDEX_SOURCE: UnwrapRef<typeof import('../utils/mt/translators')['YANDEX_SOURCE']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -768,7 +768,6 @@ declare module 'vue' {
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
     readonly intervalDays: UnwrapRef<typeof import('../utils/srs')['intervalDays']>
     readonly isBelow: UnwrapRef<typeof import('../utils/cefr/levels')['isBelow']>
-    readonly isBundledKey: UnwrapRef<typeof import('../composables/useDictSettings')['isBundledKey']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isPanelCommand: UnwrapRef<typeof import('../utils/panelBus')['isPanelCommand']>
     readonly isPanelState: UnwrapRef<typeof import('../utils/panelBus')['isPanelState']>

@@ -39,7 +39,6 @@ export default {
   // сайты и сервисы читатель разрешает сам — по одному, через `permissions.request`
   host_permissions: [
     "https://*.reddit.com/*",
-    "https://dictionary.yandex.net/*",
     "https://api.dictionaryapi.dev/*",
     "https://edge.microsoft.com/*",
     "https://api-edge.cognitive.microsofttranslator.com/*",

@@ -7,7 +7,8 @@ import InlineSvg from '@/components/InlineSvg.vue'
 import { useHostAccess } from '@/composables/useHostAccess'
 import { credentialsFor } from '@/utils/mtClient'
 import dictionariesArt from '@/assets/illustrations/dictionaries.svg?raw'
-import { HAS_BUNDLED_DICT_KEY, YANDEX_DICT_KEY_URL, useDictSettings } from '@/composables/useDictSettings'
+import { useDictSettings } from '@/composables/useDictSettings'
+import { YANDEX_LOOKUP_ORIGIN } from '@/utils/dictClient'
 import type { Translator } from '@/utils/mt/translators'
 import { TRANSLATOR_LIST, YANDEX_SOURCE, getTranslator } from '@/utils/mt/translators'
 import type { TranslatorId } from '@/utils/mt/translators'
@@ -31,9 +32,11 @@ const translatorOptions = computed<{ id: string; title: string }[]>(() => [
 const translator = computed<Translator | undefined>(() => getTranslator(settings.value.translator))
 
 /** Адреса выбранного переводчика: у Lingva и LibreTranslate — из поля, у DeepL — по виду ключа */
-const translatorUrls = computed<string[]>(() =>
-  translator.value ? translator.value.origins(credentialsFor(translator.value.id, settings.value)) : [],
-)
+const translatorUrls = computed<string[]>(() => {
+  if (settings.value.translator === 'yandex') return [YANDEX_LOOKUP_ORIGIN]
+
+  return translator.value ? translator.value.origins(credentialsFor(translator.value.id, settings.value)) : []
+})
 
 // методы
 /** Выбор в списке — клик, и доступ к хосту переводчика спрашиваем сразу же */
@@ -116,24 +119,8 @@ function applyTranslator(id: TranslatorId): void {
             placeholder="dict.1.1..."
           />
           <small class="text-muted">
-            {{ t('settings.dictionaries.yandexHintBefore') }}
-            <a
-              :href="YANDEX_DICT_KEY_URL"
-              target="_blank"
-              rel="noreferrer noopener"
-              class="inline-flex items-center gap-1 underline underline-offset-2"
-            >{{ t('settings.dictionaries.yandexHintLink') }}<ExternalLink :size="12" /></a>.
-            {{ t('settings.dictionaries.yandexHintAfter') }}
+            {{ t('settings.dictionaries.yandexHint') }}
           </small>
-
-          <Message
-            v-if="HAS_BUNDLED_DICT_KEY && !settings.yandexKey"
-            severity="info"
-            size="small"
-            variant="simple"
-          >
-            {{ t('settings.dictionaries.sharedKey') }}
-          </Message>
         </div>
 
         <div
