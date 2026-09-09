@@ -88,8 +88,7 @@ test('google: ответ без имён полей склеивается из 
   assert.equal(TRANSLATORS.google.extractText({ translation: 'вспышка' }), '')
 })
 
-test('edge и azure: общий формат Microsoft, разная подпись', () => {
-  const edge = TRANSLATORS.edge.buildRequest('flash of light', 'en', 'ru', { ...CREDENTIALS, apiKey: 'jwt-token' })
+test('azure: формат Microsoft, подпись ключом и регионом', () => {
   const azure = TRANSLATORS.azure.buildRequest('flash of light', 'en', 'ru', {
     baseUrl: '',
     apiKey: 'azure-key',
@@ -101,13 +100,12 @@ test('edge и azure: общий формат Microsoft, разная подпи�
     region: '',
   })
 
-  assert.equal(edge.headers.Authorization, 'Bearer jwt-token')
-  assert.deepEqual(JSON.parse(edge.body ?? ''), [{ Text: 'flash of light' }])
+  assert.deepEqual(JSON.parse(azure.body ?? ''), [{ Text: 'flash of light' }])
   assert.equal(azure.headers['Ocp-Apim-Subscription-Key'], 'azure-key')
   assert.equal(azure.headers['Ocp-Apim-Subscription-Region'], 'westeurope')
   // ресурс Global региона не имеет, и пустой заголовок он отвергает
   assert.equal('Ocp-Apim-Subscription-Region' in global.headers, false)
-  assert.equal(TRANSLATORS.edge.extractText([{ translations: [{ text: 'вспышка света', to: 'ru' }] }]), 'вспышка света')
+  assert.equal(TRANSLATORS.azure.extractText([{ translations: [{ text: 'вспышка света', to: 'ru' }] }]), 'вспышка света')
   assert.equal(TRANSLATORS.azure.extractText([{ translations: [] }]), '')
 })
 
@@ -134,15 +132,15 @@ test('переводчики без ключа не требуют ни ключ
   // неофициальные помечены: интерфейс предупреждает, что такой источник может отвалиться
   assert.deepEqual(
     TRANSLATOR_LIST.filter((item) => item.unofficial).map((item) => item.id),
-    ['google', 'edge', 'lingva'],
+    ['google', 'lingva'],
   )
 })
 
 test('пакет: google строками, microsoft и deepl массивами, ответ по позициям', () => {
   const google = TRANSLATORS.google.batch
-  const edge = TRANSLATORS.edge.batch
+  const azure = TRANSLATORS.azure.batch
   const deepl = TRANSLATORS.deepl.batch
-  assert.ok(google && edge && deepl)
+  assert.ok(google && azure && deepl)
 
   const googleRequest = google.build(['flash', 'light'], 'en', 'ru', CREDENTIALS)
   assert.equal(new URL(googleRequest.url).searchParams.get('q'), 'flash\nlight')
@@ -153,13 +151,13 @@ test('пакет: google строками, microsoft и deepl массивами
   // Google склеил строки по-своему — переводы съехали бы, пакет отвергается
   assert.deepEqual(google.extract([[['вспышка свет', 'flash\nlight']], null, 'en'], 2), [])
 
-  const edgeRequest = edge.build(['flash', 'light'], 'en', 'ru', { ...CREDENTIALS, apiKey: 'jwt' })
-  assert.deepEqual(JSON.parse(edgeRequest.body ?? ''), [{ Text: 'flash' }, { Text: 'light' }])
+  const azureRequest = azure.build(['flash', 'light'], 'en', 'ru', { ...CREDENTIALS, apiKey: 'azure-key' })
+  assert.deepEqual(JSON.parse(azureRequest.body ?? ''), [{ Text: 'flash' }, { Text: 'light' }])
   assert.deepEqual(
-    edge.extract([{ translations: [{ text: 'вспышка' }] }, { translations: [] }], 2),
+    azure.extract([{ translations: [{ text: 'вспышка' }] }, { translations: [] }], 2),
     ['вспышка', ''],
   )
-  assert.deepEqual(edge.extract([{ translations: [{ text: 'вспышка' }] }], 2), [])
+  assert.deepEqual(azure.extract([{ translations: [{ text: 'вспышка' }] }], 2), [])
 
   const deeplRequest = deepl.build(['flash', 'light'], 'en', 'ru', CREDENTIALS)
   assert.deepEqual(JSON.parse(deeplRequest.body ?? '').text, ['flash', 'light'])

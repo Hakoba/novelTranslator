@@ -175,6 +175,7 @@ declare global {
   const isShallow: typeof import('vue').isShallow
   const isSiteAllowed: typeof import('../composables/matchesSite').isSiteAllowed
   const isTargetLanguageText: typeof import('../utils/immersion').isTargetLanguageText
+  const isTranslatorId: typeof import('../utils/mt/translators').isTranslatorId
   const isUiLanguage: typeof import('../utils/languages').isUiLanguage
   const isValidUrl: typeof import('../composables/matchesSite').isValidUrl
   const joinBlocks: typeof import('../utils/extract/blocks').joinBlocks
@@ -632,7 +633,6 @@ declare module 'vue' {
     readonly DICTIONARY_KEY: UnwrapRef<typeof import('../utils/dictionary')['DICTIONARY_KEY']>
     readonly DICTIONARY_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['DICTIONARY_URL']>
     readonly DOCK_WIDTH: UnwrapRef<typeof import('../composables/useOverlayDock')['DOCK_WIDTH']>
-    readonly EDGE_AUTH_URL: UnwrapRef<typeof import('../utils/mt/translators')['EDGE_AUTH_URL']>
     readonly EMPTY_FILTERS: UnwrapRef<typeof import('../utils/dictionary')['EMPTY_FILTERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FAQ_URL: UnwrapRef<typeof import('../utils/dictionaryTab')['FAQ_URL']>
@@ -780,6 +780,7 @@ declare module 'vue' {
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
     readonly isSiteAllowed: UnwrapRef<typeof import('../composables/matchesSite')['isSiteAllowed']>
     readonly isTargetLanguageText: UnwrapRef<typeof import('../utils/immersion')['isTargetLanguageText']>
+    readonly isTranslatorId: UnwrapRef<typeof import('../utils/mt/translators')['isTranslatorId']>
     readonly isUiLanguage: UnwrapRef<typeof import('../utils/languages')['isUiLanguage']>
     readonly isValidUrl: UnwrapRef<typeof import('../composables/matchesSite')['isValidUrl']>
     readonly joinBlocks: UnwrapRef<typeof import('../utils/extract/blocks')['joinBlocks']>

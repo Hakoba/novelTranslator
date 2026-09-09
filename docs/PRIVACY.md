@@ -19,12 +19,12 @@ and only from sites where you have allowed the extension to run:
 - a language model at the address you configured — your own local server or a cloud
   provider (OpenAI-compatible APIs, Anthropic, Google Gemini) with your own key;
 - dictionaries and machine translators you selected (Yandex Dictionary,
-  dictionaryapi.dev, MyMemory, Google Translate, Microsoft Edge Translator, Lingva,
+  dictionaryapi.dev, MyMemory, Google Translate, Lingva,
   DeepL, Azure Translator, LibreTranslate).
 
 Each of these services processes the text under its own privacy policy. Out of the
-box, single words are sent to the Microsoft Edge translator and dictionaryapi.dev; a
-language model is used only after you configure one.
+box, single words are sent to MyMemory and dictionaryapi.dev; a language model is used
+only after you configure one.
 
 The extension never sends anything to the website you are visiting and does not
 modify its requests.
@@ -49,7 +49,7 @@ Nothing is stored outside your browser. Uninstalling the extension removes its d
 - `sidePanel` — the word list in Chrome's side panel.
 - `scripting` — registers the page script on the sites you granted access to.
 - Host access — out of the box only `reddit.com` and the key-free dictionaries
-  (api.dictionaryapi.dev and the Edge translator at edge.microsoft.com and api-edge.cognitive.microsofttranslator.com). Every
+  (api.dictionaryapi.dev, api.mymemory.translated.net). Every
   other site, translator or model address is granted by **you** when you add it:
   the browser asks each time. The "everywhere except" mode asks once for access to
   all sites, and the extension then additionally stays off on mail, banking,
@@ -83,12 +83,12 @@ Erudit — расширение браузера, которое подсвеч�
 - языковой модели по указанному вами адресу — вашему локальному серверу или облачному
   провайдеру (OpenAI-совместимые API, Anthropic, Google Gemini) с вашим ключом;
 - словарям и машинным переводчикам, которые вы выбрали (Яндекс.Словарь,
-  dictionaryapi.dev, MyMemory, Google Translate, переводчик Microsoft Edge, Lingva,
+  dictionaryapi.dev, MyMemory, Google Translate, Lingva,
   DeepL, Azure Translator, LibreTranslate).
 
 Каждый из этих сервисов обрабатывает текст по своей политике. Из коробки отдельные
-слова уходят в переводчик Microsoft Edge и dictionaryapi.dev; модель используется только
-после того, как вы её настроите.
+слова уходят в MyMemory и dictionaryapi.dev; модель используется только после того,
+как вы её настроите.
 
 Посещаемому сайту расширение ничего не отправляет и его запросы не меняет.
 
@@ -112,7 +112,7 @@ Erudit — расширение браузера, которое подсвеч�
 - `sidePanel` — список слов в боковой панели Chrome.
 - `scripting` — подключение скрипта страницы к сайтам, к которым выдан доступ.
 - Доступ к сайтам — из коробки только `reddit.com` и бесключевые словари
-  (api.dictionaryapi.dev и переводчик Edge: edge.microsoft.com и api-edge.cognitive.microsofttranslator.com). Каждый
+  (api.dictionaryapi.dev, api.mymemory.translated.net). Каждый
   следующий сайт, переводчик или адрес модели разрешаете **вы** при добавлении:
   браузер спрашивает каждый раз. Режим «везде, кроме» просит доступ ко всем сайтам
   один раз, и расширение дополнительно молчит на почте, в банках, на госуслугах

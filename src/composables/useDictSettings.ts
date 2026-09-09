@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { useBrowserSyncStorage } from './useBrowserStorage'
-import type { TranslatorId } from '@/utils/mt/translators'
+import { isTranslatorId, type TranslatorId } from '@/utils/mt/translators'
 
 export interface DictSettings {
   /**
@@ -11,10 +11,9 @@ export interface DictSettings {
   /**
    * Кто переводит слова и фразы до модели: Яндекс.Словарь или машинный переводчик.
    * Дешевле модели, но без уровня и пояснений.
-   * По умолчанию Edge: без ключа, знает все пары языков расширения и переводит
-   * пачку слов одним запросом настоящим массивом — Google склеивает строки
-   * переносом и банит по частоте первым. Эндпоинт неофициальный, об этом сказано
-   * в настройках
+   * По умолчанию MyMemory: единственный бесключевой с официальным тарифом. Пакетные
+   * бесключевые кончились: точку токена Edge Microsoft закрыл (404), Google банит
+   * по частоте, DeepL из России отвечает 451
    */
   translator: TranslatorId
   /** Почта поднимает суточную квоту MyMemory с 5 до 50 тысяч слов; ключом не является */
@@ -32,7 +31,7 @@ export interface DictSettings {
 
 export const DEFAULT_DICT_SETTINGS: DictSettings = {
   yandexKey: '',
-  translator: 'edge',
+  translator: 'mymemory',
   myMemoryEmail: '',
   lingvaUrl: 'https://lingva.ml',
   deeplKey: '',
@@ -47,7 +46,13 @@ export function dictKey(settings: DictSettings): string {
   return settings.yandexKey.trim()
 }
 
-const { data, promise } = useBrowserSyncStorage<DictSettings>('dict-settings', DEFAULT_DICT_SETTINGS)
+const { data, promise: loaded } = useBrowserSyncStorage<DictSettings>('dict-settings', DEFAULT_DICT_SETTINGS)
+
+// переводчик, которого больше нет в списке (Edge закрылся), уступает место дефолту —
+// иначе выбор в настройках пуст, а перевод молча не идёт
+const promise = loaded.then(() => {
+  if (!isTranslatorId(data.value.translator)) data.value.translator = DEFAULT_DICT_SETTINGS.translator
+})
 
 export function useDictSettings(): {
   settings: Ref<DictSettings>

@@ -8,7 +8,6 @@ export type TranslatorId =
   | 'yandex'
   | 'mymemory'
   | 'google'
-  | 'edge'
   | 'lingva'
   | 'deepl'
   | 'azure'
@@ -19,6 +18,12 @@ export type TranslatorId =
  * нет: он живёт в `dictClient` — со своим кэшем, ключом из сборки, разбором статьи
  * и отдельным сообщением про общую квоту. Отсюда — только имя для списка.
  */
+const TRANSLATOR_IDS: TranslatorId[] = ['none', 'yandex', 'mymemory', 'google', 'lingva', 'deepl', 'azure', 'libre']
+
+export function isTranslatorId(value: unknown): value is TranslatorId {
+  return typeof value === 'string' && TRANSLATOR_IDS.some((id) => id === value)
+}
+
 export const YANDEX_SOURCE: { id: TranslatorId; title: string } = { id: 'yandex', title: 'Яндекс.Словарь' }
 
 /** Кого умеет позвать `mtClient`: у Яндекса свой путь, «не переводить» не зовёт никого */
@@ -70,9 +75,6 @@ export interface Translator {
 
 const JSON_HEADERS: Record<string, string> = { 'Content-Type': 'application/json' }
 
-/** Токен на десять минут выдают анониму, ключ и регистрация не нужны */
-export const EDGE_AUTH_URL = 'https://edge.microsoft.com/translate/auth'
-
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -115,7 +117,7 @@ function extractDeepl(data: unknown, count: number): string[] {
   return data.translations.map((item: unknown) => (isObject(item) && typeof item.text === 'string' ? item.text : ''))
 }
 
-/** Edge и Azure — один API Microsoft: тело и ответ общие, разные только адрес и авторизация */
+/** Формат API Microsoft Translator (Azure) */
 function microsoftBody(text: string): string {
   return JSON.stringify([{ Text: text }])
 }
@@ -219,33 +221,6 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     },
   },
 
-  edge: {
-    id: 'edge',
-    title: 'Microsoft Edge',
-    keyUrl: 'https://www.microsoft.com/translator',
-    requiresKey: false,
-    requiresUrl: false,
-    unofficial: true,
-    origins: () => [EDGE_AUTH_URL, 'https://api-edge.cognitive.microsofttranslator.com'],
-    // ключ приходит не от пользователя: `mtClient` берёт анонимный токен по `EDGE_AUTH_URL`
-    buildRequest: (text, source, target, { apiKey }) => ({
-      url: `https://api-edge.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${source}&to=${target}`,
-      method: 'POST',
-      headers: { ...JSON_HEADERS, Authorization: `Bearer ${apiKey}` },
-      body: microsoftBody(text),
-    }),
-    extractText: extractMicrosoft,
-    batch: {
-      build: (texts, source, target, { apiKey }) => ({
-        url: `https://api-edge.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${source}&to=${target}`,
-        method: 'POST',
-        headers: { ...JSON_HEADERS, Authorization: `Bearer ${apiKey}` },
-        body: microsoftBatchBody(texts),
-      }),
-      extract: extractMicrosoftMany,
-    },
-  },
-
   lingva: {
     id: 'lingva',
     title: 'Lingva',
@@ -332,10 +307,10 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
 
 export const TRANSLATOR_LIST: Translator[] = Object.values(TRANSLATORS)
 
-function isTranslatorId(id: string): id is MachineTranslatorId {
+function isMachineTranslatorId(id: string): id is MachineTranslatorId {
   return id in TRANSLATORS
 }
 
 export function getTranslator(id: string): Translator | undefined {
-  return isTranslatorId(id) ? TRANSLATORS[id] : undefined
+  return isMachineTranslatorId(id) ? TRANSLATORS[id] : undefined
 }

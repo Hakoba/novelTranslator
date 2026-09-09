@@ -40,8 +40,7 @@ export default {
   host_permissions: [
     "https://*.reddit.com/*",
     "https://api.dictionaryapi.dev/*",
-    "https://edge.microsoft.com/*",
-    "https://api-edge.cognitive.microsofttranslator.com/*",
+    "https://api.mymemory.translated.net/*",
   ],
   optional_host_permissions: ["<all_urls>"],
   // `tabs` — адрес активной вкладки для попапа и боковой панели; `scripting` —
