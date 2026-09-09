@@ -332,6 +332,8 @@ export default {
     areaA: 'Pulsa «Elegir el área con texto» y haz clic en el bloque correcto. La elección se recuerda para las páginas de ese tipo, no para una dirección: un área elegida en una página vale para todas las páginas de ese tipo del sitio, pero no para su portada.',
     rereadQ: 'La página ha añadido más texto y la lista sigue igual',
     rereadA: 'Una pasada normal analiza solo lo añadido, por eso releer la página entera no cuesta nada. Si pilló el momento equivocado, pulsa «Releer la página»: se lee desde cero.',
+    requestsQ: '¿Cerrar el panel lateral ahorra peticiones?',
+    requestsA: 'No: el análisis vive en la propia página, el panel solo muestra el resultado. Lo que sí ahorra: una pestaña en segundo plano espera a mostrarse; el análisis automático se puede apagar; una página que añade texto envía solo lo nuevo; las respuestas de los diccionarios se guardan en caché hasta recargar.',
     repeatQ: '¿Cómo funciona la práctica?',
     repeatA: 'Los intervalos son 1, 3, 7, 16, 35 y 90 días. Un acierto sube un escalón; un fallo devuelve la escalera al principio. La sesión es de 20 palabras; el espacio muestra la traducción y 1 y 2 puntúan.',
     syncQ: '¿El diccionario se sincroniza entre dispositivos?',

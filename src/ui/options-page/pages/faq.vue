@@ -22,7 +22,7 @@ const SUPPORT_URL = 'https://t.me/erudit_extension'
 const GROUPS: { label: string; items: string[] }[] = [
   { label: 'start', items: ['free', 'silent', 'panel'] },
   { label: 'words', items: ['level', 'engine', 'translator', 'colors', 'simple'] },
-  { label: 'page', items: ['area', 'reread'] },
+  { label: 'page', items: ['area', 'reread', 'requests'] },
   { label: 'dictionary', items: ['repeat', 'sync', 'anki'] },
   { label: 'privacy', items: ['local', 'data'] },
 ]

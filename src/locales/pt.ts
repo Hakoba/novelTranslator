@@ -332,6 +332,8 @@ export default {
     areaA: 'Carregue em «Escolher a área com texto» e clique no bloco certo. A escolha fica guardada para páginas desse tipo e não para um endereço: uma área escolhida numa página vale para todas as páginas desse tipo no site, mas não para a sua lista.',
     rereadQ: 'A página acrescentou mais texto e a lista continua igual',
     rereadA: 'Uma passagem normal analisa apenas o que foi acrescentado, por isso reler a página inteira não custa nada. Se apanhou o momento errado, carregue em «Reler a página»: é lida de raiz.',
+    requestsQ: 'Fechar o painel lateral poupa pedidos?',
+    requestsA: 'Não: a análise vive na própria página, o painel só mostra o resultado. O que poupa: um separador em segundo plano espera até ser mostrado; a análise automática pode ser desligada; uma página que acrescentou texto envia só o novo; as respostas dos dicionários ficam em cache até recarregar.',
     repeatQ: 'Como funciona o treino?',
     repeatA: 'Os intervalos são 1, 3, 7, 16, 35 e 90 dias. Uma resposta certa sobe um degrau; um erro devolve a escada ao início. A sessão tem 20 palavras; o espaço mostra a tradução e 1 e 2 avaliam.',
     syncQ: 'O dicionário sincroniza entre dispositivos?',

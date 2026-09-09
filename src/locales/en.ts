@@ -332,6 +332,8 @@ export default {
     areaA: 'Press “Pick the area with text” and click the right block. The choice is remembered for pages of that kind, not for one address: an area picked on one page works on every page of that kind on the site, but not on its feed.',
     rereadQ: 'The page appended more text, but the list is unchanged',
     rereadA: 'A normal pass only analyses what was appended, so re-reading the whole page costs nothing. If it caught the wrong moment, press “Re-read the page” — it reads the page from scratch.',
+    requestsQ: 'Does closing the side panel save requests?',
+    requestsA: 'No — analysis lives on the page itself, the panel only shows the result. What does save requests: a background tab waits until it is shown; auto-analysis can be turned off; a page that appended text sends only the new part; dictionary answers are cached until reload.',
     repeatQ: 'How does practice work?',
     repeatA: 'Intervals go 1, 3, 7, 16, 35 and 90 days. A correct answer moves one step up, a mistake resets the ladder to the start. A session is 20 words; space shows the translation, 1 and 2 grade it.',
     syncQ: 'Does my dictionary sync between devices?',
