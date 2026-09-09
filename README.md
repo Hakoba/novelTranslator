@@ -22,12 +22,12 @@ and files them into a dictionary with spaced repetition and Anki export.
 Any page with text will do — an article, a docs page, a Reddit thread, a chapter of a book — and
 only on the sites you explicitly allow.
 
-> **Status: 0.0.3.** Not in the extension stores yet, so it is installed from source.
+> **Status: 0.0.4.** Not in the extension stores yet, so it is installed from source.
 > Everything described below works; what is missing is listed under [Roadmap](#roadmap).
 
 <p align="center">
   <img src="landing/img/overlay.png" width="840"
-       alt="A Reddit post with the hard words highlighted in the text, a hover card for one of them and the overlay listing everything it found" />
+       alt="A Reddit post with the hard words highlighted in the text and the side panel listing everything it found, with translations and levels" />
 </p>
 
 ## Why another one
@@ -62,6 +62,11 @@ set it to C1 and the page goes almost quiet.
 <p align="center">
   <img src="landing/img/dictionary.png" width="840"
        alt="The dictionary screen: saved words with their level, the sentence they came from and an explanation, plus search, level filter and Anki export" />
+</p>
+
+<p align="center">
+  <img src="landing/img/training.png" width="840"
+       alt="A practice session: the word, the sentence it came from, the revealed translation and the Knew / Did not know buttons" />
 </p>
 
 ## Install
