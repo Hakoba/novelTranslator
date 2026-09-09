@@ -24,6 +24,7 @@ const modes = computed<{ label: string; value: AccessMode }[]>(() => [
 ])
 
 // state
+const modeKey = ref<number>(0)
 const newSiteUrl = ref<string>('')
 const errorMessage = ref<string>('')
 
@@ -54,9 +55,16 @@ async function handleAddSite(): Promise<void> {
   newSiteUrl.value = ''
 }
 
-/** «Везде, кроме» — это доступ ко всем сайтам; отказал браузер — остаёмся в белом списке */
+/**
+ * «Везде, кроме» — это доступ ко всем сайтам; отказал браузер — остаёмся в белом
+ * списке. SelectButton PrimeVue уже перерисовал себя по клику и из неизменившейся
+ * модели назад не вернётся — пересоздаём его ключом.
+ */
 async function handleMode(mode: AccessMode): Promise<void> {
-  if (mode === 'deny' && !(await requestAllAccess())) return
+  if (mode === 'deny' && !(await requestAllAccess())) {
+    modeKey.value += 1
+    return
+  }
 
   options.value.mode = mode
 }
@@ -67,6 +75,7 @@ async function handleMode(mode: AccessMode): Promise<void> {
     <div class="flex flex-col gap-2">
       <span class="text-sm text-muted">{{ t('sites.mode') }}</span>
       <SelectButton
+        :key="modeKey"
         :model-value="options.mode"
         :options="modes"
         option-label="label"
