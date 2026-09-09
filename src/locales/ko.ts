@@ -304,6 +304,7 @@ export default {
     subtitle: '핵심만 정리했습니다. 전체 내용은 GitHub에 있습니다',
     full: 'GitHub에서 전체 FAQ 보기',
     setupGuide: '설정 가이드: 무료 또는 모델 사용',
+    support: 'Telegram에서 질문하기',
     group: {
       start: '시작하기',
       words: '단어와 레벨',

@@ -308,6 +308,7 @@ export default {
     subtitle: 'Коротко о главном. Полная версия — на GitHub',
     full: 'Полный FAQ на GitHub',
     setupGuide: 'Как настроить: бесплатно или с моделью',
+    support: 'Спросить в Telegram',
     group: {
       start: 'Начало',
       words: 'Слова и уровень',

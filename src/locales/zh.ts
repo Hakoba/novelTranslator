@@ -304,6 +304,7 @@ export default {
     subtitle: '要点速览，完整版在 GitHub 上',
     full: '在 GitHub 上查看完整 FAQ',
     setupGuide: '配置指南：免费或使用模型',
+    support: '在 Telegram 提问',
     group: {
       start: '开始使用',
       words: '词汇与等级',

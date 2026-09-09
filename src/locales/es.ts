@@ -304,6 +304,7 @@ export default {
     subtitle: 'Lo esencial. La versión completa está en GitHub',
     full: 'FAQ completo en GitHub',
     setupGuide: 'Guía de configuración: gratis o con modelo',
+    support: 'Preguntar en Telegram',
     group: {
       start: 'Primeros pasos',
       words: 'Palabras y nivel',

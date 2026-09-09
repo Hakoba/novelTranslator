@@ -30,6 +30,7 @@ Erudit читает страницу вместе с вами и подсвеч�
 
 Открытый исходный код: https://github.com/Hakoba/erudit
 Как настроить: https://github.com/Hakoba/erudit/blob/master/docs/SETUP.md
+Вопросы и поддержка: https://t.me/erudit_extension
 
 ## Категория
 
@@ -39,7 +40,8 @@ Productivity → Education (или Tools). Язык карточки — рус�
 ## Ссылки
 
 - Политика приватности: https://github.com/Hakoba/erudit/blob/master/docs/PRIVACY.md
-- Сайт / поддержка: https://github.com/Hakoba/erudit
+- Сайт (homepage): https://github.com/Hakoba/erudit
+- Поддержка (support URL): https://t.me/erudit_extension
 
 ## Единственное назначение (single purpose)
 

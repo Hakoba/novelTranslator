@@ -697,5 +697,6 @@ Google, Edge и Lingva ходят во внутренние эндпоинты �
 
 ---
 
-Не нашли ответа — [issues](https://github.com/Hakoba/erudit/issues)
-или <amion980@gmail.com>.
+Не нашли ответа — спросите в [группе в Telegram](https://t.me/erudit_extension).
+Баги и предложения — в [issues](https://github.com/Hakoba/erudit/issues)
+или на <amion980@gmail.com>.

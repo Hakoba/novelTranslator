@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ChevronDown, CircleQuestionMark, ExternalLink } from 'lucide-vue-next'
+import { ChevronDown, CircleQuestionMark, ExternalLink, MessageCircle } from 'lucide-vue-next'
 import InlineSvg from '@/components/InlineSvg.vue'
 import faqArt from '@/assets/illustrations/faq.svg?raw'
 
@@ -16,6 +16,7 @@ const { t } = useI18n()
 
 const FAQ_DOC_URL = `${__GITHUB_URL__}/blob/master/docs/FAQ.md`
 const SETUP_DOC_URL = `${__GITHUB_URL__}/blob/master/docs/SETUP.md`
+const SUPPORT_URL = 'https://t.me/erudit_extension'
 
 /** Ключ вопроса даёт пару ключей локали: `<id>Q` и `<id>A` */
 const GROUPS: { label: string; items: string[] }[] = [
@@ -77,6 +78,22 @@ const GROUPS: { label: string; items: string[] }[] = [
                 >
                   <template #icon>
                     <ExternalLink :size="16" />
+                  </template>
+                </Button>
+              </a>
+              <a
+                :href="SUPPORT_URL"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <Button
+                  severity="secondary"
+                  text
+                  size="small"
+                  :label="t('faq.support')"
+                >
+                  <template #icon>
+                    <MessageCircle :size="16" />
                   </template>
                 </Button>
               </a>

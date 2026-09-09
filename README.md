@@ -179,7 +179,8 @@ wrong: it is a host and a list of selectors in
 [`src/utils/extract/rules.ts`](src/utils/extract/rules.ts), plus a line in the test next to it.
 That single entry then works for everyone.
 
-Issues and questions: [GitHub issues](https://github.com/Hakoba/erudit/issues)
+Questions: [Telegram group](https://t.me/erudit_extension).
+Bugs and ideas: [GitHub issues](https://github.com/Hakoba/erudit/issues)
 or <amion980@gmail.com>.
 
 ## Credits

@@ -181,7 +181,8 @@ Vue 3 со `<script setup>`, TypeScript, Vite, Pinia, PrimeVue и Tailwind 4. К
 [`src/utils/extract/rules.ts`](src/utils/extract/rules.ts) плюс строчка в тест рядом.
 Одна такая запись начинает работать сразу у всех.
 
-Вопросы и замечания — в [issues](https://github.com/Hakoba/erudit/issues)
+Вопросы — в [группе в Telegram](https://t.me/erudit_extension).
+Баги и предложения — в [issues](https://github.com/Hakoba/erudit/issues)
 или на <amion980@gmail.com>.
 
 ## Благодарности

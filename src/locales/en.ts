@@ -304,6 +304,7 @@ export default {
     subtitle: 'The short version. The full one lives on GitHub',
     full: 'Full FAQ on GitHub',
     setupGuide: 'Setup guide: free or with a model',
+    support: 'Ask in Telegram',
     group: {
       start: 'Getting started',
       words: 'Words and level',
