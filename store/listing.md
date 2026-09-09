@@ -61,6 +61,46 @@ Productivity → Education (или Tools). Язык карточки — рус�
 - **Удалённый код** — не используется. Все скрипты и WebAssembly (sql.js для экспорта
   в Anki) входят в пакет.
 
+## Обоснование разрешений — по-английски (для формы Privacy)
+
+**Single purpose**
+
+Erudit helps read foreign-language pages: it highlights words above the reader's
+level, translates them and keeps them in a personal dictionary for spaced practice.
+
+**storage**
+
+Stores user settings (level, language pair, allowed sites, API keys the user
+entered) and the personal dictionary with practice progress. Nothing is sent to the
+developer.
+
+**tabs**
+
+Used to read the URL of the active tab: the popup offers "Allow this site" for the
+current domain, and the side panel shows the word list of the active tab and
+switches when the user changes tabs. Page content is never read through this API.
+
+**sidePanel**
+
+The list of found words lives in Chrome's side panel. The panel is opened only by
+a user gesture (popup button, on-page button or keyboard shortcut).
+
+**Host permissions (<all_urls>)**
+
+The extension runs only on sites the user has allowed in its settings; the default
+list contains a single site (reddit.com). The user can flip the list to "everywhere
+except the listed sites", so the set of hosts cannot be known in advance and must be
+declared broadly. The content script checks the current URL against the user's list
+on page load and exits immediately on sites that are not allowed, without reading
+the page. Mail, banking, government and intranet hosts are always excluded. The page
+text is sent only to translation or language-model services the user has chosen in
+the settings; there is no developer server.
+
+**Remote code**
+
+No remote code is used. All scripts and the WebAssembly module (sql.js, used for
+Anki export) are bundled in the package.
+
 ## Раскрытие данных (Data usage)
 
 Расширение собирает или передаёт:
