@@ -42,6 +42,11 @@ export default defineConfig({
 
   define,
 
+  // Dev-сборка тянет код с этого сервера из service worker и content script, а origin
+  // у них chrome-extension://. Vite по умолчанию пускает только localhost-origin, и без
+  // <all_urls> в манифесте запросы режет CORS: «Service worker registration failed»
+  server: { cors: true },
+
   // legacy: {
   //   // ⚠️ SECURITY RISK: Allows WebSockets to connect to the vite server without a token check ⚠️
   //   // See https://github.com/crxjs/chrome-extension-tools/issues/971 for more info
