@@ -57,8 +57,8 @@ Productivity → Education (или Tools). Язык карточки — рус�
 - **scripting** — регистрация content script на сайтах, к которым пользователь
   выдал доступ (`scripting.registerContentScripts`).
 - **Host permissions** — статически только `reddit.com` (сайт по умолчанию)
-  и три бесключевых словаря: dictionary.yandex.net, api.dictionaryapi.dev,
-  translate.googleapis.com. Остальное — `optional_host_permissions: <all_urls>`:
+  и бесключевые словари: dictionary.yandex.net, api.dictionaryapi.dev, переводчик
+  Edge (edge.microsoft.com, api-edge.cognitive.microsofttranslator.com). Остальное — `optional_host_permissions: <all_urls>`:
   каждый сайт, переводчик или адрес модели пользователь разрешает сам, браузер
   спрашивает при добавлении. Режим «везде, кроме» просит доступ ко всем сайтам
   один раз; почта, банки, госуслуги и внутренние хосты исключены всегда.
@@ -96,9 +96,10 @@ Registers the content script on the sites the user has granted access to
 
 **Host permissions**
 
-Declared statically only for the default site (reddit.com) and the three key-free
+Declared statically only for the default site (reddit.com) and the key-free
 dictionary services used out of the box: dictionary.yandex.net, api.dictionaryapi.dev
-and translate.googleapis.com. Everything else is under `optional_host_permissions`:
+and the Edge translator (edge.microsoft.com, api-edge.cognitive.microsofttranslator.com).
+Everything else is under `optional_host_permissions`:
 when the user adds a site, picks another translator or sets a model address, the
 extension calls `permissions.request` for that origin only, and the browser asks
 the user. The "everywhere except" mode requests access to all sites once; mail,
