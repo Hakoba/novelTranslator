@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Bot, Cloud, Cpu, ExternalLink, KeyRound, Laptop, Link, Plug, Zap } from 'lucide-vue-next'
 import AppLoader from '@/components/AppLoader.vue'
+import HostAccess from '@/components/HostAccess.vue'
+import { useHostAccess } from '@/composables/useHostAccess'
 import InlineSvg from '@/components/InlineSvg.vue'
 import modelArt from '@/assets/illustrations/model.svg?raw'
 import modelOfflineArt from '@/assets/illustrations/model-offline.svg?raw'
@@ -19,6 +21,7 @@ import { checkModel } from '@/utils/llmClient'
 
 const { t } = useI18n()
 const { settings } = useLlmSettings()
+const { requestAccess } = useHostAccess()
 
 // state
 const checkState = ref<'idle' | 'busy' | 'ok' | 'fail'>('idle')
@@ -38,30 +41,41 @@ const providerOptions = computed<{ id: string; title: string }[]>(() =>
 )
 
 // методы
+/**
+ * Пресет — клик, а клик даёт право спросить доступ к хосту сразу, без второй кнопки.
+ * Адрес, набранный руками, покрывает предупреждение `HostAccess` под полем.
+ */
+function apply(next: typeof settings.value): void {
+  settings.value = next
+  void requestAccess([next.baseUrl])
+}
+
 /** Смена вида API тянет адрес и модель: прежние в новом протоколе не работают */
 function applyProvider(id: ProviderId): void {
-  settings.value = presetForProvider(id)
+  apply(presetForProvider(id))
 }
 
 function applyCompatiblePreset(preset: { baseUrl: string; model: string }): void {
-  settings.value = {
+  apply({
     ...settings.value,
     provider: 'openai',
     baseUrl: preset.baseUrl,
     model: preset.model,
-  }
+  })
 }
 
 function applyLocalPreset(): void {
-  settings.value = { ...LOCAL_PRESET }
+  apply({ ...LOCAL_PRESET })
 }
 
 function applyYandexPreset(): void {
   // в dev-сборке пресет уже содержит ключ и каталог из .env
-  settings.value = { ...YANDEX_PRESET, apiKey: YANDEX_PRESET.apiKey || settings.value.apiKey }
+  apply({ ...YANDEX_PRESET, apiKey: YANDEX_PRESET.apiKey || settings.value.apiKey })
 }
 
 async function runCheck(): Promise<void> {
+  // проверка — тоже клик: заодно просим доступ, если адрес вписали руками
+  await requestAccess([settings.value.baseUrl])
   checkState.value = 'busy'
   const started = performance.now()
 
@@ -176,6 +190,7 @@ async function runCheck(): Promise<void> {
             v-model="settings.baseUrl"
             placeholder="http://localhost:1234"
           />
+          <HostAccess :urls="[settings.baseUrl]" />
         </div>
 
         <div class="flex flex-col gap-2">

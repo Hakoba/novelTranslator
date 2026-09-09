@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 /// <reference types="unplugin-vue-router/client" />
+// `?script` — путь к content script для `scripting.registerContentScripts`
+/// <reference types="@crxjs/vite-plugin/client" />
 
 // Put your variables here:
 

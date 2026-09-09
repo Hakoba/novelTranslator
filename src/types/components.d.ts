@@ -18,6 +18,7 @@ declare module 'vue' {
     Card: typeof import('primevue/card')['default']
     Checkbox: typeof import('primevue/checkbox')['default']
     DataView: typeof import('primevue/dataview')['default']
+    HostAccess: typeof import('./../components/HostAccess.vue')['default']
     InlineSvg: typeof import('./../components/InlineSvg.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
     LookupPanel: typeof import('./../components/LookupPanel.vue')['default']

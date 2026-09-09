@@ -55,6 +55,8 @@ export interface Translator {
    */
   unofficial: boolean
   buildRequest: (text: string, source: string, target: string, credentials: TranslatorCredentials) => TranslateRequest
+  /** Куда уходят запросы: страница настроек просит у браузера доступ к этим адресам */
+  origins: (credentials: TranslatorCredentials) => string[]
   extractText: (data: unknown) => string
   /**
    * Пачка слов одним запросом — там, где API это умеет. Ответ строго по позициям
@@ -164,6 +166,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: false,
     requiresUrl: false,
     unofficial: false,
+    origins: () => ['https://api.mymemory.translated.net'],
     // почта лежит в поле ключа: MyMemory поднимает по ней суточную квоту с 5 до 50 тысяч
     // слов, но ключом её не считает — запрос уходит и без неё
     buildRequest: (text, source, target, { apiKey }) => {
@@ -193,6 +196,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: false,
     requiresUrl: false,
     unofficial: true,
+    origins: () => ['https://translate.googleapis.com'],
     buildRequest: (text, source, target) => ({
       url: googleUrl(text, source, target),
       method: 'GET',
@@ -222,6 +226,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: false,
     requiresUrl: false,
     unofficial: true,
+    origins: () => [EDGE_AUTH_URL, 'https://api-edge.cognitive.microsofttranslator.com'],
     // ключ приходит не от пользователя: `mtClient` берёт анонимный токен по `EDGE_AUTH_URL`
     buildRequest: (text, source, target, { apiKey }) => ({
       url: `https://api-edge.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${source}&to=${target}`,
@@ -250,6 +255,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     // это прокси к Google, поднятый добровольцами: и сам эндпоинт неофициальный,
     // и инстанс живёт ровно столько, сколько его держит владелец
     unofficial: true,
+    origins: ({ baseUrl }) => [baseUrl],
     buildRequest: (text, source, target, { baseUrl }) => ({
       url: `${trimUrl(baseUrl)}/api/v1/${source}/${target}/${encodeURIComponent(text)}`,
       method: 'GET',
@@ -265,6 +271,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: true,
     requiresUrl: false,
     unofficial: false,
+    origins: ({ apiKey }) => [deeplBaseUrl(apiKey)],
     buildRequest: (text, source, target, credentials) => deeplRequest([text], source, target, credentials),
     extractText: (data) => extractDeepl(data, 1)[0] ?? '',
     // DeepL берёт до 50 текстов за раз, отвечает по позициям
@@ -278,6 +285,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: true,
     requiresUrl: false,
     unofficial: false,
+    origins: () => ['https://api.cognitive.microsofttranslator.com'],
     // регион обязателен для ресурсов, заведённых не как Global: без заголовка ключ отклоняют
     buildRequest: (text, source, target, { apiKey, region }) => ({
       url: `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${source}&to=${target}`,
@@ -304,6 +312,7 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
     requiresKey: false,
     requiresUrl: true,
     unofficial: false,
+    origins: ({ baseUrl }) => [baseUrl],
     buildRequest: (text, source, target, { baseUrl, apiKey }) => ({
       url: `${trimUrl(baseUrl)}/translate`,
       method: 'POST',

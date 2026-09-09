@@ -183,3 +183,36 @@ export function isSiteAllowed(
     return false
   }
 }
+
+// Шаблон доступа к хосту для `permissions.request`: схема и домен целиком, с портом
+// (локальная модель живёт на `http://localhost:1234`), путь — всё. Не http — `undefined`.
+// Комментарий строчный: в шаблоне есть последовательность, закрывающая блочный
+export function originPattern(url: string): string | undefined {
+  if (!isValidUrl(url)) return undefined
+
+  const parsed = new URL(url)
+
+  return `${parsed.protocol}//${parsed.host}/*`
+}
+
+// Накрывает ли выданное разрешение адрес. Шаблоны здесь только свои и браузерные:
+// `<all_urls>`, все хосты по любой схеме, `*.reddit.com`, `localhost:1234` —
+// путь у них всегда «всё», поэтому сравниваются схема и хост.
+export function matchesOriginPattern(url: string, pattern: string): boolean {
+  if (pattern === '<all_urls>') return isValidUrl(url)
+
+  const parts = /^(\*|https?):\/\/([^/]+)\/.*$/.exec(pattern)
+  if (!parts || !isValidUrl(url)) return false
+
+  const [, scheme, host] = parts
+  const parsed = new URL(url)
+  if (scheme !== '*' && `${scheme}:` !== parsed.protocol) return false
+  if (host === '*') return true
+  if (host.startsWith('*.')) {
+    const domain = host.slice(2)
+
+    return parsed.host === domain || parsed.host.endsWith(`.${domain}`)
+  }
+
+  return parsed.host === host
+}

@@ -1,13 +1,19 @@
 import browser, { type Runtime } from "webextension-polyfill"
-import type { BgFetchResponse } from "@/utils/bgFetch"
+import { NO_HOST_ACCESS, type BgFetchResponse } from "@/utils/bgFetch"
+import { originPattern } from "@/composables/matchesSite"
 import { DICTIONARY_URL } from "@/utils/dictionaryTab"
 import { PANEL_OPEN, PANEL_STATE } from "@/utils/panelBus"
+import { SCRIPTS_SYNC } from "@/utils/siteScripts"
+import { syncSiteScripts } from "./siteScripts"
 
 // Sample code if using extensionpay.com
 // import { extPay } from 'src/utils/payment/extPay'
 // extPay.startBackground()
 
 chrome.runtime.onInstalled.addListener(async (opt) => {
+  // обновление расширения стирает зарегистрированные content script — собираем заново
+  void syncSiteScripts()
+
   // Check if reason is install or update. Eg: opt.reason === 'install' // If extension is installed.
   // opt.reason === 'update' // If extension is updated.
   if (opt.reason === "install") {
@@ -41,8 +47,20 @@ self.onerror = function (message, source, lineno, colno, error) {
 
 console.info("hello world from background")
 
+// доступ к сайту меняют и мимо нас — в chrome://extensions; список внедрения идёт за ним
+browser.permissions.onAdded.addListener(() => void syncSiteScripts())
+browser.permissions.onRemoved.addListener(() => void syncSiteScripts())
+browser.runtime.onStartup.addListener(() => void syncSiteScripts())
+
 function isObject(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null
+}
+
+async function hasHostAccess(url: string): Promise<boolean> {
+  const pattern = originPattern(url)
+  if (!pattern) return true
+
+  return browser.permissions.contains({ origins: [pattern] })
 }
 
 async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResponse> {
@@ -75,6 +93,10 @@ async function proxyFetch(message: Record<string, unknown>): Promise<BgFetchResp
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error'
     console.info('[nt] fetch упал:', msg)
+
+    // без доступа к хосту fetch падает тем же «Failed to fetch», что и выключенный сервер;
+    // код вместо текста: локали в фоне не нужны, текст подставит `sendBgFetch`
+    if (!(await hasHostAccess(url))) return { ok: false, status: 0, error: NO_HOST_ACCESS }
 
     return { ok: false, status: 0, error: msg }
   }
@@ -117,6 +139,7 @@ browser.runtime.onMessage.addListener((message: unknown, sender: Runtime.Message
   if (message.type === 'llm/fetch') return proxyFetch(message)
   if (message.type === 'ui/open-dictionary') return openDictionary()
   if (message.type === 'ui/open-options') return browser.runtime.openOptionsPage()
+  if (message.type === SCRIPTS_SYNC) return syncSiteScripts()
   if (message.type === PANEL_STATE) updateBadge(sender.tab?.id, message.state)
   // строго синхронно: жест пользователя не переживает await, панель без него не откроется.
   // Приходит только из Chrome-сборки (кнопка за __HAS_SIDE_PANEL__), в Firefox API нет

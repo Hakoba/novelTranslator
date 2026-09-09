@@ -147,6 +147,11 @@ export default {
     empty: '목록이 비어 있어 확장 프로그램이 어디에서도 동작하지 않습니다.',
     errorEmpty: '사이트 주소를 입력하세요',
     errorInvalid: '주소가 올바르지 않거나 이미 목록에 있습니다',
+    errorDenied: '사이트 접근 권한이 없으면 확장 프로그램이 해당 사이트에서 실행되지 않습니다',
+    accessMissing: '이 기기에는 이 사이트 접근 권한이 없습니다. 사이트 목록은 동기화되지만 브라우저 권한은 동기화되지 않습니다',
+    grantAccess: '권한 부여',
+    grantAccessTo: '{host} 접근 권한 부여',
+    allAccessHint: '「이 사이트 외 모든 곳」 모드에는 모든 사이트 접근 권한이 필요합니다. 브라우저가 한 번 묻습니다',
   },
 
   popup: {
@@ -413,6 +418,10 @@ export default {
     yandexAttribution: 'Powered by Yandex.Dictionary',
   },
 
+  hostAccess: {
+    needed: '{hosts} 접근 권한이 필요합니다. 없으면 요청이 전송되지 않습니다',
+    allow: '허용',
+  },
   errors: {
     keyRejected: '{host}이(가) API 키를 거부했습니다({status}). 확장 프로그램 설정에서 키와 모델 이름을 확인하세요.',
     notFound: '{host}이(가) 해당 엔드포인트나 모델을 모릅니다(404). 주소와 모델 이름을 확인하세요.',
@@ -422,6 +431,7 @@ export default {
     httpStatusWith: '{host}이(가) 오류 {status}(으)로 응답했습니다: {error}',
     timeout: '모델이 {seconds}초 안에 응답하지 않았습니다',
     requestTimeout: '서버가 {seconds}초 안에 응답하지 않았습니다',
+    noHostAccess: '{host} 접근 권한이 없습니다. 설정에서 허용하세요',
     llmUnknown: '모델의 응답을 받지 못했습니다',
     dictKeyRejected: 'Yandex 사전이 키를 거부했습니다 — 설정에서 확인하세요',
     dictSharedKeyOut: '공용 Yandex.Dictionary 키가 소진되었거나 회수되었습니다. 설정에서 직접 발급받은 키를 입력하세요. 무료입니다.',

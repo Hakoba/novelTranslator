@@ -147,6 +147,11 @@ export default {
     empty: 'La lista está vacía: la extensión no funcionará en ningún sitio.',
     errorEmpty: 'Introduce la dirección del sitio',
     errorInvalid: 'Dirección no válida, o el sitio ya está en la lista',
+    errorDenied: 'Sin acceso al sitio la extensión no puede funcionar en él',
+    accessMissing: 'Sin acceso a este sitio en este dispositivo: la lista de sitios se sincroniza, los permisos del navegador no',
+    grantAccess: 'Dar acceso',
+    grantAccessTo: 'Dar acceso a {host}',
+    allAccessHint: 'El modo «en todas partes excepto» necesita acceso a todos los sitios: el navegador lo pedirá una vez',
   },
 
   popup: {
@@ -413,6 +418,10 @@ export default {
     yandexAttribution: 'Powered by Yandex.Dictionary',
   },
 
+  hostAccess: {
+    needed: 'Se necesita acceso a {hosts}: sin él las peticiones no saldrán',
+    allow: 'Permitir',
+  },
   errors: {
     keyRejected: '{host} rechazó la clave de API ({status}). Revisa la clave y el nombre del modelo en los ajustes de la extensión.',
     notFound: '{host} no conoce ese endpoint o modelo (404). Revisa la dirección y el nombre del modelo.',
@@ -422,6 +431,7 @@ export default {
     httpStatusWith: '{host} respondió con el error {status}: {error}',
     timeout: 'El modelo no respondió en {seconds} segundos',
     requestTimeout: 'El servidor no respondió en {seconds} segundos',
+    noHostAccess: 'Sin acceso a {host}: permítelo en los ajustes',
     llmUnknown: 'No se pudo obtener una respuesta del modelo',
     dictKeyRejected: 'Yandex Dictionary rechazó la clave: revísala en los ajustes',
     dictSharedKeyOut: 'La clave compartida de Yandex.Dictionary se ha agotado o ha sido revocada. Escribe la tuya en los ajustes: es gratuita.',

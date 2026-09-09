@@ -147,6 +147,11 @@ export default {
     empty: 'A lista está vazia — a extensão não vai funcionar em lado nenhum.',
     errorEmpty: 'Escreve o endereço do site',
     errorInvalid: 'Endereço inválido, ou o site já está na lista',
+    errorDenied: 'Sem acesso ao site a extensão não consegue funcionar nele',
+    accessMissing: 'Sem acesso a este site neste dispositivo: a lista de sites sincroniza, as permissões do navegador não',
+    grantAccess: 'Dar acesso',
+    grantAccessTo: 'Dar acesso a {host}',
+    allAccessHint: 'O modo «em todo o lado exceto» precisa de acesso a todos os sites: o navegador pergunta uma vez',
   },
 
   popup: {
@@ -413,6 +418,10 @@ export default {
     yandexAttribution: 'Powered by Yandex.Dictionary',
   },
 
+  hostAccess: {
+    needed: 'É preciso acesso a {hosts}: sem ele os pedidos não saem',
+    allow: 'Permitir',
+  },
   errors: {
     keyRejected: '{host} rejeitou a chave de API ({status}). Verifica a chave e o nome do modelo nas definições da extensão.',
     notFound: '{host} não conhece este endpoint ou modelo (404). Verifica o endereço e o nome do modelo.',
@@ -422,6 +431,7 @@ export default {
     httpStatusWith: '{host} respondeu com o erro {status}: {error}',
     timeout: 'O modelo não respondeu em {seconds} segundos',
     requestTimeout: 'O servidor não respondeu em {seconds} segundos',
+    noHostAccess: 'Sem acesso a {host}: permita-o nas definições',
     llmUnknown: 'Não foi possível obter resposta do modelo',
     dictKeyRejected: 'O Yandex Dictionary rejeitou a chave — verifica-a nas definições',
     dictSharedKeyOut: 'A chave partilhada do Yandex.Dictionary esgotou ou foi revogada. Escreve a tua nas definições: é gratuita.',

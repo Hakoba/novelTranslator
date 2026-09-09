@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { areaPattern, isSensitiveHost, isSiteAllowed, matchesArea, matchesSite } from './matchesSite'
+import { areaPattern, isSensitiveHost, isSiteAllowed, matchesArea, matchesOriginPattern, matchesSite, originPattern } from './matchesSite'
 
 test('matchesSite: точное совпадение хоста', () => {
   assert.equal(matchesSite('https://novelbin.com/book/1', 'https://novelbin.com/'), true)
@@ -128,4 +128,33 @@ test('isSiteAllowed: поддомены и путь в исключении ра
   assert.equal(isSiteAllowed('https://a.gov.uk/news', 'deny', [], true, ['https://*.gov.uk/']), true)
   assert.equal(isSiteAllowed('https://sberbank.ru/news', 'deny', [], true, ['https://sberbank.ru/news']), true)
   assert.equal(isSiteAllowed('https://sberbank.ru/private', 'deny', [], true, ['https://sberbank.ru/news']), false)
+})
+
+test('originPattern: домен с портом, путь отброшен', () => {
+  assert.equal(originPattern('http://localhost:1234/v1/chat'), 'http://localhost:1234/*')
+  assert.equal(originPattern('https://www.reddit.com/r/stories/'), 'https://www.reddit.com/*')
+})
+
+test('originPattern: не http — нет шаблона', () => {
+  assert.equal(originPattern('chrome://extensions'), undefined)
+  assert.equal(originPattern('gpt://folder/model'), undefined)
+})
+
+test('matchesOriginPattern: <all_urls> и *://*/* накрывают любой http-адрес', () => {
+  assert.equal(matchesOriginPattern('https://example.com/a', '<all_urls>'), true)
+  assert.equal(matchesOriginPattern('http://localhost:1234/', '*://*/*'), true)
+  assert.equal(matchesOriginPattern('chrome://extensions', '<all_urls>'), false)
+})
+
+test('matchesOriginPattern: поддомены по *. и точный хост', () => {
+  assert.equal(matchesOriginPattern('https://www.reddit.com/r/x', 'https://*.reddit.com/*'), true)
+  assert.equal(matchesOriginPattern('https://reddit.com/', 'https://*.reddit.com/*'), true)
+  assert.equal(matchesOriginPattern('https://notreddit.com/', 'https://*.reddit.com/*'), false)
+  assert.equal(matchesOriginPattern('https://old.reddit.com/', 'https://www.reddit.com/*'), false)
+})
+
+test('matchesOriginPattern: схема и порт входят в сравнение', () => {
+  assert.equal(matchesOriginPattern('http://example.com/', 'https://example.com/*'), false)
+  assert.equal(matchesOriginPattern('http://localhost:1234/', 'http://localhost/*'), false)
+  assert.equal(matchesOriginPattern('http://localhost:1234/', 'http://localhost:1234/*'), true)
 })

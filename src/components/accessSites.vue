@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, ShieldOff, Trash2 } from 'lucide-vue-next'
+import { Plus, ShieldAlert, ShieldOff, Trash2 } from 'lucide-vue-next'
 import InlineSvg from '@/components/InlineSvg.vue'
 import sitesEmptyArt from '@/assets/illustrations/sites-empty.svg?raw'
 import { useAccessSites } from '@/composables/useAccessSites'
+import { useHostAccess } from '@/composables/useHostAccess'
 import type { AccessMode } from '@/composables/matchesSite'
 
 /**
@@ -14,6 +15,7 @@ import type { AccessMode } from '@/composables/matchesSite'
  */
 const { t } = useI18n()
 const { options, sites, trusted, isDenyMode, addSite, removeSite, toggleSite, untrustSite } = useAccessSites()
+const { hasAccess, hasAllAccess, requestAccess, requestAllAccess } = useHostAccess()
 
 // computed
 const modes = computed<{ label: string; value: AccessMode }[]>(() => [
@@ -26,12 +28,21 @@ const newSiteUrl = ref<string>('')
 const errorMessage = ref<string>('')
 
 // методы
-function handleAddSite(): void {
+/**
+ * Доступ спрашиваем до записи в список: без него сайт в списке был бы мёртвым.
+ * В режиме «везде, кроме» список — исключения, там доступ не нужен.
+ */
+async function handleAddSite(): Promise<void> {
   errorMessage.value = ''
   const url = newSiteUrl.value.trim()
 
   if (!url) {
     errorMessage.value = t('sites.errorEmpty')
+    return
+  }
+
+  if (!isDenyMode.value && !(await requestAccess([url]))) {
+    errorMessage.value = t('sites.errorDenied')
     return
   }
 
@@ -42,6 +53,13 @@ function handleAddSite(): void {
 
   newSiteUrl.value = ''
 }
+
+/** «Везде, кроме» — это доступ ко всем сайтам; отказал браузер — остаёмся в белом списке */
+async function handleMode(mode: AccessMode): Promise<void> {
+  if (mode === 'deny' && !(await requestAllAccess())) return
+
+  options.value.mode = mode
+}
 </script>
 
 <template>
@@ -49,13 +67,36 @@ function handleAddSite(): void {
     <div class="flex flex-col gap-2">
       <span class="text-sm text-muted">{{ t('sites.mode') }}</span>
       <SelectButton
-        v-model="options.mode"
+        :model-value="options.mode"
         :options="modes"
         option-label="label"
         option-value="value"
         :allow-empty="false"
+        @update:model-value="handleMode"
       />
     </div>
+
+    <!-- режим приехал синхронизацией: разрешение на этом устройстве ещё не выдано -->
+    <Message
+      v-if="isDenyMode && !hasAllAccess"
+      severity="warn"
+      size="small"
+      variant="simple"
+    >
+      <span class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        {{ t('sites.allAccessHint') }}
+        <Button
+          size="small"
+          severity="warn"
+          :label="t('sites.grantAccess')"
+          @click="requestAllAccess"
+        >
+          <template #icon>
+            <ShieldAlert :size="14" />
+          </template>
+        </Button>
+      </span>
+    </Message>
 
     <!-- защита осмысленна только там, где расширение включается само -->
     <div
@@ -160,6 +201,20 @@ function handleAddSite(): void {
         >
           {{ site.url }}
         </span>
+        <!-- запись из синхронизации: на этом устройстве доступа к сайту ещё нет -->
+        <Button
+          v-if="!isDenyMode && site.enabled && !hasAccess(site.url)"
+          severity="warn"
+          text
+          size="small"
+          :label="t('sites.grantAccess')"
+          :title="t('sites.accessMissing')"
+          @click="requestAccess([site.url])"
+        >
+          <template #icon>
+            <ShieldAlert :size="14" />
+          </template>
+        </Button>
         <Button
           severity="secondary"
           text

@@ -54,12 +54,14 @@ Productivity → Education (или Tools). Язык карточки — рус�
 - **tabs** — адрес активной вкладки: кнопка «Разрешить сайт» в попапе и список слов
   активной вкладки в боковой панели. Содержимое вкладок через это API не читается.
 - **sidePanel** — список найденных слов живёт в боковой панели Chrome.
-- **Host permissions `<all_urls>`** — расширение работает на сайтах, которые
-  пользователь разрешил в настройках, а в режиме «везде, кроме» — на всех, кроме
-  перечисленных. Список правит пользователь, поэтому заранее сузить его нельзя.
-  Проверка идёт в content script при загрузке страницы; на неразрешённом сайте он
-  завершает работу сразу, ничего не читая. Почта, банки, госуслуги и внутренние
-  хосты исключены всегда.
+- **scripting** — регистрация content script на сайтах, к которым пользователь
+  выдал доступ (`scripting.registerContentScripts`).
+- **Host permissions** — статически только `reddit.com` (сайт по умолчанию)
+  и три бесключевых словаря: dictionary.yandex.net, api.dictionaryapi.dev,
+  translate.googleapis.com. Остальное — `optional_host_permissions: <all_urls>`:
+  каждый сайт, переводчик или адрес модели пользователь разрешает сам, браузер
+  спрашивает при добавлении. Режим «везде, кроме» просит доступ ко всем сайтам
+  один раз; почта, банки, госуслуги и внутренние хосты исключены всегда.
 - **Удалённый код** — не используется. Все скрипты и WebAssembly (sql.js для экспорта
   в Anki) входят в пакет.
 
@@ -87,16 +89,22 @@ switches when the user changes tabs. Page content is never read through this API
 The list of found words lives in Chrome's side panel. The panel is opened only by
 a user gesture (popup button, on-page button or keyboard shortcut).
 
-**Host permissions (<all_urls>)**
+**scripting**
 
-The extension runs only on sites the user has allowed in its settings; the default
-list contains a single site (reddit.com). The user can flip the list to "everywhere
-except the listed sites", so the set of hosts cannot be known in advance and must be
-declared broadly. The content script checks the current URL against the user's list
-on page load and exits immediately on sites that are not allowed, without reading
-the page. Mail, banking, government and intranet hosts are always excluded. The page
-text is sent only to translation or language-model services the user has chosen in
-the settings; there is no developer server.
+Registers the content script on the sites the user has granted access to
+(`scripting.registerContentScripts`). Nothing is injected on other sites.
+
+**Host permissions**
+
+Declared statically only for the default site (reddit.com) and the three key-free
+dictionary services used out of the box: dictionary.yandex.net, api.dictionaryapi.dev
+and translate.googleapis.com. Everything else is under `optional_host_permissions`:
+when the user adds a site, picks another translator or sets a model address, the
+extension calls `permissions.request` for that origin only, and the browser asks
+the user. The "everywhere except" mode requests access to all sites once; mail,
+banking, government and intranet hosts are always excluded there. The page text is
+sent only to translation or language-model services the user has chosen; there is
+no developer server.
 
 **Remote code**
 

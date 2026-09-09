@@ -9,6 +9,7 @@ import {
   Plus,
   RotateCcw,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   ShieldOff,
 } from 'lucide-vue-next'
@@ -16,6 +17,7 @@ import AccessSites from '@/components/accessSites.vue'
 import { useAccessSites } from '@/composables/useAccessSites'
 import { isValidUrl } from '@/composables/matchesSite'
 import { useDictionary } from '@/composables/useDictionary'
+import { useHostAccess } from '@/composables/useHostAccess'
 import { openDictionaryTab } from '@/utils/dictionaryTab'
 
 const { t } = useI18n()
@@ -31,12 +33,14 @@ const {
   isSiteListed,
 } = useAccessSites()
 const { entries } = useDictionary()
+const { hasAccess, requestAccess } = useHostAccess()
 
 // state
 /** Адрес открытой вкладки: из него берём домен для кнопки «разрешить» */
 const currentUrl = ref<string>('')
 /** Окно узнаём заранее: sidePanel.open требует жеста, и await в обработчике клика его бы съел */
 const windowId = ref<number | undefined>(undefined)
+const tabId = ref<number | undefined>(undefined)
 
 /** Сборка с боковой панелью браузера — кнопка открытия есть только там */
 const hasSidePanel = __HAS_SIDE_PANEL__
@@ -57,6 +61,10 @@ const currentHost = computed<string>(() => (currentUrl.value ? new URL(currentUr
 const currentAllowed = computed<boolean>(
   () => Boolean(currentUrl.value) && isUrlAllowed(currentUrl.value),
 )
+/** Сайт в списке, а доступа на этом устройстве нет: список синхронизируется, разрешения — нет */
+const currentUngranted = computed<boolean>(
+  () => currentAllowed.value && !isDenyMode.value && !hasAccess(currentUrl.value),
+)
 /** Запись в списке накрывает адрес — значит в чёрном режиме его можно вернуть */
 const currentListed = computed<boolean>(
   () => Boolean(currentUrl.value) && isSiteListed(currentUrl.value),
@@ -72,9 +80,28 @@ function openOptions(): void {
 }
 
 
-/** Домен целиком: путь текущей главы в списке сайтов только мешал бы */
-function listCurrent(): void {
-  if (currentUrl.value) addSite(new URL(currentUrl.value).origin)
+/**
+ * Домен целиком: путь текущей главы в списке сайтов только мешал бы. В белом режиме
+ * сначала доступ, потом запись, и страница перезагружается: content script
+ * внедряется при загрузке документа
+ */
+async function listCurrent(): Promise<void> {
+  if (!currentUrl.value) return
+
+  const origin = new URL(currentUrl.value).origin
+  if (!isDenyMode.value && !(await grantCurrent())) return
+
+  addSite(origin)
+}
+
+/** Доступ к сайту открытой вкладки; выдали — перезагружаем её, чтобы оверлей появился */
+async function grantCurrent(): Promise<boolean> {
+  if (!currentUrl.value) return false
+
+  const ok = await requestAccess([currentUrl.value])
+  if (ok && tabId.value !== undefined) void browser.tabs.reload(tabId.value)
+
+  return ok
 }
 
 /** Убираем все записи, накрывающие адрес: одной кнопкой сайт должен возвращаться целиком */
@@ -106,6 +133,7 @@ function openSidePanel(): void {
 onMounted(async () => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
   windowId.value = tab?.windowId
+  tabId.value = tab?.id
   // у страниц chrome:// и about: адрес не отдают либо он не http — кнопку тогда не показываем
   if (tab?.url && isValidUrl(tab.url)) currentUrl.value = tab.url
 })
@@ -189,6 +217,19 @@ onMounted(async () => {
     >
       <template #icon>
         <Ban :size="16" />
+      </template>
+    </Button>
+    <Button
+      v-else-if="currentUngranted"
+      severity="warn"
+      outlined
+      size="small"
+      :label="t('sites.grantAccessTo', { host: currentHost })"
+      :title="t('sites.accessMissing')"
+      @click="grantCurrent"
+    >
+      <template #icon>
+        <ShieldAlert :size="16" />
       </template>
     </Button>
     <Button

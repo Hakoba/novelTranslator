@@ -147,6 +147,11 @@ export default {
     empty: 'The list is empty — the extension will not work anywhere.',
     errorEmpty: 'Enter a site address',
     errorInvalid: 'Invalid address, or the site is already listed',
+    errorDenied: 'Without access to the site the extension cannot run there',
+    accessMissing: 'No access to this site on this device: the site list syncs, browser permissions do not',
+    grantAccess: 'Grant access',
+    grantAccessTo: 'Grant access to {host}',
+    allAccessHint: 'The “everywhere except” mode needs access to all sites — the browser asks once',
   },
 
   popup: {
@@ -413,6 +418,10 @@ export default {
     yandexAttribution: 'Powered by Yandex.Dictionary',
   },
 
+  hostAccess: {
+    needed: 'Access to {hosts} is needed, otherwise requests will not go through',
+    allow: 'Allow',
+  },
   errors: {
     keyRejected: '{host} rejected the API key ({status}). Check the key and the model name in the extension settings.',
     notFound: '{host} does not know this endpoint or model (404). Check the address and the model name.',
@@ -422,6 +431,7 @@ export default {
     httpStatusWith: '{host} replied with error {status}: {error}',
     timeout: 'The model did not answer within {seconds} seconds',
     requestTimeout: 'The server did not answer within {seconds} seconds',
+    noHostAccess: 'No access to {host} — allow it in the settings',
     llmUnknown: 'Could not get an answer from the model',
     dictKeyRejected: 'Yandex Dictionary rejected the key — check it in the settings',
     dictSharedKeyOut: 'The shared Yandex Dictionary key is out of quota or has been revoked. Add your own in the settings — it is free.',

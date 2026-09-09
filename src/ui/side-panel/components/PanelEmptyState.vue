@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, RotateCcw, RotateCw, Settings } from 'lucide-vue-next'
+import { Plus, RotateCcw, RotateCw, Settings, ShieldAlert } from 'lucide-vue-next'
 import Button from 'primevue/button'
 import InlineSvg from '@/components/InlineSvg.vue'
 import emptyPanel from '@/assets/illustrations/empty-panel.svg?raw'
 import welcomeArt from '@/assets/illustrations/welcome.svg?raw'
 import { useAccessSites } from '@/composables/useAccessSites'
+import { useHostAccess } from '@/composables/useHostAccess'
 import { FAQ_URL, openOptionsTab } from '@/utils/dictionaryTab'
 
 /**
@@ -27,6 +28,7 @@ const emit = defineEmits<{ (e: 'reload'): void }>()
 
 const { t } = useI18n()
 const { isDenyMode, addSite, removeMatching, isUrlAllowed, isSiteListed } = useAccessSites()
+const { hasAccess, requestAccess, requestAllAccess } = useHostAccess()
 
 const faqUrl = browser.runtime.getURL(FAQ_URL)
 
@@ -39,6 +41,10 @@ const faqUrl = browser.runtime.getURL(FAQ_URL)
 const canAllow = computed<boolean>(
   () => Boolean(props.currentUrl) && !isUrlAllowed(props.currentUrl),
 )
+/** Сайт разрешён, но на этом устройстве доступа к нему нет: список синхронизируется, разрешения — нет */
+const canGrant = computed<boolean>(
+  () => Boolean(props.currentUrl) && isUrlAllowed(props.currentUrl) && !hasAccess(props.currentUrl),
+)
 /** В чёрном режиме вернуть сайт можно, только если он попал туда записью, а не правилом */
 const canUnblock = computed<boolean>(
   () => isDenyMode.value && Boolean(props.currentUrl) && isSiteListed(props.currentUrl),
@@ -49,6 +55,7 @@ const canUnblock = computed<boolean>(
  */
 const reasonKey = computed<string>(() => {
   if (!props.currentUrl) return 'overlay.panelBrowserPage'
+  if (canGrant.value) return 'sites.accessMissing'
   if (!isDenyMode.value) return 'overlay.panelUnavailableHint'
 
   return canUnblock.value ? 'popup.currentBlocked' : 'popup.currentGuarded'
@@ -65,10 +72,19 @@ async function allowCurrent(): Promise<void> {
   if (!props.currentUrl) return
 
   if (canUnblock.value) removeMatching(props.currentUrl)
-  else addSite(new URL(props.currentUrl).origin)
+  else {
+    if (!(await requestAccess([props.currentUrl]))) return
+    addSite(new URL(props.currentUrl).origin)
+  }
 
   await nextTick()
   emit('reload')
+}
+
+/** Доступ к сайту, который в списке уже есть; в чёрном режиме — ко всем сайтам сразу */
+async function grantCurrent(): Promise<void> {
+  const ok = isDenyMode.value ? await requestAllAccess() : await requestAccess([props.currentUrl])
+  if (ok) emit('reload')
 }
 </script>
 
@@ -107,6 +123,18 @@ async function allowCurrent(): Promise<void> {
       >
         <template #icon>
           <RotateCcw :size="16" />
+        </template>
+      </Button>
+
+      <Button
+        v-else-if="canGrant"
+        class="w-full [&_.p-button-label]:grow-0"
+        severity="warn"
+        :label="t('sites.grantAccessTo', { host: currentHost })"
+        @click="grantCurrent"
+      >
+        <template #icon>
+          <ShieldAlert :size="16" />
         </template>
       </Button>
 

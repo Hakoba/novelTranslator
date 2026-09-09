@@ -35,6 +35,7 @@ declare global {
   const LOCAL_PRESET: typeof import('../composables/useLlmSettings').LOCAL_PRESET
   const MAX_CHARS: typeof import('../utils/extract/blocks').MAX_CHARS
   const MODEL_NAME: typeof import('../utils/ankiSchema').MODEL_NAME
+  const NO_HOST_ACCESS: typeof import('../utils/bgFetch').NO_HOST_ACCESS
   const OPENAI_COMPATIBLE_PRESETS: typeof import('../composables/useLlmSettings').OPENAI_COMPATIBLE_PRESETS
   const OVERLAY_ROOT_ID: typeof import('../utils/overlayRoot').OVERLAY_ROOT_ID
   const PANEL_COMMAND: typeof import('../utils/panelBus').PANEL_COMMAND
@@ -48,6 +49,7 @@ declare global {
   const PROVIDER_LIST: typeof import('../utils/llm/providers').PROVIDER_LIST
   const RAIL_WIDTH: typeof import('../composables/useOverlayDock').RAIL_WIDTH
   const REQUEST_TIMEOUT_MS: typeof import('../utils/llmClient').REQUEST_TIMEOUT_MS
+  const SCRIPTS_SYNC: typeof import('../utils/siteScripts').SCRIPTS_SYNC
   const SELECTION_MODES: typeof import('../composables/useReaderSettings').SELECTION_MODES
   const SESSION_SIZE: typeof import('../utils/srs').SESSION_SIZE
   const SITE_RULES: typeof import('../utils/extract/rules').SITE_RULES
@@ -107,6 +109,7 @@ declare global {
   const createSharedComposable: typeof import('@vueuse/core').createSharedComposable
   const createTemplatePromise: typeof import('@vueuse/core').createTemplatePromise
   const createUnrefFn: typeof import('@vueuse/core').createUnrefFn
+  const credentialsFor: typeof import('../utils/mtClient').credentialsFor
   const customRef: typeof import('vue').customRef
   const debouncedRef: typeof import('@vueuse/core').debouncedRef
   const debouncedWatch: typeof import('@vueuse/core').debouncedWatch
@@ -151,6 +154,7 @@ declare global {
   const hasOccurrence: typeof import('../utils/highlight').hasOccurrence
   const highlightTerms: typeof import('../utils/highlight').highlightTerms
   const hintAttrs: typeof import('../utils/hint').hintAttrs
+  const hostsOf: typeof import('../composables/useHostAccess').hostsOf
   const i18n: typeof import('../utils/i18n').i18n
   const ignorableWatch: typeof import('@vueuse/core').ignorableWatch
   const inject: typeof import('vue').inject
@@ -191,6 +195,7 @@ declare global {
   const markRaw: typeof import('vue').markRaw
   const matchedGroupIndex: typeof import('../utils/terms').matchedGroupIndex
   const matchesArea: typeof import('../composables/matchesSite').matchesArea
+  const matchesOriginPattern: typeof import('../composables/matchesSite').matchesOriginPattern
   const matchesSite: typeof import('../composables/matchesSite').matchesSite
   const matchesTranslate: typeof import('../utils/immersion').matchesTranslate
   const needsApiKey: typeof import('../utils/settingsStatus').needsApiKey
@@ -224,6 +229,7 @@ declare global {
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
   const openDictionaryTab: typeof import('../utils/dictionaryTab').openDictionaryTab
   const openOptionsTab: typeof import('../utils/dictionaryTab').openOptionsTab
+  const originPattern: typeof import('../composables/matchesSite').originPattern
   const panelStateFromMessage: typeof import('../utils/panelBus').panelStateFromMessage
   const parseApkg: typeof import('../utils/anki').parseApkg
   const parseBackup: typeof import('../utils/backup').parseBackup
@@ -261,6 +267,7 @@ declare global {
   const requestDifficultWords: typeof import('../utils/llmClient').requestDifficultWords
   const requestExplanation: typeof import('../utils/llmClient').requestExplanation
   const requestPanelState: typeof import('../utils/panelBus').requestPanelState
+  const requestScriptsSync: typeof import('../utils/siteScripts').requestScriptsSync
   const requestTranslation: typeof import('../utils/llmClient').requestTranslation
   const resolveComponent: typeof import('vue').resolveComponent
   const resolveRef: typeof import('@vueuse/core').resolveRef
@@ -384,6 +391,7 @@ declare global {
   const useGamepad: typeof import('@vueuse/core').useGamepad
   const useGeolocation: typeof import('@vueuse/core').useGeolocation
   const useHighlightHover: typeof import('../composables/useHighlightHover').useHighlightHover
+  const useHostAccess: typeof import('../composables/useHostAccess').useHostAccess
   const useId: typeof import('vue').useId
   const useIdle: typeof import('@vueuse/core').useIdle
   const useIgnoredWords: typeof import('../composables/useIgnoredWords').useIgnoredWords
@@ -635,6 +643,7 @@ declare module 'vue' {
     readonly LOCAL_PRESET: UnwrapRef<typeof import('../composables/useLlmSettings')['LOCAL_PRESET']>
     readonly MAX_CHARS: UnwrapRef<typeof import('../utils/extract/blocks')['MAX_CHARS']>
     readonly MODEL_NAME: UnwrapRef<typeof import('../utils/ankiSchema')['MODEL_NAME']>
+    readonly NO_HOST_ACCESS: UnwrapRef<typeof import('../utils/bgFetch')['NO_HOST_ACCESS']>
     readonly OPENAI_COMPATIBLE_PRESETS: UnwrapRef<typeof import('../composables/useLlmSettings')['OPENAI_COMPATIBLE_PRESETS']>
     readonly OVERLAY_ROOT_ID: UnwrapRef<typeof import('../utils/overlayRoot')['OVERLAY_ROOT_ID']>
     readonly PANEL_COMMAND: UnwrapRef<typeof import('../utils/panelBus')['PANEL_COMMAND']>
@@ -648,6 +657,7 @@ declare module 'vue' {
     readonly PROVIDER_LIST: UnwrapRef<typeof import('../utils/llm/providers')['PROVIDER_LIST']>
     readonly RAIL_WIDTH: UnwrapRef<typeof import('../composables/useOverlayDock')['RAIL_WIDTH']>
     readonly REQUEST_TIMEOUT_MS: UnwrapRef<typeof import('../utils/llmClient')['REQUEST_TIMEOUT_MS']>
+    readonly SCRIPTS_SYNC: UnwrapRef<typeof import('../utils/siteScripts')['SCRIPTS_SYNC']>
     readonly SELECTION_MODES: UnwrapRef<typeof import('../composables/useReaderSettings')['SELECTION_MODES']>
     readonly SESSION_SIZE: UnwrapRef<typeof import('../utils/srs')['SESSION_SIZE']>
     readonly SITE_RULES: UnwrapRef<typeof import('../utils/extract/rules')['SITE_RULES']>
@@ -706,6 +716,7 @@ declare module 'vue' {
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTemplatePromise: UnwrapRef<typeof import('@vueuse/core')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
+    readonly credentialsFor: UnwrapRef<typeof import('../utils/mtClient')['credentialsFor']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
@@ -750,6 +761,7 @@ declare module 'vue' {
     readonly hasOccurrence: UnwrapRef<typeof import('../utils/highlight')['hasOccurrence']>
     readonly highlightTerms: UnwrapRef<typeof import('../utils/highlight')['highlightTerms']>
     readonly hintAttrs: UnwrapRef<typeof import('../utils/hint')['hintAttrs']>
+    readonly hostsOf: UnwrapRef<typeof import('../composables/useHostAccess')['hostsOf']>
     readonly i18n: UnwrapRef<typeof import('../utils/i18n')['i18n']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -790,6 +802,7 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly matchedGroupIndex: UnwrapRef<typeof import('../utils/terms')['matchedGroupIndex']>
     readonly matchesArea: UnwrapRef<typeof import('../composables/matchesSite')['matchesArea']>
+    readonly matchesOriginPattern: UnwrapRef<typeof import('../composables/matchesSite')['matchesOriginPattern']>
     readonly matchesSite: UnwrapRef<typeof import('../composables/matchesSite')['matchesSite']>
     readonly matchesTranslate: UnwrapRef<typeof import('../utils/immersion')['matchesTranslate']>
     readonly needsApiKey: UnwrapRef<typeof import('../utils/settingsStatus')['needsApiKey']>
@@ -823,6 +836,7 @@ declare module 'vue' {
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly openDictionaryTab: UnwrapRef<typeof import('../utils/dictionaryTab')['openDictionaryTab']>
     readonly openOptionsTab: UnwrapRef<typeof import('../utils/dictionaryTab')['openOptionsTab']>
+    readonly originPattern: UnwrapRef<typeof import('../composables/matchesSite')['originPattern']>
     readonly panelStateFromMessage: UnwrapRef<typeof import('../utils/panelBus')['panelStateFromMessage']>
     readonly parseApkg: UnwrapRef<typeof import('../utils/anki')['parseApkg']>
     readonly parseBackup: UnwrapRef<typeof import('../utils/backup')['parseBackup']>
@@ -858,6 +872,7 @@ declare module 'vue' {
     readonly requestDifficultWords: UnwrapRef<typeof import('../utils/llmClient')['requestDifficultWords']>
     readonly requestExplanation: UnwrapRef<typeof import('../utils/llmClient')['requestExplanation']>
     readonly requestPanelState: UnwrapRef<typeof import('../utils/panelBus')['requestPanelState']>
+    readonly requestScriptsSync: UnwrapRef<typeof import('../utils/siteScripts')['requestScriptsSync']>
     readonly requestTranslation: UnwrapRef<typeof import('../utils/llmClient')['requestTranslation']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
@@ -981,6 +996,7 @@ declare module 'vue' {
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
     readonly useHighlightHover: UnwrapRef<typeof import('../composables/useHighlightHover')['useHighlightHover']>
+    readonly useHostAccess: UnwrapRef<typeof import('../composables/useHostAccess')['useHostAccess']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
     readonly useIgnoredWords: UnwrapRef<typeof import('../composables/useIgnoredWords')['useIgnoredWords']>

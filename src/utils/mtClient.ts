@@ -41,7 +41,7 @@ async function getEdgeToken(): Promise<string> {
 }
 
 /** Каждому переводчику своё поле в настройках; общий у них только вид credentials */
-function credentialsFor(id: MachineTranslatorId, settings: DictSettings): TranslatorCredentials {
+export function credentialsFor(id: MachineTranslatorId, settings: DictSettings): TranslatorCredentials {
   const empty = { baseUrl: '', apiKey: '', region: '' }
 
   switch (id) {

@@ -11,6 +11,16 @@ export type BgFetchInit = { method?: string; headers?: Record<string, string>; b
  */
 export const BG_FETCH_TIMEOUT_MS = 20000
 
+/** Код ошибки из background: к хосту нет доступа, разрешение выдаётся в настройках */
+export const NO_HOST_ACCESS = 'NO_HOST_ACCESS'
+
+function describeBgError(error: unknown, url: string): string | undefined {
+  if (typeof error !== 'string') return undefined
+  if (error !== NO_HOST_ACCESS) return error
+
+  return t('errors.noHostAccess', { host: new URL(url).host })
+}
+
 function isObject(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null
 }
@@ -51,6 +61,6 @@ export async function sendBgFetch(
     ok: typeof res.ok === 'boolean' ? res.ok : false,
     status: typeof res.status === 'number' ? res.status : 0,
     data: res.data,
-    error: typeof res.error === 'string' ? res.error : undefined,
+    error: describeBgError(res.error, url),
   }
 }

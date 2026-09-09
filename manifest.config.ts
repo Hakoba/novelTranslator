@@ -26,14 +26,8 @@ export default {
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  content_scripts: [
-    {
-      all_frames: false,
-      js: ["src/content-script/index.ts"],
-      matches: ["*://*/*"],
-      run_at: "document_end",
-    },
-  ],
+  // content script в манифесте не объявлен: его регистрирует background по выданным
+  // разрешениям (`background/siteScripts.ts`), сам файл подключён оттуда через `?script`
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
   // экспорт в Anki собирает базу SQLite через sql.js, а это WebAssembly:
@@ -41,9 +35,18 @@ export default {
   content_security_policy: {
     extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
   },
-  host_permissions: ["<all_urls>"],
-  // `tabs` — адрес активной вкладки для попапа и боковой панели, больше ничего
-  permissions: ["storage", "tabs"],
+  // Из коробки: сайт по умолчанию и словари, которым не нужен ключ. Остальные
+  // сайты и сервисы читатель разрешает сам — по одному, через `permissions.request`
+  host_permissions: [
+    "https://*.reddit.com/*",
+    "https://dictionary.yandex.net/*",
+    "https://api.dictionaryapi.dev/*",
+    "https://translate.googleapis.com/*",
+  ],
+  optional_host_permissions: ["<all_urls>"],
+  // `tabs` — адрес активной вкладки для попапа и боковой панели; `scripting` —
+  // регистрация content script на разрешённых сайтах
+  permissions: ["storage", "tabs", "scripting"],
   web_accessible_resources: [
     {
       resources: ["src/ui/setup/index.html"],

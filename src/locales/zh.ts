@@ -147,6 +147,11 @@ export default {
     empty: '列表为空——扩展不会在任何网站上工作。',
     errorEmpty: '请输入网站地址',
     errorInvalid: '地址无效，或该网站已在列表中',
+    errorDenied: '没有网站访问权限，扩展无法在该网站运行',
+    accessMissing: '此设备上没有该网站的访问权限：网站列表会同步，浏览器权限不会',
+    grantAccess: '授予权限',
+    grantAccessTo: '授予 {host} 的访问权限',
+    allAccessHint: '「除这些之外的所有网站」模式需要访问所有网站的权限，浏览器只会询问一次',
   },
 
   popup: {
@@ -413,6 +418,10 @@ export default {
     yandexAttribution: 'Powered by Yandex.Dictionary',
   },
 
+  hostAccess: {
+    needed: '需要 {hosts} 的访问权限，否则请求无法发送',
+    allow: '允许',
+  },
   errors: {
     keyRejected: '{host} 拒绝了 API 密钥（{status}）。请在扩展设置中检查密钥和模型名。',
     notFound: '{host} 不认识该接口或模型（404）。请检查地址和模型名。',
@@ -422,6 +431,7 @@ export default {
     httpStatusWith: '{host} 返回错误 {status}：{error}',
     timeout: '模型在 {seconds} 秒内没有响应',
     requestTimeout: '服务器在 {seconds} 秒内没有响应',
+    noHostAccess: '没有 {host} 的访问权限，请在设置中允许',
     llmUnknown: '未能获取模型的响应',
     dictKeyRejected: 'Yandex 词典拒绝了密钥——请在设置中检查',
     dictSharedKeyOut: '公共的 Yandex.Dictionary 密钥已用尽或被撤销。请在设置中填写自己的密钥，它是免费的。',

@@ -47,10 +47,14 @@ Nothing is stored outside your browser. Uninstalling the extension removes its d
 - `tabs` — the address of the active tab, to offer "Allow this site" in the popup
   and to show the word list for the active tab in the side panel.
 - `sidePanel` — the word list in Chrome's side panel.
-- Host permission `<all_urls>` — lets the content script start on the sites **you**
-  allow. The check happens inside the extension; on sites that are not allowed it
-  does nothing. In the "everywhere except" mode the extension additionally stays off
-  on mail, banking, government and internal hosts.
+- `scripting` — registers the page script on the sites you granted access to.
+- Host access — out of the box only `reddit.com` and the key-free dictionaries
+  (dictionary.yandex.net, api.dictionaryapi.dev, translate.googleapis.com). Every
+  other site, translator or model address is granted by **you** when you add it:
+  the browser asks each time. The "everywhere except" mode asks once for access to
+  all sites, and the extension then additionally stays off on mail, banking,
+  government and internal hosts. Access can be revoked on the extension's page in
+  `chrome://extensions`.
 
 ## Contact
 
@@ -106,10 +110,14 @@ Erudit — расширение браузера, которое подсвеч�
 - `tabs` — адрес активной вкладки: кнопка «Разрешить сайт» в попапе и список слов
   активной вкладки в боковой панели.
 - `sidePanel` — список слов в боковой панели Chrome.
-- Доступ к сайтам `<all_urls>` — чтобы content script мог запуститься на сайтах,
-  которые разрешили **вы**. Проверка идёт внутри расширения; на неразрешённых сайтах
-  оно не делает ничего. В режиме «везде, кроме» расширение дополнительно молчит
-  на почте, в банках, на госуслугах и внутренних адресах.
+- `scripting` — подключение скрипта страницы к сайтам, к которым выдан доступ.
+- Доступ к сайтам — из коробки только `reddit.com` и бесключевые словари
+  (dictionary.yandex.net, api.dictionaryapi.dev, translate.googleapis.com). Каждый
+  следующий сайт, переводчик или адрес модели разрешаете **вы** при добавлении:
+  браузер спрашивает каждый раз. Режим «везде, кроме» просит доступ ко всем сайтам
+  один раз, и расширение дополнительно молчит на почте, в банках, на госуслугах
+  и внутренних адресах. Отозвать доступ можно на странице расширения
+  в `chrome://extensions`.
 
 ## Контакт
 

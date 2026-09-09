@@ -28,6 +28,14 @@
   из `document.head` (`mirrorStyles.ts`), подсветка слов ставится инлайном на элемент.
 - **Запросы к LLM идут через background.** Content script на https-странице не может
   обратиться к http-адресу локальной модели, service worker — может (`bgFetch`).
+- **Доступ к хостам — по одному, а не `<all_urls>`.** В манифесте только reddit
+  и бесключевые словари, остальное — `optional_host_permissions`. Content script
+  в манифесте не объявлен: `background/siteScripts.ts` регистрирует его через
+  `scripting.registerContentScripts` по `permissions.getAll()` (файл приходит
+  импортом `?script` от @crxjs). Доступ спрашивает `useHostAccess` из обработчика
+  клика на страницах расширения (в content script `permissions` нет); список сайтов
+  синхронизируется, разрешения — нет, поэтому у записей без доступа есть кнопка
+  «Дать доступ».
 - **Ответ модели парсится терпимо**: markdown-фенсы и текст вокруг JSON отбрасываются
   (`llmParse.ts`).
 - **PrimeVue Dialog не годится для оверлея** — он рендерится в `document.body`, вне shadow root.
