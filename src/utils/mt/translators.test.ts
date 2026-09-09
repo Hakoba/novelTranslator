@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { deeplBaseUrl, deeplTarget, getTranslator, TRANSLATOR_LIST, TRANSLATORS } from './translators'
+import { chunkByChars, deeplBaseUrl, deeplTarget, getTranslator, TRANSLATOR_LIST, TRANSLATORS } from './translators'
 
 const CREDENTIALS = { baseUrl: 'https://libre.example/', apiKey: 'key-123:fx', region: '' }
 
@@ -165,8 +165,26 @@ test('пакет: google строками, microsoft и deepl массивами
   assert.deepEqual(deepl.extract({ translations: [{ text: 'вспышка' }] }, 2), [])
 })
 
-test('пакет: у mymemory, lingva и libre его нет — слова уходят по одному', () => {
-  assert.equal(TRANSLATORS.mymemory.batch, undefined)
+test('пакет: mymemory строками в одном q, ответ теми же строками, длина под лимит', () => {
+  const batch = TRANSLATORS.mymemory.batch
+  assert.ok(batch)
+
+  const request = batch.build(['flash', 'light'], 'en', 'ru', { ...CREDENTIALS, apiKey: '' })
+  assert.equal(new URL(request.url).searchParams.get('q'), 'flash\nlight')
+
+  const reply = { responseStatus: 200, responseData: { translatedText: 'вспышка\nсвет' } }
+  assert.deepEqual(batch.extract(reply, 2), ['вспышка', 'свет'])
+  // строк меньше, чем слов, — переводы съехали бы на соседей; исчерпанная квота — тоже пусто
+  assert.deepEqual(batch.extract({ responseStatus: 200, responseData: { translatedText: 'вспышка света' } }, 2), [])
+  assert.deepEqual(batch.extract({ responseStatus: '403', responseData: { translatedText: 'MYMEMORY WARNING' } }, 1), [])
+
+  assert.equal(batch.maxChars, 500)
+  assert.deepEqual(chunkByChars(['ab', 'cd', 'ef', 'g'], 5), [['ab', 'cd'], ['ef', 'g']])
+  assert.deepEqual(chunkByChars(['abcdefgh', 'x'], 5), [['abcdefgh'], ['x']])
+  assert.deepEqual(chunkByChars([], 5), [])
+})
+
+test('пакет: у lingva и libre его нет — слова уходят по одному', () => {
   assert.equal(TRANSLATORS.lingva.batch, undefined)
   assert.equal(TRANSLATORS.libre.batch, undefined)
 })

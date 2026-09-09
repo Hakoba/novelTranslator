@@ -146,6 +146,7 @@
     "cefrLevel": true,
     "checkModel": true,
     "chunk": true,
+    "chunkByChars": true,
     "clearHighlights": true,
     "collectLevels": true,
     "computed": true,

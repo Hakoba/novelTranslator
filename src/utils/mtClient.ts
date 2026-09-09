@@ -3,7 +3,7 @@ import type { MachineTranslatorId, Translator, TranslatorCredentials } from '@/u
 import { getDictSettings } from '@/composables/useDictSettings'
 import { getReaderSettings } from '@/composables/useReaderSettings'
 import { sendBgFetch } from '@/utils/bgFetch'
-import { getTranslator } from '@/utils/mt/translators'
+import { chunkByChars, getTranslator } from '@/utils/mt/translators'
 import { t } from '@/utils/i18n'
 import { normalizeTerm } from '@/utils/dictionary'
 
@@ -55,12 +55,25 @@ async function readyTranslator(): Promise<ReadyTranslator | undefined> {
   return { adapter, credentials, sourceLang, targetLang }
 }
 
+/**
+ * Запросы к переводчику уходят по одному. Разбор шлёт все слова разом, и Chrome
+ * кладёт их в одно h2-соединение — на маршруте с «замирающими» соединениями (см.
+ * `mymemory.batch`) такой залп не получает ни одного ответа: два параллельных
+ * стрима ещё проходят, четыре виснут до таймаута. curl открывает по соединению
+ * на запрос, поэтому из терминала всё работало.
+ */
+// ponytail: очередь одна на все переводчики; лимит на переводчик — когда пакетным станет тесно
+let queue: Promise<unknown> = Promise.resolve()
+
 /** Общий транспорт: отказ по ключу — ошибкой, остальные отказы — `undefined` */
 async function send(
   { adapter }: ReadyTranslator,
   { url, method, headers, body }: ReturnType<Translator['buildRequest']>,
 ): Promise<unknown> {
-  const res = await sendBgFetch(url, { method, headers, body })
+  // таймаут `sendBgFetch` отсчитывается от отправки, а не от постановки в очередь
+  const request = queue.then(() => sendBgFetch(url, { method, headers, body }))
+  queue = request.catch(() => undefined)
+  const res = await request
 
   if (res.status === 401 || res.status === 403) {
     // ключ ввёл пользователь — про отказ надо сказать; бесключевой переводчик
@@ -109,8 +122,18 @@ export async function machineTranslateMany(terms: string[]): Promise<string[]> {
   const pending = terms.filter((_, index) => !results[index])
   if (!pending.length) return results
 
-  const data = await send(ready, batch.build(pending, sourceLang, targetLang, credentials))
-  const texts = data === undefined ? [] : batch.extract(data, pending.length)
+  // пачки уходят по очереди (`send`), ответ каждой — строго по её позициям
+  const chunks = batch.maxChars ? chunkByChars(pending, batch.maxChars) : [pending]
+  const texts = (
+    await Promise.all(
+      chunks.map(async (chunk): Promise<string[]> => {
+        const data = await send(ready, batch.build(chunk, sourceLang, targetLang, credentials))
+        const extracted = data === undefined ? [] : batch.extract(data, chunk.length)
+
+        return extracted.length === chunk.length ? extracted : chunk.map(() => '')
+      }),
+    )
+  ).flat()
 
   pending.forEach((term, index) => {
     const text = (texts[index] ?? '').trim()

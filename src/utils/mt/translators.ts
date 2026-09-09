@@ -70,7 +70,28 @@ export interface Translator {
   batch?: {
     build: (texts: string[], source: string, target: string, credentials: TranslatorCredentials) => TranslateRequest
     extract: (data: unknown, count: number) => string[]
+    /** Потолок на длину запроса: пачка длиннее режется на несколько (см. `chunkByChars`) */
+    maxChars?: number
   }
+}
+
+/** Режет тексты на пачки так, чтобы склейка через `\n` не превышала `max` символов */
+export function chunkByChars(texts: string[], max: number): string[][] {
+  const chunks: string[][] = []
+  let size = 0
+
+  for (const text of texts) {
+    const last = chunks[chunks.length - 1]
+    if (!last || size + 1 + text.length > max) {
+      chunks.push([text])
+      size = text.length
+    } else {
+      last.push(text)
+      size += 1 + text.length
+    }
+  }
+
+  return chunks
 }
 
 const JSON_HEADERS: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -188,6 +209,22 @@ export const TRANSLATORS: Record<MachineTranslatorId, Translator> = {
       if (Number(data.responseStatus) !== 200) return ''
 
       return typeof data.responseData.translatedText === 'string' ? data.responseData.translatedText : ''
+    },
+    // строками в одном `q`, как у Google: переводит построчно. Один запрос на страницу
+    // вместо залпа по слову: на некоторых маршрутах (из РФ к AWS, где живёт MyMemory)
+    // переиспользуемое соединение после 2–5 запросов замирает на минуту — то же
+    // с httpbin.org и nghttp2.org, так что это сеть, не сервис (см. очередь в `mtClient`)
+    batch: {
+      build: (texts, source, target, credentials) =>
+        TRANSLATORS.mymemory.buildRequest(texts.join('\n'), source, target, credentials),
+      extract: (data, count) => {
+        const text = TRANSLATORS.mymemory.extractText(data)
+        const lines = text.split('\n').map((line) => line.trim())
+
+        return text && lines.length === count ? lines : []
+      },
+      // документированный предел `q`, сверх него — 403 «QUERY LENGTH LIMIT EXCEEDED»
+      maxChars: 500,
     },
   },
 

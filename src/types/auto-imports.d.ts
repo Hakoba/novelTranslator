@@ -86,6 +86,7 @@ declare global {
   const cefrLevel: typeof import('../utils/cefr/levels').cefrLevel
   const checkModel: typeof import('../utils/llmClient').checkModel
   const chunk: typeof import('../utils/dictionary').chunk
+  const chunkByChars: typeof import('../utils/mt/translators').chunkByChars
   const clearHighlights: typeof import('../utils/highlight').clearHighlights
   const collectLevels: typeof import('../utils/dictionary').collectLevels
   const computed: typeof import('vue').computed
@@ -692,6 +693,7 @@ declare module 'vue' {
     readonly cefrLevel: UnwrapRef<typeof import('../utils/cefr/levels')['cefrLevel']>
     readonly checkModel: UnwrapRef<typeof import('../utils/llmClient')['checkModel']>
     readonly chunk: UnwrapRef<typeof import('../utils/dictionary')['chunk']>
+    readonly chunkByChars: UnwrapRef<typeof import('../utils/mt/translators')['chunkByChars']>
     readonly clearHighlights: UnwrapRef<typeof import('../utils/highlight')['clearHighlights']>
     readonly collectLevels: UnwrapRef<typeof import('../utils/dictionary')['collectLevels']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
